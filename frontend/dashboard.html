@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — AlephOne</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* ── Dashboard específico ── */
+        .day-greeting {
+            background: linear-gradient(135deg, var(--dark) 0%, #0a0a50 60%, var(--primary-dim) 100%);
+            border-radius: var(--radius-lg);
+            padding: 28px 32px;
+            margin-bottom: 24px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .day-greeting::before {
+            content: 'ℵ';
+            position: absolute;
+            font-family: var(--font-display);
+            font-size: 14em;
+            font-weight: 800;
+            color: rgba(255,255,255,0.03);
+            right: -0.1em;
+            top: -0.2em;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .day-greeting .greeting-label {
+            font-size: 0.82em;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: 0.6;
+            margin-bottom: 6px;
+        }
+
+        .day-greeting h2 {
+            color: white;
+            font-size: 1.9em;
+            margin-bottom: 6px;
+        }
+
+        .day-greeting .greeting-date {
+            opacity: 0.6;
+            font-size: 0.9em;
+        }
+
+        .day-greeting .greeting-badges {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .greeting-badge {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 5px 14px;
+            border-radius: 999px;
+            font-size: 0.82em;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+        }
+
+        .greeting-badge.urgent {
+            background: rgba(220,53,69,0.3);
+            border-color: rgba(220,53,69,0.5);
+        }
+
+        /* Dashboard grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .dashboard-main { display: flex; flex-direction: column; gap: 20px; }
+        .dashboard-side { display: flex; flex-direction: column; gap: 20px; }
+
+        /* Hoy en clases */
+        .today-schedule {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .schedule-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            transition: all var(--transition);
+        }
+
+        .schedule-item:hover { background: var(--bg-hover); }
+
+        .schedule-item.current {
+            border-color: var(--primary);
+            background: rgba(38,212,199,0.08);
+        }
+
+        .schedule-time {
+            font-family: var(--font-display);
+            font-size: 0.82em;
+            font-weight: 700;
+            color: var(--text-faint);
+            width: 48px;
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .schedule-item.current .schedule-time { color: var(--primary); }
+
+        .schedule-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            flex-shrink: 0;
+        }
+
+        .schedule-item.current .schedule-dot {
+            background: var(--primary);
+            box-shadow: 0 0 0 3px rgba(38,212,199,0.2);
+        }
+
+        .schedule-info { flex: 1; }
+        .schedule-subject { font-weight: 600; font-size: 0.92em; }
+        .schedule-teacher { font-size: 0.78em; color: var(--text-muted); }
+
+        /* Tareas pendientes */
+        .tarea-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 16px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            transition: all var(--transition);
+            cursor: pointer;
+        }
+
+        .tarea-item:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary);
+        }
+
+        .tarea-item.vence-hoy { border-left: 3px solid #dc3545; }
+        .tarea-item.vence-pronto { border-left: 3px solid #ffc107; }
+        .tarea-item.vence-normal { border-left: 3px solid var(--primary); }
+
+        .tarea-check {
+            width: 20px; height: 20px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            flex-shrink: 0;
+            transition: all var(--transition);
+        }
+
+        .tarea-item:hover .tarea-check { border-color: var(--primary); }
+
+        .tarea-info { flex: 1; min-width: 0; }
+        .tarea-title { font-weight: 600; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tarea-meta { font-size: 0.78em; color: var(--text-muted); margin-top: 2px; }
+
+        .dias-badge {
+            font-size: 0.75em;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 999px;
+            flex-shrink: 0;
+        }
+
+        .dias-badge.hoy    { background: rgba(220,53,69,0.12); color: #dc3545; }
+        .dias-badge.pronto { background: rgba(255,193,7,0.15);  color: #b8860b; }
+        .dias-badge.normal { background: rgba(38,212,199,0.12); color: var(--primary-dim); }
+
+        body.dark-mode .dias-badge.normal { color: var(--primary); }
+
+        /* Mensajes */
+        .mensaje-item {
+            padding: 14px 16px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition);
+            margin-bottom: 8px;
+        }
+
+        .mensaje-item:hover { background: var(--bg-hover); border-color: var(--accent); }
+
+        .mensaje-item.urgente { border-left: 3px solid #dc3545; }
+        .mensaje-item.anuncio { border-left: 3px solid var(--accent); }
+        .mensaje-item.recordatorio { border-left: 3px solid #ffc107; }
+
+        .mensaje-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .mensaje-titulo { font-weight: 700; font-size: 0.9em; }
+        .mensaje-fecha  { font-size: 0.75em; color: var(--text-faint); }
+        .mensaje-preview { font-size: 0.82em; color: var(--text-muted); line-height: 1.4;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Próximos eventos */
+        .evento-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            margin-bottom: 8px;
+            font-size: 0.88em;
+        }
+
+        .evento-fecha-box {
+            width: 44px; height: 44px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .evento-dia  { font-family: var(--font-display); font-size: 1.1em; font-weight: 800; line-height: 1; }
+        .evento-mes  { font-size: 0.6em; font-weight: 600; text-transform: uppercase; opacity: 0.85; }
+        .evento-info { flex: 1; }
+        .evento-titulo { font-weight: 600; }
+        .evento-tipo-tag { font-size: 0.75em; color: var(--text-muted); }
+
+        /* Teacher panel */
+        .teacher-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .action-card {
+            padding: 16px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition);
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+
+        .action-card:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .action-card .action-icon { font-size: 1.6em; margin-bottom: 8px; }
+        .action-card .action-label { font-size: 0.82em; font-weight: 600; color: var(--text); }
+        .action-card .action-sub   { font-size: 0.75em; color: var(--text-muted); margin-top: 2px; }
+
+        /* Mobile nav toggle */
+        .mobile-nav-btn {
+            display: none;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 38px; height: 38px;
+            border-radius: var(--radius-sm);
+            font-size: 1.1em;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 900px) {
+            .mobile-nav-btn { display: flex; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .dashboard-side { order: -1; }
+            .teacher-actions { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        @media (max-width: 600px) {
+            .teacher-actions { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-shell">
+
+    <!-- ── TOPBAR ── -->
+    <header class="topbar">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <button class="mobile-nav-btn" id="mobileNavBtn" onclick="toggleMobileNav()">☰</button>
+            <span class="topbar-logo">ℵ AlephOne</span>
+        </div>
+        <div class="topbar-right">
+            <button class="dark-mode-toggle" id="darkModeBtn" title="Cambiar tema">🌙</button>
+            <div class="user-pill">
+                <div class="user-avatar" id="userAvatar">?</div>
+                <span id="username">—</span>
+                <span class="role-badge" id="userRole">—</span>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+        </div>
+    </header>
+
+    <!-- ── SIDEBAR ── -->
+    <nav class="sidebar" id="sidebar">
+        <span class="nav-section-label">Principal</span>
+        <a href="dashboard.html" class="nav-link active">
+            <span class="nav-icon">🏠</span> Dashboard
+        </a>
+        <a href="comunicacion.html" class="nav-link">
+            <span class="nav-icon">📢</span> Comunicación
+            <span class="nav-badge" id="navBadgeMensajes">0</span>
+        </a>
+        <a href="tareas.html" class="nav-link">
+            <span class="nav-icon">📋</span> Tareas
+            <span class="nav-badge" id="navBadgeTareas">0</span>
+        </a>
+
+        <span class="nav-section-label">Académico</span>
+        <a href="horario.html" class="nav-link">
+            <span class="nav-icon">🗓️</span> Horario
+        </a>
+        <a href="promedios.html" class="nav-link">
+            <span class="nav-icon">📊</span> Promedios
+        </a>
+
+        <span class="nav-section-label">Herramientas</span>
+        <a href="ai-chat.html" class="nav-link">
+            <span class="nav-icon">🤖</span> Fractal AI
+        </a>
+
+        <div class="sidebar-footer">
+            <button class="btn btn-ghost btn-sm" onclick="logout()" style="width:100%;">
+                ← Cerrar sesión
+            </button>
+        </div>
+    </nav>
+
+    <!-- ── MAIN ── -->
+    <main class="main-content">
+
+        <!-- Saludo dinámico -->
+        <div class="day-greeting fade-up" id="dayGreeting">
+            <div class="greeting-label">HOY ES <span id="greetingDia"></span></div>
+            <h2 id="greetingMsg">Hola 👋</h2>
+            <div class="greeting-date" id="greetingDate"></div>
+            <div class="greeting-badges" id="greetingBadges"></div>
+        </div>
+
+        <!-- Stats rápidas -->
+        <div class="stats-grid fade-up" id="statsGrid"></div>
+
+        <!-- Grid principal -->
+        <div class="dashboard-grid">
+
+            <!-- Columna principal -->
+            <div class="dashboard-main">
+
+                <!-- Panel docente: acciones rápidas (solo si es teacher) -->
+                <div class="card fade-up" id="teacherPanel" style="display:none;">
+                    <div class="card-header">
+                        <span class="card-title">⚡ Acciones rápidas</span>
+                    </div>
+                    <div class="teacher-actions">
+                        <a href="comunicacion.html" class="action-card">
+                            <div class="action-icon">📢</div>
+                            <div class="action-label">Nuevo anuncio</div>
+                            <div class="action-sub">Comunicar al curso</div>
+                        </a>
+                        <a href="tareas.html" class="action-card">
+                            <div class="action-icon">📋</div>
+                            <div class="action-label">Nueva tarea</div>
+                            <div class="action-sub">Asignar actividad</div>
+                        </a>
+                        <a href="horario.html" class="action-card">
+                            <div class="action-icon">🗓️</div>
+                            <div class="action-label">Editar horario</div>
+                            <div class="action-sub">Cambios del día</div>
+                        </a>
+                        <a href="promedios.html" class="action-card">
+                            <div class="action-icon">📊</div>
+                            <div class="action-label">Cargar notas</div>
+                            <div class="action-sub">Registrar calificaciones</div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Tareas pendientes -->
+                <div class="card fade-up">
+                    <div class="card-header">
+                        <span class="card-title">📋 Tareas pendientes</span>
+                        <a href="tareas.html" class="btn btn-ghost btn-sm">Ver todas →</a>
+                    </div>
+                    <div id="tareasList" class="item-list">
+                        <div class="empty-state">
+                            <div class="empty-icon">✅</div>
+                            <p>Sin tareas pendientes</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensajes recientes -->
+                <div class="card fade-up">
+                    <div class="card-header">
+                        <span class="card-title">📢 Mensajes recientes</span>
+                        <a href="comunicacion.html" class="btn btn-ghost btn-sm">Ver todos →</a>
+                    </div>
+                    <div id="mensajesList"></div>
+                </div>
+
+            </div>
+
+            <!-- Columna lateral -->
+            <div class="dashboard-side">
+
+                <!-- Clases de hoy -->
+                <div class="card fade-up">
+                    <div class="card-header">
+                        <span class="card-title">🏫 Clases de hoy</span>
+                    </div>
+                    <div id="clasesHoy" class="today-schedule"></div>
+                </div>
+
+                <!-- Próximos eventos -->
+                <div class="card fade-up">
+                    <div class="card-header">
+                        <span class="card-title">📅 Próximos eventos</span>
+                        <a href="horario.html" class="btn btn-ghost btn-sm">Ver →</a>
+                    </div>
+                    <div id="eventosList"></div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>
