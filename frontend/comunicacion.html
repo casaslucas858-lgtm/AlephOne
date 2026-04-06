@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comunicación — AlephOne</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* ── Modal ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(4px);
+            z-index: 500;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: var(--shadow-lg);
+            animation: fadeUp 0.25s ease both;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .modal-title { font-family: var(--font-display); font-size: 1.2em; font-weight: 700; }
+
+        .modal-close {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            font-size: 1em;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .modal-close:hover { background: var(--bg-hover); color: var(--text); }
+
+        /* ── Filtros ── */
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-chip {
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 0.82em;
+            font-weight: 600;
+            border: 1.5px solid var(--border);
+            background: var(--bg-subtle);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .filter-chip:hover { border-color: var(--primary); color: var(--text); }
+
+        .filter-chip.active {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-color: transparent;
+            color: white;
+        }
+
+        /* ── Mensaje card ── */
+        .msg-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px 22px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .msg-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+        }
+
+        .msg-card.urgente::before  { background: #dc3545; }
+        .msg-card.anuncio::before  { background: var(--accent); }
+        .msg-card.recordatorio::before { background: #ffc107; }
+
+        .msg-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .msg-card.no-leido { background: var(--bg-subtle); }
+
+        .msg-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .msg-title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .msg-title {
+            font-family: var(--font-display);
+            font-size: 1em;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .unread-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .msg-meta {
+            font-size: 0.78em;
+            color: var(--text-faint);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .msg-body {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .msg-body.collapsed {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .msg-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        .msg-autor {
+            font-size: 0.78em;
+            color: var(--text-faint);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .msg-autor-avatar {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--dark));
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            font-size: 0.7em;
+            font-weight: 700;
+            font-family: var(--font-display);
+        }
+
+        /* ── Tipo badge ── */
+        .tipo-urgente     { background: rgba(220,53,69,0.1);  color: #dc3545; }
+        .tipo-anuncio     { background: rgba(115,194,251,0.2); color: var(--accent-dim); }
+        .tipo-recordatorio { background: rgba(255,193,7,0.15); color: #b8860b; }
+
+        /* ── Mobile nav btn ── */
+        .mobile-nav-btn {
+            display: none;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 38px; height: 38px;
+            border-radius: var(--radius-sm);
+            font-size: 1.1em;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 900px) {
+            .mobile-nav-btn { display: flex; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-shell">
+
+    <!-- ── TOPBAR ── -->
+    <header class="topbar">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <button class="mobile-nav-btn" onclick="toggleMobileNav()">☰</button>
+            <span class="topbar-logo">ℵ AlephOne</span>
+        </div>
+        <div class="topbar-right">
+            <button class="dark-mode-toggle" id="darkModeBtn" title="Cambiar tema">🌙</button>
+            <div class="user-pill">
+                <div class="user-avatar" id="userAvatar">?</div>
+                <span id="username">—</span>
+                <span class="role-badge" id="userRole">—</span>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+        </div>
+    </header>
+
+    <!-- ── SIDEBAR ── -->
+    <nav class="sidebar" id="sidebar">
+        <span class="nav-section-label">Principal</span>
+        <a href="dashboard.html" class="nav-link">
+            <span class="nav-icon">🏠</span> Dashboard
+        </a>
+        <a href="comunicacion.html" class="nav-link active">
+            <span class="nav-icon">📢</span> Comunicación
+        </a>
+        <a href="tareas.html" class="nav-link">
+            <span class="nav-icon">📋</span> Tareas
+        </a>
+        <span class="nav-section-label">Académico</span>
+        <a href="horario.html" class="nav-link">
+            <span class="nav-icon">🗓️</span> Horario
+        </a>
+        <a href="promedios.html" class="nav-link">
+            <span class="nav-icon">📊</span> Promedios
+        </a>
+        <span class="nav-section-label">Herramientas</span>
+        <a href="ai-chat.html" class="nav-link">
+            <span class="nav-icon">🤖</span> Fractal AI
+        </a>
+        <div class="sidebar-footer">
+            <button class="btn btn-ghost btn-sm" onclick="logout()" style="width:100%;">
+                ← Cerrar sesión
+            </button>
+        </div>
+    </nav>
+
+    <!-- ── MAIN ── -->
+    <main class="main-content">
+
+        <div class="page-header" style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+            <div>
+                <h2>📢 Comunicación</h2>
+                <p class="text-muted">Anuncios, recordatorios y mensajes del curso.</p>
+            </div>
+            <!-- Botón solo visible para docentes/directores -->
+            <button class="btn btn-primary" id="btnNuevoMensaje" style="display:none;"
+                    onclick="abrirModal()">
+                + Nuevo mensaje
+            </button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filter-bar">
+            <button class="filter-chip active" data-tipo="todos" onclick="filtrar('todos', this)">Todos</button>
+            <button class="filter-chip" data-tipo="urgente" onclick="filtrar('urgente', this)">🔴 Urgentes</button>
+            <button class="filter-chip" data-tipo="anuncio" onclick="filtrar('anuncio', this)">📢 Anuncios</button>
+            <button class="filter-chip" data-tipo="recordatorio" onclick="filtrar('recordatorio', this)">⏰ Recordatorios</button>
+        </div>
+
+        <!-- Lista de mensajes -->
+        <div id="mensajesList"></div>
+
+    </main>
+</div>
+
+<!-- ── MODAL: Nuevo mensaje (solo docentes) ── -->
+<div class="modal-overlay" id="modalOverlay" onclick="cerrarModalSiEsFondo(event)">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">📢 Nuevo mensaje</span>
+            <button class="modal-close" onclick="cerrarModal()">✕</button>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Tipo de mensaje</label>
+            <div style="display:flex; gap:8px;">
+                <button class="filter-chip active" data-tipo="anuncio"
+                        onclick="seleccionarTipo('anuncio', this)">📢 Anuncio</button>
+                <button class="filter-chip" data-tipo="recordatorio"
+                        onclick="seleccionarTipo('recordatorio', this)">⏰ Recordatorio</button>
+                <button class="filter-chip" data-tipo="urgente"
+                        onclick="seleccionarTipo('urgente', this)">🔴 Urgente</button>
+            </div>
+            <input type="hidden" id="msgTipo" value="anuncio">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Título</label>
+            <input type="text" id="msgTitulo" class="form-input"
+                   placeholder="Título del mensaje" maxlength="80">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Contenido</label>
+            <textarea id="msgContenido" class="form-textarea"
+                      placeholder="Escribí el mensaje acá..." rows="4" maxlength="600"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Materia (opcional)</label>
+            <input type="text" id="msgMateria" class="form-input"
+                   placeholder="Ej: Matemática, Historia...">
+        </div>
+
+        <div id="msgError" class="form-error" style="margin-bottom:8px;"></div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="enviarMensaje()">Publicar →</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script src="js/comunicacion.js"></script>
+</body>
+</html>
