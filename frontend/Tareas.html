@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tareas — AlephOne</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .mobile-nav-btn {
+            display: none;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 38px; height: 38px;
+            border-radius: var(--radius-sm);
+            font-size: 1.1em;
+            align-items: center;
+            justify-content: center;
+        }
+        @media (max-width: 900px) { .mobile-nav-btn { display: flex; } }
+
+        /* Modal */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
+            z-index: 500; align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius-xl); padding: 32px;
+            width: 100%; max-width: 540px;
+            box-shadow: var(--shadow-lg); animation: fadeUp 0.25s ease both;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal-header {
+            display: flex; align-items: center;
+            justify-content: space-between; margin-bottom: 24px;
+        }
+        .modal-title { font-family: var(--font-display); font-size: 1.2em; font-weight: 700; }
+        .modal-close {
+            background: var(--bg-subtle); border: 1px solid var(--border);
+            color: var(--text-muted); width: 34px; height: 34px;
+            border-radius: 50%; font-size: 1em;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all var(--transition);
+        }
+        .modal-close:hover { background: var(--bg-hover); color: var(--text); }
+
+        /* Tarea card */
+        .tarea-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius-lg); padding: 20px 22px;
+            margin-bottom: 12px; transition: all var(--transition);
+            position: relative; overflow: hidden;
+        }
+        .tarea-card::before {
+            content: ''; position: absolute;
+            left: 0; top: 0; bottom: 0; width: 4px;
+        }
+        .tarea-card.urgente::before  { background: #dc3545; }
+        .tarea-card.pronto::before   { background: #ffc107; }
+        .tarea-card.normal::before   { background: var(--primary); }
+        .tarea-card.entregada::before { background: #28a745; }
+
+        .tarea-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+        .tarea-header {
+            display: flex; align-items: flex-start;
+            justify-content: space-between; gap: 12px; margin-bottom: 8px;
+        }
+        .tarea-titulo {
+            font-family: var(--font-display); font-size: 1em;
+            font-weight: 700; color: var(--text);
+        }
+        .tarea-desc {
+            font-size: 0.88em; color: var(--text-muted);
+            line-height: 1.5; margin-bottom: 12px;
+        }
+        .tarea-footer {
+            display: flex; align-items: center;
+            justify-content: space-between; flex-wrap: wrap; gap: 8px;
+        }
+        .tarea-meta-row {
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+
+        /* Entrega form */
+        .entrega-section {
+            margin-top: 14px; padding-top: 14px;
+            border-top: 1px solid var(--border);
+        }
+        .entrega-done {
+            display: flex; align-items: center; gap: 8px;
+            color: #28a745; font-size: 0.88em; font-weight: 600;
+        }
+
+        /* Vista docente: tabla entregas */
+        .entregas-tabla {
+            width: 100%; border-collapse: collapse;
+            font-size: 0.85em; margin-top: 12px;
+        }
+        .entregas-tabla th {
+            background: var(--bg-subtle); padding: 8px 12px;
+            text-align: left; font-weight: 600;
+            color: var(--text-muted); border-bottom: 1px solid var(--border);
+        }
+        .entregas-tabla td {
+            padding: 8px 12px; border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+        .entregas-tabla tr:last-child td { border-bottom: none; }
+
+        .filter-bar {
+            display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+        }
+        .filter-chip {
+            padding: 6px 16px; border-radius: 999px; font-size: 0.82em;
+            font-weight: 600; border: 1.5px solid var(--border);
+            background: var(--bg-subtle); color: var(--text-muted);
+            cursor: pointer; transition: all var(--transition);
+        }
+        .filter-chip:hover { border-color: var(--primary); color: var(--text); }
+        .filter-chip.active {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-color: transparent; color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="app-shell">
+    <header class="topbar">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <button class="mobile-nav-btn" onclick="toggleMobileNav()">☰</button>
+            <span class="topbar-logo">ℵ AlephOne</span>
+        </div>
+        <div class="topbar-right">
+            <button class="dark-mode-toggle" id="darkModeBtn" title="Cambiar tema">🌙</button>
+            <div class="user-pill">
+                <div class="user-avatar" id="userAvatar">?</div>
+                <span id="username">—</span>
+                <span class="role-badge" id="userRole">—</span>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+        </div>
+    </header>
+
+    <nav class="sidebar" id="sidebar">
+        <span class="nav-section-label">Principal</span>
+        <a href="dashboard.html" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="comunicacion.html" class="nav-link"><span class="nav-icon">📢</span> Comunicación</a>
+        <a href="tareas.html" class="nav-link active"><span class="nav-icon">📋</span> Tareas</a>
+        <span class="nav-section-label">Académico</span>
+        <a href="horario.html" class="nav-link"><span class="nav-icon">🗓️</span> Horario</a>
+        <a href="promedios.html" class="nav-link"><span class="nav-icon">📊</span> Promedios</a>
+        <span class="nav-section-label">Herramientas</span>
+        <a href="ai-chat.html" class="nav-link"><span class="nav-icon">🤖</span> Fractal AI</a>
+        <div class="sidebar-footer">
+            <button class="btn btn-ghost btn-sm" onclick="logout()" style="width:100%;">← Cerrar sesión</button>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-header" style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+            <div>
+                <h2>📋 Tareas</h2>
+                <p class="text-muted">Actividades, trabajos prácticos y entregas.</p>
+            </div>
+            <button class="btn btn-primary" id="btnNuevaTarea" style="display:none;"
+                    onclick="abrirModalTarea()">+ Nueva tarea</button>
+        </div>
+
+        <div class="filter-bar">
+            <button class="filter-chip active" onclick="filtrar('todas', this)">Todas</button>
+            <button class="filter-chip" onclick="filtrar('tarea', this)">📋 Tareas</button>
+            <button class="filter-chip" onclick="filtrar('quiz', this)">🧪 Quizzes</button>
+            <button class="filter-chip" onclick="filtrar('examen', this)">📝 Exámenes</button>
+        </div>
+
+        <div id="tareasList"></div>
+    </main>
+</div>
+
+<!-- Modal nueva tarea (docente) -->
+<div class="modal-overlay" id="modalTarea" onclick="cerrarModalSiFondo(event, 'modalTarea')">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">📋 Nueva tarea</span>
+            <button class="modal-close" onclick="cerrarModal('modalTarea')">✕</button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Tipo</label>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="filter-chip active" onclick="selTipo('tarea',this)">📋 Tarea</button>
+                <button class="filter-chip" onclick="selTipo('quiz',this)">🧪 Quiz</button>
+                <button class="filter-chip" onclick="selTipo('examen',this)">📝 Examen</button>
+            </div>
+            <input type="hidden" id="tареaTipo" value="tarea">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Título</label>
+            <input type="text" id="tareaTitulo" class="form-input" placeholder="Ej: TP Ecuaciones lineales" maxlength="80">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Descripción</label>
+            <textarea id="tareaDesc" class="form-textarea" placeholder="Consigna, instrucciones, recursos..." rows="3" maxlength="500"></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Materia</label>
+            <input type="text" id="tareaMateria" class="form-input" placeholder="Ej: Matemática">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Fecha de cierre</label>
+            <input type="datetime-local" id="tareaCierre" class="form-input">
+        </div>
+        <div id="tareaError" class="form-error" style="margin-bottom:8px;"></div>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn btn-secondary" onclick="cerrarModal('modalTarea')">Cancelar</button>
+            <button class="btn btn-primary" onclick="crearTarea()">Publicar →</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal entregar tarea (alumno) -->
+<div class="modal-overlay" id="modalEntrega" onclick="cerrarModalSiFondo(event, 'modalEntrega')">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">📤 Entregar tarea</span>
+            <button class="modal-close" onclick="cerrarModal('modalEntrega')">✕</button>
+        </div>
+        <p id="entregaTareaTitle" style="font-weight:600; margin-bottom:16px; color:var(--text-muted);"></p>
+        <div class="form-group">
+            <label class="form-label">Tu respuesta / comentario</label>
+            <textarea id="entregaContenido" class="form-textarea"
+                      placeholder="Escribí tu respuesta, o indicá que adjuntás físicamente..." rows="4" maxlength="800"></textarea>
+        </div>
+        <div id="entregaError" class="form-error" style="margin-bottom:8px;"></div>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn btn-secondary" onclick="cerrarModal('modalEntrega')">Cancelar</button>
+            <button class="btn btn-primary" onclick="confirmarEntrega()">Entregar ✓</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal ver entregas (docente) -->
+<div class="modal-overlay" id="modalEntregas" onclick="cerrarModalSiFondo(event, 'modalEntregas')">
+    <div class="modal" style="max-width:600px;">
+        <div class="modal-header">
+            <span class="modal-title" id="entregasModalTitle">Entregas</span>
+            <button class="modal-close" onclick="cerrarModal('modalEntregas')">✕</button>
+        </div>
+        <div id="entregasLista"></div>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script src="js/tareas.js"></script>
+</body>
+</html>
