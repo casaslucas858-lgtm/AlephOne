@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horario — AlephOne</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .mobile-nav-btn {
+            display: none; background: var(--bg-subtle);
+            border: 1px solid var(--border); color: var(--text);
+            width: 38px; height: 38px; border-radius: var(--radius-sm);
+            font-size: 1.1em; align-items: center; justify-content: center;
+        }
+        @media (max-width: 900px) { .mobile-nav-btn { display: flex; } }
+
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
+            z-index: 500; align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius-xl); padding: 32px;
+            width: 100%; max-width: 480px;
+            box-shadow: var(--shadow-lg); animation: fadeUp 0.25s ease both;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal-header {
+            display: flex; align-items: center;
+            justify-content: space-between; margin-bottom: 24px;
+        }
+        .modal-title { font-family: var(--font-display); font-size: 1.2em; font-weight: 700; }
+        .modal-close {
+            background: var(--bg-subtle); border: 1px solid var(--border);
+            color: var(--text-muted); width: 34px; height: 34px;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; cursor: pointer; transition: all var(--transition);
+        }
+        .modal-close:hover { background: var(--bg-hover); color: var(--text); }
+
+        /* Horario table wrapper */
+        .schedule-wrapper {
+            overflow-x: auto; border-radius: var(--radius-lg);
+            border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+        }
+
+        .schedule-table {
+            width: 100%; border-collapse: collapse; font-size: 0.88em; min-width: 600px;
+        }
+        .schedule-table th {
+            background: linear-gradient(135deg, var(--dark), #1a1ab8);
+            color: white; padding: 12px 10px;
+            font-family: var(--font-display); font-weight: 700;
+            text-align: center; font-size: 0.85em; letter-spacing: 0.5px;
+        }
+        .schedule-table th.hoy-col {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+        }
+        .schedule-table td {
+            padding: 8px 10px; border: 1px solid var(--border);
+            text-align: center; vertical-align: middle;
+            background: var(--bg-card); color: var(--text);
+        }
+        .schedule-table tr:hover td { background: var(--bg-subtle); }
+        .schedule-table td.hoy-col { background: rgba(38,212,199,0.05); }
+
+        .schedule-cell {
+            background: rgba(38,212,199,0.1); border-radius: var(--radius-sm);
+            padding: 6px 8px; font-weight: 600; font-size: 0.88em;
+            color: var(--primary-dim); cursor: default;
+        }
+        body.dark-mode .schedule-cell { color: var(--primary); }
+        .schedule-cell .cell-teacher {
+            font-size: 0.75em; font-weight: 400;
+            color: var(--text-muted); margin-top: 2px;
+        }
+        .time-col {
+            font-family: var(--font-display); font-size: 0.82em;
+            font-weight: 700; color: var(--text-faint);
+            background: var(--bg-subtle) !important;
+            width: 60px;
+        }
+
+        /* Cambios del día */
+        .cambio-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px; background: var(--bg-subtle);
+            border: 1px solid var(--border); border-radius: var(--radius-md);
+            margin-bottom: 8px;
+        }
+        .cambio-item.cancelacion { border-left: 3px solid #dc3545; }
+        .cambio-item.reemplazo   { border-left: 3px solid #ffc107; }
+
+        /* Bloque editor (docente) */
+        .bloque-editor {
+            display: flex; gap: 8px; align-items: flex-end;
+            padding: 12px; background: var(--bg-subtle);
+            border-radius: var(--radius-md); margin-bottom: 8px;
+        }
+        .bloque-editor .form-group { margin: 0; flex: 1; }
+        .bloque-editor input, .bloque-editor select {
+            padding: 8px 10px; font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+<div class="app-shell">
+    <header class="topbar">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <button class="mobile-nav-btn" onclick="toggleMobileNav()">☰</button>
+            <span class="topbar-logo">ℵ AlephOne</span>
+        </div>
+        <div class="topbar-right">
+            <button class="dark-mode-toggle" id="darkModeBtn">🌙</button>
+            <div class="user-pill">
+                <div class="user-avatar" id="userAvatar">?</div>
+                <span id="username">—</span>
+                <span class="role-badge" id="userRole">—</span>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+        </div>
+    </header>
+
+    <nav class="sidebar" id="sidebar">
+        <span class="nav-section-label">Principal</span>
+        <a href="dashboard.html" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="comunicacion.html" class="nav-link"><span class="nav-icon">📢</span> Comunicación</a>
+        <a href="tareas.html" class="nav-link"><span class="nav-icon">📋</span> Tareas</a>
+        <span class="nav-section-label">Académico</span>
+        <a href="horario.html" class="nav-link active"><span class="nav-icon">🗓️</span> Horario</a>
+        <a href="promedios.html" class="nav-link"><span class="nav-icon">📊</span> Promedios</a>
+        <span class="nav-section-label">Herramientas</span>
+        <a href="ai-chat.html" class="nav-link"><span class="nav-icon">🤖</span> Fractal AI</a>
+        <div class="sidebar-footer">
+            <button class="btn btn-ghost btn-sm" onclick="logout()" style="width:100%;">← Cerrar sesión</button>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-header" style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+            <div>
+                <h2>🗓️ Horario</h2>
+                <p class="text-muted">Horario semanal del curso y cambios del día.</p>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-secondary" id="btnCambio" style="display:none;"
+                        onclick="abrirModal('modalCambio')">⚠️ Registrar cambio</button>
+                <button class="btn btn-primary" id="btnEditar" style="display:none;"
+                        onclick="abrirModal('modalEditor')">✏️ Editar horario</button>
+            </div>
+        </div>
+
+        <!-- Cambios del día -->
+        <div id="cambiosSection" style="margin-bottom:24px; display:none;">
+            <h3 style="margin-bottom:12px;">⚠️ Cambios de hoy</h3>
+            <div id="cambiosList"></div>
+        </div>
+
+        <!-- Tabla horario -->
+        <div class="card fade-up" style="padding:0; overflow:hidden;">
+            <div class="schedule-wrapper">
+                <table class="schedule-table" id="scheduleTable">
+                    <thead id="scheduleHead"></thead>
+                    <tbody id="scheduleBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal cambio del día -->
+<div class="modal-overlay" id="modalCambio" onclick="cerrarModalSiFondo(event,'modalCambio')">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">⚠️ Registrar cambio</span>
+            <button class="modal-close" onclick="cerrarModal('modalCambio')">✕</button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Tipo de cambio</label>
+            <select id="cambioTipo" class="form-select">
+                <option value="cancelacion">❌ Cancelación de clase</option>
+                <option value="reemplazo">🔄 Reemplazo docente</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Materia afectada</label>
+            <input type="text" id="cambioMateria" class="form-input" placeholder="Ej: Matemática">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Motivo / Detalle</label>
+            <input type="text" id="cambioMotivo" class="form-input" placeholder="Ej: Docente ausente por enfermedad">
+        </div>
+        <div id="cambioError" class="form-error" style="margin-bottom:8px;"></div>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn btn-secondary" onclick="cerrarModal('modalCambio')">Cancelar</button>
+            <button class="btn btn-primary" onclick="registrarCambio()">Guardar →</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal editor de horario -->
+<div class="modal-overlay" id="modalEditor" onclick="cerrarModalSiFondo(event,'modalEditor')">
+    <div class="modal" style="max-width:560px;">
+        <div class="modal-header">
+            <span class="modal-title">✏️ Editar horario</span>
+            <button class="modal-close" onclick="cerrarModal('modalEditor')">✕</button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Día</label>
+            <select id="editDia" class="form-select" onchange="renderBloqueEditor()">
+                <option value="lunes">Lunes</option>
+                <option value="martes">Martes</option>
+                <option value="miercoles">Miércoles</option>
+                <option value="jueves">Jueves</option>
+                <option value="viernes">Viernes</option>
+            </select>
+        </div>
+        <div id="bloquesEditor" style="margin-bottom:16px;"></div>
+        <button class="btn btn-secondary btn-sm" onclick="agregarBloque()" style="margin-bottom:16px;">
+            + Agregar bloque
+        </button>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn btn-secondary" onclick="cerrarModal('modalEditor')">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarDia()">Guardar día →</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script src="js/horario.js"></script>
+</body>
+</html>
