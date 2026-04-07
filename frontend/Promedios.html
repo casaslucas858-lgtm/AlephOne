@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promedios — AlephOne</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .mobile-nav-btn {
+            display: none; background: var(--bg-subtle);
+            border: 1px solid var(--border); color: var(--text);
+            width: 38px; height: 38px; border-radius: var(--radius-sm);
+            font-size: 1.1em; align-items: center; justify-content: center;
+        }
+        @media (max-width: 900px) { .mobile-nav-btn { display: flex; } }
+
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
+            z-index: 500; align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius-xl); padding: 32px;
+            width: 100%; max-width: 480px;
+            box-shadow: var(--shadow-lg); animation: fadeUp 0.25s ease both;
+        }
+        .modal-header {
+            display: flex; align-items: center;
+            justify-content: space-between; margin-bottom: 24px;
+        }
+        .modal-title { font-family: var(--font-display); font-size: 1.2em; font-weight: 700; }
+        .modal-close {
+            background: var(--bg-subtle); border: 1px solid var(--border);
+            color: var(--text-muted); width: 34px; height: 34px;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; cursor: pointer; transition: all var(--transition);
+        }
+        .modal-close:hover { background: var(--bg-hover); color: var(--text); }
+
+        /* Materia card */
+        .materia-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius-lg); padding: 22px 24px;
+            margin-bottom: 14px; transition: all var(--transition);
+        }
+        .materia-card:hover { box-shadow: var(--shadow-md); }
+
+        .materia-header {
+            display: flex; align-items: center;
+            justify-content: space-between; margin-bottom: 12px;
+        }
+        .materia-nombre {
+            font-family: var(--font-display); font-size: 1.05em; font-weight: 700;
+        }
+        .promedio-valor {
+            font-family: var(--font-display); font-size: 1.8em;
+            font-weight: 800; line-height: 1;
+        }
+        .promedio-valor.alto   { color: #28a745; }
+        .promedio-valor.medio  { color: #ffc107; }
+        .promedio-valor.bajo   { color: #dc3545; }
+
+        .notas-lista {
+            display: flex; flex-direction: column; gap: 6px; margin-top: 12px;
+        }
+        .nota-row {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            padding: 7px 12px; background: var(--bg-subtle);
+            border-radius: var(--radius-sm); font-size: 0.85em;
+        }
+        .nota-row .nota-val {
+            font-family: var(--font-display); font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        /* Simulador */
+        .simulador {
+            background: linear-gradient(135deg, rgba(38,212,199,0.08), rgba(115,194,251,0.06));
+            border: 1px solid rgba(38,212,199,0.2);
+            border-radius: var(--radius-lg); padding: 22px 24px;
+            margin-bottom: 24px;
+        }
+        .simulador h3 { margin-bottom: 16px; }
+        .sim-row {
+            display: grid; grid-template-columns: 1fr 1fr auto;
+            gap: 10px; align-items: end;
+        }
+        .sim-result {
+            margin-top: 14px; padding: 12px 16px;
+            background: var(--bg-card); border-radius: var(--radius-md);
+            border: 1px solid var(--border); font-size: 0.92em;
+            display: none;
+        }
+        .sim-result.visible { display: block; }
+        .sim-result strong { color: var(--primary); font-size: 1.1em; }
+
+        /* Promedio general destacado */
+        .prom-general-card {
+            background: linear-gradient(135deg, var(--dark) 0%, #0a0a50 60%, var(--primary-dim) 100%);
+            border-radius: var(--radius-lg); padding: 24px 28px;
+            color: white; margin-bottom: 24px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .prom-general-label { font-size: 0.85em; opacity: 0.7; margin-bottom: 4px; }
+        .prom-general-val {
+            font-family: var(--font-display); font-size: 3em;
+            font-weight: 800; line-height: 1;
+        }
+    </style>
+</head>
+<body>
+<div class="app-shell">
+    <header class="topbar">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <button class="mobile-nav-btn" onclick="toggleMobileNav()">☰</button>
+            <span class="topbar-logo">ℵ AlephOne</span>
+        </div>
+        <div class="topbar-right">
+            <button class="dark-mode-toggle" id="darkModeBtn">🌙</button>
+            <div class="user-pill">
+                <div class="user-avatar" id="userAvatar">?</div>
+                <span id="username">—</span>
+                <span class="role-badge" id="userRole">—</span>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+        </div>
+    </header>
+
+    <nav class="sidebar" id="sidebar">
+        <span class="nav-section-label">Principal</span>
+        <a href="dashboard.html" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="comunicacion.html" class="nav-link"><span class="nav-icon">📢</span> Comunicación</a>
+        <a href="tareas.html" class="nav-link"><span class="nav-icon">📋</span> Tareas</a>
+        <span class="nav-section-label">Académico</span>
+        <a href="horario.html" class="nav-link"><span class="nav-icon">🗓️</span> Horario</a>
+        <a href="promedios.html" class="nav-link active"><span class="nav-icon">📊</span> Promedios</a>
+        <span class="nav-section-label">Herramientas</span>
+        <a href="ai-chat.html" class="nav-link"><span class="nav-icon">🤖</span> Fractal AI</a>
+        <div class="sidebar-footer">
+            <button class="btn btn-ghost btn-sm" onclick="logout()" style="width:100%;">← Cerrar sesión</button>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-header" style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+            <div>
+                <h2>📊 Promedios</h2>
+                <p class="text-muted">Notas, promedios por materia y simulador.</p>
+            </div>
+            <button class="btn btn-primary" id="btnCargarNota" style="display:none;"
+                    onclick="abrirModalNota()">+ Cargar nota</button>
+        </div>
+
+        <!-- Promedio general -->
+        <div class="prom-general-card fade-up" id="promGeneralCard">
+            <div>
+                <div class="prom-general-label">PROMEDIO GENERAL</div>
+                <div class="prom-general-val" id="promGeneralVal">—</div>
+            </div>
+            <div style="text-align:right; opacity:0.7; font-size:0.85em;" id="promGeneralSub"></div>
+        </div>
+
+        <!-- Simulador -->
+        <div class="simulador fade-up">
+            <h3>🧮 Simulador de notas</h3>
+            <p style="font-size:0.88em; color:var(--text-muted); margin-bottom:14px;">
+                ¿Qué nota necesito para llegar a un promedio objetivo?
+            </p>
+            <div class="sim-row">
+                <div class="form-group" style="margin:0;">
+                    <label class="form-label">Materia</label>
+                    <select id="simMateria" class="form-select">
+                        <option value="">— elegí una —</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label class="form-label">Promedio objetivo</label>
+                    <input type="number" id="simObjetivo" class="form-input"
+                           placeholder="Ej: 8" min="1" max="10" step="0.5">
+                </div>
+                <button class="btn btn-primary" onclick="simular()">Calcular</button>
+            </div>
+            <div class="sim-result" id="simResult"></div>
+        </div>
+
+        <!-- Por materia -->
+        <h3 style="margin-bottom:14px;">Notas por materia</h3>
+        <div id="materiasLista"></div>
+    </main>
+</div>
+
+<!-- Modal cargar nota (docente/alumno) -->
+<div class="modal-overlay" id="modalNota" onclick="cerrarModalSiFondo(event)">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">📝 Cargar nota</span>
+            <button class="modal-close" onclick="cerrarModal()">✕</button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Materia</label>
+            <input type="text" id="notaMateria" class="form-input" placeholder="Ej: Matemática">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Tipo</label>
+            <select id="notaTipo" class="form-select">
+                <option value="examen">📝 Examen</option>
+                <option value="tarea">📋 Tarea / TP</option>
+                <option value="participacion">🙋 Participación</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Nota (1–10)</label>
+            <input type="number" id="notaValor" class="form-input"
+                   placeholder="Ej: 8.5" min="1" max="10" step="0.5">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Descripción (opcional)</label>
+            <input type="text" id="notaDesc" class="form-input"
+                   placeholder="Ej: Primer parcial cap.4">
+        </div>
+        <div id="notaError" class="form-error" style="margin-bottom:8px;"></div>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarNota()">Guardar →</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script src="js/promedios.js"></script>
+</body>
+</html>
