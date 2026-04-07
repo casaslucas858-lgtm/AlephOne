@@ -40,7 +40,7 @@ function diaDeHoy() {
 function requireAuth() {
     const user = AlephAPI.Auth.getCurrentUser();
     if (!user) {
-        window.location.href = '/frontend/index.html';
+        window.location.href = './index.html';
         return null;
     }
     return user;
@@ -51,7 +51,7 @@ function requireRole(role) {
     if (!user) return null;
     if (user.role !== role) {
         // Redirigir al dashboard correcto si el rol no coincide
-        window.location.href = '/frontend/dashboard.html';
+        window.location.href = './dashboard.html';
         return null;
     }
     return user;
@@ -60,7 +60,7 @@ function requireRole(role) {
 function redirectIfLoggedIn() {
     const user = AlephAPI.Auth.getCurrentUser();
     if (user) {
-        window.location.href = '/frontend/dashboard.html';
+        window.location.href = './dashboard.html';
     }
 }
 
