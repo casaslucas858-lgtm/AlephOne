@@ -133,10 +133,6 @@
         }
 
         /* Typing indicator */
-        .typing-indicator {
-            display: flex; align-items: center; gap: 10px;
-        }
-
         .typing-dots {
             display: flex; gap: 4px; padding: 12px 16px;
             background: var(--bg-subtle); border: 1px solid var(--border);
@@ -207,10 +203,6 @@
             box-shadow: 0 6px 20px rgba(38,212,199,0.5);
         }
 
-        .send-btn:disabled {
-            opacity: 0.5; cursor: not-allowed; transform: none;
-        }
-
         /* Sugerencias rápidas */
         .suggestions {
             display: flex; gap: 8px; flex-wrap: wrap;
@@ -244,14 +236,13 @@
             padding: 6px 20px 10px;
         }
 
-        /* Prose formatting en burbujas AI */
+        /* Formatting */
         .bubble.ai strong { font-weight: 700; }
-        .bubble.ai em { font-style: italic; color: var(--primary-dim); }
-        body.dark-mode .bubble.ai em { color: var(--primary); }
+        .bubble.ai em { font-style: italic; color: var(--primary); }
         .bubble.ai code {
             background: var(--bg-hover);
             padding: 1px 6px; border-radius: 4px;
-            font-family: 'Courier New', monospace;
+            font-family: monospace;
             font-size: 0.88em;
         }
 
@@ -298,7 +289,6 @@
 
         <div class="chat-wrapper">
 
-            <!-- Header del chat -->
             <div class="chat-header">
                 <div class="chat-header-left">
                     <div class="fractal-avatar">🤖</div>
@@ -315,7 +305,6 @@
                 </button>
             </div>
 
-            <!-- Sugerencias rápidas -->
             <div class="suggestions" id="suggestions">
                 <button class="suggestion-chip" onclick="enviarSugerencia(this)">📖 Explicame un tema</button>
                 <button class="suggestion-chip" onclick="enviarSugerencia(this)">🧮 Ayudame con matemática</button>
@@ -323,9 +312,7 @@
                 <button class="suggestion-chip" onclick="enviarSugerencia(this)">💡 Técnicas para aprender mejor</button>
             </div>
 
-            <!-- Mensajes -->
             <div class="chat-messages" id="chatMessages">
-                <!-- Mensaje de bienvenida -->
                 <div class="msg-row ai" id="welcomeMsg">
                     <div class="msg-avatar ai">ℵ</div>
                     <div class="bubble ai">
@@ -337,17 +324,14 @@
                 </div>
             </div>
 
-            <!-- Input -->
             <div class="chat-input-area">
                 <textarea
                     id="chatInput"
                     class="chat-input"
                     placeholder="Escribí tu pregunta..."
                     rows="1"
-                    onkeydown="handleKey(event)"
-                    oninput="autoResize(this)"
                 ></textarea>
-                <button class="send-btn" id="sendBtn" onclick="enviarMensaje()" title="Enviar">
+                <button class="send-btn" id="sendBtn" title="Enviar">
                     ➤
                 </button>
             </div>
