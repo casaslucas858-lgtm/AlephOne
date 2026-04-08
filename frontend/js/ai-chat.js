@@ -1,11 +1,14 @@
 // ============================================================
 // AlephOne — ai-chat.js
-// Fractal AI: chat con LLaMA via OpenRouter
+// Fractal AI: chat con Gemini 2.0 Flash
 // ============================================================
 
 let conversationHistory = [];
 let isLoading = false;
 let currentUser = null;
+
+// Reemplazá esto por tu clave real o manejala desde un entorno seguro
+const GEMINI_API_KEY = 'TU_KEY_ACÁ'; 
 
 const SYSTEM_PROMPT = `
 Sos Fractal AI, el asistente de estudio integrado en AlephOne, una plataforma educativa para escuelas argentinas.
@@ -140,19 +143,17 @@ async function enviarMensaje() {
     showTyping();
 
     try {
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer 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'
+            headers: { 
+                'Content-Type': 'application/json' 
             },
             body: JSON.stringify({
-                model: 'meta-llama/llama-3.1-8b-instruct:free',
-                max_tokens: 1000,
-                messages: [
-                    { role: 'system', content: SYSTEM_PROMPT },
-                    ...conversationHistory
-                ]
+                system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+                contents: conversationHistory.map(m => ({
+                    role: m.role === 'assistant' ? 'model' : m.role,
+                    parts: [{ text: m.content }]
+                }))
             })
         });
 
@@ -165,7 +166,9 @@ async function enviarMensaje() {
             return;
         }
 
-        const aiText = data.choices?.[0]?.message?.content || 'No pude generar una respuesta. Intentá de nuevo.';
+        const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No pude generar una respuesta. Intentá de nuevo.';
+        
+        // Guardamos 'assistant' en el historial local para mantener la lógica original del array
         conversationHistory.push({ role: 'assistant', content: aiText });
         addBubble('ai', aiText);
 
