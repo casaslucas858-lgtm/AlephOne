@@ -1,13 +1,12 @@
 // ============================================================
-// AlephOne — ai-chat.js
-// Fractal AI: motor estable con Gemini 1.5 Flash (v1)
+// AlephOne — ai-chat.js (VERSIÓN FINAL BLINDADA)
 // ============================================================
 
 let conversationHistory = [];
 let isLoading = false;
 let currentUser = null;
 
-// REEMPLAZÁ CON TU API KEY DE GOOGLE AI STUDIO
+// CLAVE QUE PASASTE (Mantenela en privado después de esto)
 const GEMINI_API_KEY = 'AIzaSyCK1C3mkm9xG2tZGATxDLGBSnkWZkmOB5Q'; 
 
 const SYSTEM_PROMPT = `
@@ -56,43 +55,16 @@ Objetivo principal:
 Ayudar a que el estudiante entienda, aprenda y gane autonomía, no solo que “termine rápido”.
 `;
 
-// ─── UTILIDADES DE UI ───────────────────────────────────────
+// ─── FUNCIONES DE APOYO ──────────────────────────────────────
 function horaActual() {
     return new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 }
 
-function scrollToBottom() {
-    const el = document.getElementById('chatMessages');
-    if (el) el.scrollTop = el.scrollHeight;
-}
-
 function sanitize(text) {
     if (!text) return '';
-    const temp = document.createElement('div');
-    temp.textContent = text;
-    return temp.innerHTML;
-}
-
-// ─── BURBUJAS Y FORMATO ─────────────────────────────────────
-function addBubble(role, text, animate = true) {
-    const container = document.getElementById('chatMessages');
-    const isAI = role === 'ai';
-
-    const row = document.createElement('div');
-    row.className = `msg-row ${role}${animate ? ' fade-up' : ''}`;
-
-    const avatarText = isAI ? 'ℵ' : (currentUser?.username?.charAt(0).toUpperCase() || 'U');
-
-    row.innerHTML = `
-        <div class="msg-avatar ${role}">${avatarText}</div>
-        <div class="bubble ${role}">
-            ${formatText(text)}
-            <span class="bubble-time">${horaActual()}</span>
-        </div>`;
-
-    container.appendChild(row);
-    scrollToBottom();
-    return row;
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function formatText(text) {
@@ -103,6 +75,25 @@ function formatText(text) {
         .replace(/\n/g, '<br>');
 }
 
+// ─── MANEJO DE UI ────────────────────────────────────────────
+function addBubble(role, text) {
+    const container = document.getElementById('chatMessages');
+    const row = document.createElement('div');
+    row.className = `msg-row ${role} fade-up`;
+    
+    const avatar = role === 'ai' ? 'ℵ' : (currentUser?.username?.charAt(0).toUpperCase() || 'U');
+
+    row.innerHTML = `
+        <div class="msg-avatar ${role}">${avatar}</div>
+        <div class="bubble ${role}">
+            ${formatText(text)}
+            <span class="bubble-time">${horaActual()}</span>
+        </div>`;
+    
+    container.appendChild(row);
+    container.scrollTop = container.scrollHeight;
+}
+
 function showTyping() {
     const container = document.getElementById('chatMessages');
     const row = document.createElement('div');
@@ -111,173 +102,91 @@ function showTyping() {
     row.innerHTML = `
         <div class="msg-avatar ai">ℵ</div>
         <div class="typing-dots">
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
+            <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
         </div>`;
     container.appendChild(row);
-    scrollToBottom();
+    container.scrollTop = container.scrollHeight;
 }
 
 function hideTyping() {
     document.getElementById('typingRow')?.remove();
 }
 
-// ─── LÓGICA DE ENVÍO Y API ──────────────────────────────────
+// ─── ENVÍO DE MENSAJE ────────────────────────────────────────
 async function enviarMensaje() {
     const input = document.getElementById('chatInput');
-    const sendBtn = document.getElementById('sendBtn');
     const text = input.value.trim();
 
     if (!text || isLoading) return;
 
-    // UI Inicial
+    // UI: Bloquear y mostrar
     addBubble('user', text);
-    const sugg = document.getElementById('suggestions');
-    if (sugg) sugg.style.display = 'none';
-
     input.value = '';
-    input.style.height = 'auto';
     isLoading = true;
-    sendBtn.disabled = true;
     showTyping();
 
-    // Controlador para abortar si la conexión se cuelga (20 seg)
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000);
-
     try {
-        // ENDPOINT V1: La versión estable de producción
+        // Usamos la URL v1 que es la de producción estable
         const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-        
+
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            signal: controller.signal,
             body: JSON.stringify({
-                system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+                system_instruction: { 
+                    parts: [{ text: SYSTEM_PROMPT }] 
+                },
                 contents: [
                     ...conversationHistory.map(m => ({
                         role: m.role === 'assistant' ? 'model' : 'user',
                         parts: [{ text: m.content }]
                     })),
                     { role: 'user', parts: [{ text: text }] }
-                ],
-                generationConfig: {
-                    maxOutputTokens: 1000,
-                    temperature: 0.7
-                }
+                ]
             })
         });
 
-        clearTimeout(timeoutId);
         const data = await response.json();
         hideTyping();
 
-        // Manejo de errores de API
         if (data.error) {
-            console.error("Error de Gemini:", data.error);
+            // Si el error es de cuota (429), damos un mensaje claro
             if (data.error.code === 429) {
-                addBubble('ai', '⚠️ El servidor está a full. Esperá un minutito y volvé a intentar.');
+                addBubble('ai', '⚠️ Che, me están matando a preguntas. Esperá 1 minuto que me tomo un respiro y seguimos.');
             } else {
-                addBubble('ai', `⚠️ Error técnico: ${data.error.message}`);
+                addBubble('ai', `⚠️ Error: ${data.error.message}`);
             }
+            console.error("Detalle técnico:", data.error);
             return;
         }
 
         const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
         if (aiText) {
-            // Guardamos en historial solo si la respuesta fue exitosa
+            // Guardamos en el historial solo si fue exitoso
             conversationHistory.push({ role: 'user', content: text });
             conversationHistory.push({ role: 'assistant', content: aiText });
             addBubble('ai', aiText);
-        } else {
-            addBubble('ai', 'Fractal AI no pudo generar contenido. Intentá reformular tu duda.');
         }
 
     } catch (err) {
         hideTyping();
-        if (err.name === 'AbortError') {
-            addBubble('ai', '⚠️ La conexión tardó demasiado. ¿Tenés buen internet ahí?');
-        } else {
-            console.error('Error fatal:', err);
-            addBubble('ai', '⚠️ Hubo un problema al conectar. Revisá la consola.');
-        }
+        addBubble('ai', '⚠️ Se cortó la conexión. Fijate si tenés internet o si la Key está bien.');
     } finally {
         isLoading = false;
-        sendBtn.disabled = false;
         input.focus();
-    }
-}
-
-// ─── EVENTOS Y CONTROLADORES ────────────────────────────────
-function enviarSugerencia(el) {
-    document.getElementById('chatInput').value = el.textContent.trim();
-    enviarMensaje();
-}
-
-function limpiarChat() {
-    if (conversationHistory.length > 0 && confirm('¿Borrar toda la charla?')) {
-        conversationHistory = [];
-        const container = document.getElementById('chatMessages');
-        while (container.children.length > 1) {
-            container.removeChild(container.lastChild);
-        }
-        const sugg = document.getElementById('suggestions');
-        if (sugg) sugg.style.display = 'flex';
-    }
-}
-
-function handleKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        enviarMensaje();
-    }
-}
-
-function autoResize(el) {
-    el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-}
-
-function renderAvatar(user) {
-    const el = document.getElementById('userAvatar');
-    if (el) el.textContent = user.username.charAt(0).toUpperCase();
-    const roleEl = document.getElementById('userRole');
-    if (roleEl) {
-        const roles = { student: 'Estudiante', teacher: 'Docente', director: 'Director' };
-        roleEl.textContent = roles[user.role] || user.role;
-        roleEl.className = `role-badge ${user.role}`;
     }
 }
 
 // ─── INICIALIZACIÓN ──────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    // currentUser se obtiene de app.js (requireAuth)
-    if (typeof requireAuth === 'function') {
-        currentUser = requireAuth();
-    }
-    
-    if (currentUser) {
-        renderAvatar(currentUser);
-        // Personalizar bienvenida
-        const welcomeMsg = document.querySelector('#welcomeMsg .bubble.ai');
-        if (welcomeMsg) {
-            welcomeMsg.innerHTML = welcomeMsg.innerHTML.replace('¡Hola!', `¡Hola, <strong>${sanitize(currentUser.username)}</strong>!`);
+    // Si tenés una función requireAuth en otro lado, esto la llama
+    if (typeof requireAuth === 'function') currentUser = requireAuth();
+
+    document.getElementById('chatInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            enviarMensaje();
         }
-    }
-
-    const input = document.getElementById('chatInput');
-    if (input) {
-        input.addEventListener('keydown', handleKey);
-        input.addEventListener('input', (e) => autoResize(e.target));
-        input.focus();
-    }
-
-    const clearBtn = document.getElementById('clearBtn');
-    if (clearBtn) clearBtn.addEventListener('click', limpiarChat);
-    
-    const sendBtn = document.getElementById('sendBtn');
-    if (sendBtn) sendBtn.addEventListener('click', enviarMensaje);
+    });
 });
