@@ -1,409 +1,256 @@
 // ============================================================
-// AlephOne — api.js
-// Capa de abstracción de datos.
-// Fase 1: localStorage. Fase 2: swapear por Firebase/Supabase
-// sin tocar ningún otro archivo.
+// AlephOne — api.js — FASE 2: Supabase
 // ============================================================
+
+const SUPABASE_URL = 'https://ikxvbmsvzmsiztxvzdtz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_cN4exqC8p4r9Hg3ZQYWcWg_gLwcRdui';
+
+const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const AlephAPI = (() => {
 
-    // ─── HELPERS INTERNOS ───────────────────────────────────
-
-    function _get(key) {
-        try {
-            return JSON.parse(localStorage.getItem(key));
-        } catch {
-            return null;
-        }
-    }
-
-    function _set(key, value) {
-        localStorage.setItem(key, JSON.stringify(value));
-    }
-
-    function _now() {
-        return new Date().toISOString();
-    }
-
-    function _id() {
-        return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-    }
+    function _now() { return new Date().toISOString(); }
 
     // ─── AUTH ────────────────────────────────────────────────
-
     const Auth = {
         getCurrentUser() {
-            const username = localStorage.getItem('aleph_current_user');
-            if (!username) return null;
-            const users = _get('aleph_users') || {};
-            if (!users[username]) return null;
-            return { username, ...users[username] };
+            return window._alephUser || null;
         },
 
-        login(username, password) {
-            const users = _get('aleph_users') || {};
-            const user = users[username];
-            if (!user) return { ok: false, error: 'Usuario no encontrado' };
-            if (user.password !== password) return { ok: false, error: 'Contraseña incorrecta' };
-            localStorage.setItem('aleph_current_user', username);
-            return { ok: true, user: { username, ...user } };
+        async init() {
+            const { data: { session } } = await _sb.auth.getSession();
+            if (session?.user) await Auth._loadProfile(session.user);
+
+            _sb.auth.onAuthStateChange(async (event, session) => {
+                if (session?.user) await Auth._loadProfile(session.user);
+                else window._alephUser = null;
+            });
         },
 
-        register(username, email, password, role = 'student') {
-            const users = _get('aleph_users') || {};
-            if (users[username]) return { ok: false, error: 'El usuario ya existe' };
-            users[username] = {
-                email,
-                password,
-                role,           // 'student' | 'teacher' | 'director'
-                createdAt: _now(),
-                avatar: null
+        async _loadProfile(authUser) {
+            const { data: profile } = await _sb
+                .from('profiles').select('*').eq('id', authUser.id).single();
+
+            window._alephUser = {
+                id: authUser.id,
+                email: authUser.email,
+                username: profile?.username || authUser.email.split('@')[0],
+                role: profile?.role || 'student',
+                curso: profile?.curso || '3A'
             };
-            _set('aleph_users', users);
-            localStorage.setItem('aleph_current_user', username);
+        },
+
+        async login(username, password) {
+            const email = `${username}@alephone.app`;
+            const { data, error } = await _sb.auth.signInWithPassword({ email, password });
+            if (error) return { ok: false, error: 'Usuario o contraseña incorrectos' };
+            await Auth._loadProfile(data.user);
             return { ok: true };
         },
 
-        logout() {
-            localStorage.removeItem('aleph_current_user');
+        async register(username, email, password, role = 'student') {
+            const { data: existing } = await _sb
+                .from('profiles').select('id').eq('username', username).single();
+            if (existing) return { ok: false, error: 'El usuario ya existe' };
+
+            const authEmail = `${username}@alephone.app`;
+            const { data, error } = await _sb.auth.signUp({
+                email: authEmail,
+                password,
+                options: { data: { username, role } }
+            });
+            if (error) return { ok: false, error: error.message };
+            await Auth._loadProfile(data.user);
+            return { ok: true };
         },
 
-        updateUser(username, data) {
-            const users = _get('aleph_users') || {};
-            if (!users[username]) return { ok: false };
-            users[username] = { ...users[username], ...data };
-            _set('aleph_users', users);
-            return { ok: true };
+        async logout() {
+            await _sb.auth.signOut();
+            window._alephUser = null;
         }
     };
 
     // ─── COMUNICACIÓN ────────────────────────────────────────
-
     const Comunicacion = {
-        // Crear anuncio (docente/director)
-        crear({ titulo, contenido, autor, curso, materia, tipo = 'anuncio' }) {
-            const mensajes = _get('aleph_mensajes') || [];
-            const nuevo = {
-                id: _id(),
-                titulo,
-                contenido,
-                autor,
-                curso,
-                materia,
-                tipo,           // 'anuncio' | 'recordatorio' | 'urgente'
-                fechaCreacion: _now(),
-                leido: []       // array de usernames que lo leyeron
-            };
-            mensajes.push(nuevo);
-            _set('aleph_mensajes', mensajes);
-            return { ok: true, mensaje: nuevo };
+        async crear({ titulo, contenido, autor, curso, materia, tipo = 'anuncio' }) {
+            const user = Auth.getCurrentUser();
+            const { data, error } = await _sb.from('mensajes').insert({
+                titulo, contenido,
+                autor_id: user.id, autor_username: autor,
+                curso, materia, tipo
+            }).select().single();
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, mensaje: data };
         },
 
-        // Obtener mensajes para un usuario
-        getParaUsuario(username, curso = null) {
-            const mensajes = _get('aleph_mensajes') || [];
-            return mensajes
-                .filter(m => !curso || m.curso === curso || m.curso === 'todos')
-                .sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion));
+        async getParaUsuario(username, curso = null) {
+            let query = _sb.from('mensajes').select('*').order('created_at', { ascending: false });
+            if (curso) query = query.eq('curso', curso);
+            const { data } = await query;
+
+            const user = Auth.getCurrentUser();
+            const { data: leidos } = await _sb
+                .from('mensajes_leidos').select('mensaje_id').eq('user_id', user.id);
+            const leidosSet = new Set((leidos || []).map(l => l.mensaje_id));
+
+            return (data || []).map(m => ({
+                ...m,
+                fechaCreacion: m.created_at,
+                autor: m.autor_username,
+                leido: leidosSet.has(m.id) ? [username] : []
+            }));
         },
 
-        // Marcar como leído
-        marcarLeido(mensajeId, username) {
-            const mensajes = _get('aleph_mensajes') || [];
-            const idx = mensajes.findIndex(m => m.id === mensajeId);
-            if (idx === -1) return;
-            if (!mensajes[idx].leido.includes(username)) {
-                mensajes[idx].leido.push(username);
-                _set('aleph_mensajes', mensajes);
-            }
+        async marcarLeido(mensajeId, username) {
+            const user = Auth.getCurrentUser();
+            await _sb.from('mensajes_leidos')
+                .upsert({ mensaje_id: mensajeId, user_id: user.id });
         },
 
-        eliminar(mensajeId) {
-            let mensajes = _get('aleph_mensajes') || [];
-            mensajes = mensajes.filter(m => m.id !== mensajeId);
-            _set('aleph_mensajes', mensajes);
+        async eliminar(mensajeId) {
+            await _sb.from('mensajes').delete().eq('id', mensajeId);
         }
     };
 
-    // ─── TAREAS (QUIZZIT) ────────────────────────────────────
-
+    // ─── TAREAS ──────────────────────────────────────────────
     const Tareas = {
-        crear({ titulo, descripcion, materia, curso, autor, fechaCierre, tipo = 'tarea' }) {
-            const tareas = _get('aleph_tareas') || [];
-            const nueva = {
-                id: _id(),
-                titulo,
-                descripcion,
-                materia,
-                curso,
-                autor,
-                fechaCierre,    // ISO string
-                tipo,           // 'tarea' | 'examen' | 'quiz'
-                fechaCreacion: _now(),
-                entregas: []    // [{ username, contenido, fecha, nota }]
-            };
-            tareas.push(nueva);
-            _set('aleph_tareas', tareas);
-            return { ok: true, tarea: nueva };
+        async crear({ titulo, descripcion, materia, curso, autor, fechaCierre, tipo = 'tarea' }) {
+            const user = Auth.getCurrentUser();
+            const { data, error } = await _sb.from('tareas').insert({
+                titulo, descripcion, materia, curso,
+                autor_id: user.id, autor_username: autor,
+                fecha_cierre: fechaCierre, tipo
+            }).select().single();
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, tarea: data };
         },
 
-        getParaCurso(curso) {
-            const tareas = _get('aleph_tareas') || [];
-            return tareas
-                .filter(t => t.curso === curso || t.curso === 'todos')
-                .sort((a, b) => new Date(a.fechaCierre) - new Date(b.fechaCierre));
+        async getParaCurso(curso) {
+            const { data } = await _sb
+                .from('tareas').select('*, entregas(*)')
+                .eq('curso', curso).order('fecha_cierre', { ascending: true });
+            return (data || []).map(t => ({ ...t, fechaCierre: t.fecha_cierre, entregas: t.entregas || [] }));
         },
 
-        getDelDocente(autor) {
-            const tareas = _get('aleph_tareas') || [];
-            return tareas.filter(t => t.autor === autor);
+        async getDelDocente(autorUsername) {
+            const { data } = await _sb
+                .from('tareas').select('*, entregas(*)')
+                .eq('autor_username', autorUsername).order('fecha_cierre', { ascending: true });
+            return (data || []).map(t => ({ ...t, fechaCierre: t.fecha_cierre, entregas: t.entregas || [] }));
         },
 
-        entregar({ tareaId, username, contenido }) {
-            const tareas = _get('aleph_tareas') || [];
-            const idx = tareas.findIndex(t => t.id === tareaId);
-            if (idx === -1) return { ok: false, error: 'Tarea no encontrada' };
-            const yaEntrego = tareas[idx].entregas.find(e => e.username === username);
-            if (yaEntrego) return { ok: false, error: 'Ya entregaste esta tarea' };
-            tareas[idx].entregas.push({
-                username,
-                contenido,
-                fecha: _now(),
-                nota: null
+        async entregar({ tareaId, username, contenido }) {
+            const user = Auth.getCurrentUser();
+            const { error } = await _sb.from('entregas').insert({
+                tarea_id: tareaId, alumno_id: user.id,
+                alumno_username: username, contenido
             });
-            _set('aleph_tareas', tareas);
+            if (error) {
+                if (error.code === '23505') return { ok: false, error: 'Ya entregaste esta tarea' };
+                return { ok: false, error: error.message };
+            }
             return { ok: true };
         },
 
-        calificar({ tareaId, username, nota }) {
-            const tareas = _get('aleph_tareas') || [];
-            const idx = tareas.findIndex(t => t.id === tareaId);
-            if (idx === -1) return { ok: false };
-            const entrega = tareas[idx].entregas.find(e => e.username === username);
-            if (!entrega) return { ok: false };
-            entrega.nota = nota;
-            _set('aleph_tareas', tareas);
-            return { ok: true };
+        async calificar({ tareaId, username, nota }) {
+            const { error } = await _sb.from('entregas')
+                .update({ nota })
+                .eq('tarea_id', tareaId).eq('alumno_username', username);
+            return error ? { ok: false } : { ok: true };
         },
 
-        eliminar(tareaId) {
-            let tareas = _get('aleph_tareas') || [];
-            tareas = tareas.filter(t => t.id !== tareaId);
-            _set('aleph_tareas', tareas);
+        async eliminar(tareaId) {
+            await _sb.from('tareas').delete().eq('id', tareaId);
         }
     };
 
     // ─── HORARIO ─────────────────────────────────────────────
-
     const Horario = {
-        // Obtener horario de un curso
-        get(curso) {
-            const horarios = _get('aleph_horarios') || {};
-            return horarios[curso] || null;
+        async get(curso) {
+            const { data } = await _sb.from('horarios').select('*').eq('curso', curso).single();
+            return data || null;
         },
 
-        // Guardar/actualizar horario de un curso
-        // bloques: { lunes: [{hora:'08:00', materia:'Matemática', docente:'Prof. García'}], ... }
-        guardar(curso, bloques) {
-            const horarios = _get('aleph_horarios') || {};
-            horarios[curso] = {
-                curso,
-                bloques,
-                ultimaActualizacion: _now()
-            };
-            _set('aleph_horarios', horarios);
-            return { ok: true };
+        async guardar(curso, bloques) {
+            const { error } = await _sb.from('horarios')
+                .upsert({ curso, bloques, updated_at: _now() }, { onConflict: 'curso' });
+            return error ? { ok: false } : { ok: true };
         },
 
-        // Agregar cambio puntual (reemplazo, cancelación)
-        agregarCambio(curso, cambio) {
-            const cambios = _get('aleph_cambios_horario') || [];
-            cambios.push({
-                id: _id(),
-                curso,
-                ...cambio,      // { fecha, tipo: 'cancelacion'|'reemplazo', materia, motivo }
-                createdAt: _now()
-            });
-            _set('aleph_cambios_horario', cambios);
-            return { ok: true };
+        async agregarCambio(curso, cambio) {
+            const { error } = await _sb.from('cambios_horario').insert({ curso, ...cambio });
+            return error ? { ok: false } : { ok: true };
         },
 
-        getCambiosHoy(curso) {
-            const cambios = _get('aleph_cambios_horario') || [];
+        async getCambiosHoy(curso) {
             const hoy = new Date().toISOString().slice(0, 10);
-            return cambios.filter(c => c.curso === curso && c.fecha === hoy);
+            const { data } = await _sb.from('cambios_horario')
+                .select('*').eq('curso', curso).eq('fecha', hoy);
+            return data || [];
         }
     };
 
     // ─── PROMEDIOS ───────────────────────────────────────────
-
     const Promedios = {
-        // Guardar nota de un alumno en una materia
-        guardarNota({ username, materia, tipo, valor, descripcion }) {
-            const notas = _get('aleph_notas') || [];
-            notas.push({
-                id: _id(),
-                username,
-                materia,
-                tipo,           // 'tarea' | 'examen' | 'participacion' | 'asistencia'
-                valor,          // número 1-10
-                descripcion,
-                fecha: _now()
+        async guardarNota({ username, materia, tipo, valor, descripcion }) {
+            const user = Auth.getCurrentUser();
+            const { error } = await _sb.from('notas').insert({
+                alumno_id: user.id, alumno_username: username,
+                materia, tipo, valor, descripcion
             });
-            _set('aleph_notas', notas);
-            return { ok: true };
+            return error ? { ok: false } : { ok: true };
         },
 
-        // Obtener todas las notas de un alumno
-        getDeAlumno(username) {
-            const notas = _get('aleph_notas') || [];
-            return notas.filter(n => n.username === username);
+        async getDeAlumno(username) {
+            const { data } = await _sb.from('notas')
+                .select('*').eq('alumno_username', username)
+                .order('created_at', { ascending: false });
+            return (data || []).map(n => ({ ...n, fecha: n.created_at }));
         },
 
-        // Calcular promedio por materia
-        calcularPromedio(username, materia) {
-            const notas = _get('aleph_notas') || [];
-            const filtradas = notas.filter(n => n.username === username && n.materia === materia);
-            if (filtradas.length === 0) return null;
-            const suma = filtradas.reduce((acc, n) => acc + n.valor, 0);
-            return +(suma / filtradas.length).toFixed(2);
+        calcularPromedio(notas, materia) {
+            const f = notas.filter(n => n.materia === materia);
+            if (!f.length) return null;
+            return +(f.reduce((a, n) => a + Number(n.valor), 0) / f.length).toFixed(2);
         },
 
-        // Simulación: ¿qué nota necesito para llegar a X promedio?
-        simular({ username, materia, promedioObjetivo }) {
-            const notas = _get('aleph_notas') || [];
-            const filtradas = notas.filter(n => n.username === username && n.materia === materia);
-            if (filtradas.length === 0) return null;
-            const suma = filtradas.reduce((acc, n) => acc + n.valor, 0);
-            // nota_necesaria = objetivo * (n+1) - suma_actual
-            const notaNecesaria = promedioObjetivo * (filtradas.length + 1) - suma;
-            return +notaNecesaria.toFixed(2);
+        simular({ notas, materia, promedioObjetivo }) {
+            const f = notas.filter(n => n.materia === materia);
+            if (!f.length) return null;
+            const suma = f.reduce((a, n) => a + Number(n.valor), 0);
+            return +(promedioObjetivo * (f.length + 1) - suma).toFixed(2);
         }
     };
 
     // ─── CALENDARIO ──────────────────────────────────────────
-
     const Calendario = {
-        agregar({ titulo, fecha, tipo, curso, descripcion }) {
-            const eventos = _get('aleph_calendario') || [];
-            eventos.push({
-                id: _id(),
-                titulo,
-                fecha,          // 'YYYY-MM-DD'
-                tipo,           // 'examen' | 'entrega' | 'evento' | 'feriado'
-                curso,
-                descripcion,
-                createdAt: _now()
-            });
-            _set('aleph_calendario', eventos);
-            return { ok: true };
+        async agregar({ titulo, fecha, tipo, curso, descripcion }) {
+            const { error } = await _sb.from('eventos').insert({ titulo, fecha, tipo, curso, descripcion });
+            return error ? { ok: false } : { ok: true };
         },
 
-        getProximos(curso, dias = 7) {
-            const eventos = _get('aleph_calendario') || [];
-            const hoy = new Date();
-            const limite = new Date(hoy.getTime() + dias * 86400000);
-            return eventos
-                .filter(e => {
-                    const fecha = new Date(e.fecha);
-                    return (e.curso === curso || e.curso === 'todos') &&
-                           fecha >= hoy && fecha <= limite;
-                })
-                .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+        async getProximos(curso, dias = 7) {
+            const hoy = new Date().toISOString().slice(0, 10);
+            const limite = new Date(Date.now() + dias * 86400000).toISOString().slice(0, 10);
+            const { data } = await _sb.from('eventos').select('*')
+                .or(`curso.eq.${curso},curso.eq.todos`)
+                .gte('fecha', hoy).lte('fecha', limite)
+                .order('fecha', { ascending: true });
+            return data || [];
         },
 
-        getDelMes(curso, year, month) {
-            const eventos = _get('aleph_calendario') || [];
-            return eventos.filter(e => {
-                const f = new Date(e.fecha);
-                return (e.curso === curso || e.curso === 'todos') &&
-                       f.getFullYear() === year && f.getMonth() === month;
-            });
+        async getDelMes(curso, year, month) {
+            const inicio = `${year}-${String(month+1).padStart(2,'0')}-01`;
+            const fin    = `${year}-${String(month+1).padStart(2,'0')}-31`;
+            const { data } = await _sb.from('eventos').select('*')
+                .or(`curso.eq.${curso},curso.eq.todos`)
+                .gte('fecha', inicio).lte('fecha', fin);
+            return data || [];
         }
     };
 
-    // ─── SEED (datos demo para testing) ─────────────────────
+    async function seedDemo() {}
 
-    function seedDemo() {
-        if (_get('aleph_seeded')) return;
-
-        // Usuario demo docente
-        Auth.register('profe_demo', 'profe@aleph.com', '1234', 'teacher');
-        // Usuario demo alumno
-        Auth.register('alumno_demo', 'alumno@aleph.com', '1234', 'student');
-
-        // Mensajes demo
-        Comunicacion.crear({
-            titulo: 'Bienvenidos a AlephOne',
-            contenido: 'Esta es la plataforma oficial del curso. Acá van a encontrar todas las tareas, horarios y comunicados.',
-            autor: 'profe_demo',
-            curso: '3A',
-            materia: 'General',
-            tipo: 'anuncio'
-        });
-
-        Comunicacion.crear({
-            titulo: 'Examen de Matemática el viernes',
-            contenido: 'El viernes 11/4 hay examen de ecuaciones. Estudien del capítulo 4.',
-            autor: 'profe_demo',
-            curso: '3A',
-            materia: 'Matemática',
-            tipo: 'urgente'
-        });
-
-        // Tareas demo
-        Tareas.crear({
-            titulo: 'TP: Ecuaciones lineales',
-            descripcion: 'Resolver los ejercicios 1 al 10 del capítulo 4. Mostrar procedimiento.',
-            materia: 'Matemática',
-            curso: '3A',
-            autor: 'profe_demo',
-            fechaCierre: new Date(Date.now() + 3 * 86400000).toISOString(),
-            tipo: 'tarea'
-        });
-
-        Tareas.crear({
-            titulo: 'Quiz: Revolución Francesa',
-            descripcion: 'Quiz de 10 preguntas sobre causas y consecuencias.',
-            materia: 'Historia',
-            curso: '3A',
-            autor: 'profe_demo',
-            fechaCierre: new Date(Date.now() + 5 * 86400000).toISOString(),
-            tipo: 'quiz'
-        });
-
-        // Horario demo
-        Horario.guardar('3A', {
-            lunes:    [{ hora: '08:00', materia: 'Matemática', docente: 'Prof. García' }, { hora: '09:00', materia: 'Historia', docente: 'Prof. López' }],
-            martes:   [{ hora: '08:00', materia: 'Lengua', docente: 'Prof. Martínez' }, { hora: '09:00', materia: 'Biología', docente: 'Prof. Sosa' }],
-            miercoles:[{ hora: '08:00', materia: 'Matemática', docente: 'Prof. García' }, { hora: '09:00', materia: 'Física', docente: 'Prof. Ruiz' }],
-            jueves:   [{ hora: '08:00', materia: 'Historia', docente: 'Prof. López' }, { hora: '09:00', materia: 'Inglés', docente: 'Prof. Smith' }],
-            viernes:  [{ hora: '08:00', materia: 'Matemática', docente: 'Prof. García' }, { hora: '09:00', materia: 'Educación Física', docente: 'Prof. Torres' }]
-        });
-
-        // Notas demo
-        Promedios.guardarNota({ username: 'alumno_demo', materia: 'Matemática', tipo: 'examen', valor: 8, descripcion: 'Primer parcial' });
-        Promedios.guardarNota({ username: 'alumno_demo', materia: 'Matemática', tipo: 'tarea', valor: 9, descripcion: 'TP cap. 3' });
-        Promedios.guardarNota({ username: 'alumno_demo', materia: 'Historia', tipo: 'examen', valor: 7, descripcion: 'Primer parcial' });
-
-        // Eventos calendario demo
-        Calendario.agregar({ titulo: 'Examen Matemática', fecha: new Date(Date.now() + 2 * 86400000).toISOString().slice(0,10), tipo: 'examen', curso: '3A', descripcion: 'Cap. 4 - Ecuaciones' });
-        Calendario.agregar({ titulo: 'Entrega TP Historia', fecha: new Date(Date.now() + 5 * 86400000).toISOString().slice(0,10), tipo: 'entrega', curso: '3A', descripcion: 'Revolución Francesa' });
-
-        _set('aleph_seeded', true);
-        console.log('✓ AlephOne: datos demo cargados');
-    }
-
-    // ─── EXPORT ──────────────────────────────────────────────
-
-    return {
-        Auth,
-        Comunicacion,
-        Tareas,
-        Horario,
-        Promedios,
-        Calendario,
-        seedDemo
-    };
+    return { Auth, Comunicacion, Tareas, Horario, Promedios, Calendario, seedDemo };
 
 })();
