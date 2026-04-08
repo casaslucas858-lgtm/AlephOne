@@ -144,7 +144,7 @@ async function enviarMensaje() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer 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'
+                'Authorization': 'Bearer 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'
             },
             body: JSON.stringify({
                 model: 'meta-llama/llama-3.1-8b-instruct:free',
