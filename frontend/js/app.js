@@ -50,7 +50,6 @@ function requireRole(role) {
     const user = requireAuth();
     if (!user) return null;
     if (user.role !== role) {
-        // Redirigir al dashboard correcto si el rol no coincide
         window.location.href = './dashboard.html';
         return null;
     }
@@ -95,7 +94,6 @@ function setActiveNav() {
 
 // ─── TOAST NOTIFICATIONS ────────────────────────────────────
 function showToast(mensaje, tipo = 'info') {
-    // tipo: 'info' | 'success' | 'error' | 'warning'
     let container = document.getElementById('toastContainer');
     if (!container) {
         container = document.createElement('div');
@@ -146,56 +144,64 @@ function renderHeader(user) {
 }
 
 // ─── LOGIN ───────────────────────────────────────────────────
-function handleLogin(e) {
+async function handleLogin(e) {
     e.preventDefault();
     const username = document.getElementById('loginUsername')?.value?.trim();
     const password = document.getElementById('loginPassword')?.value;
-    const errorEl = document.getElementById('loginError');
+    const errorEl  = document.getElementById('loginError');
+    const btn      = e.target.querySelector('button[type="submit"]');
 
     if (!username || !password) {
         if (errorEl) errorEl.textContent = 'Completá todos los campos';
         return false;
     }
 
-    const result = AlephAPI.Auth.login(username, password);
+    if (btn) btn.textContent = 'Ingresando...';
+
+    const result = await AlephAPI.Auth.login(username, password);
     if (result.ok) {
         window.location.href = './dashboard.html';
     } else {
         if (errorEl) errorEl.textContent = result.error;
+        if (btn) btn.textContent = 'Ingresar →';
     }
     return false;
 }
 
 // ─── REGISTER ────────────────────────────────────────────────
-function handleRegister(e) {
+async function handleRegister(e) {
     e.preventDefault();
     const username = document.getElementById('registerUsername')?.value?.trim();
     const email    = document.getElementById('registerEmail')?.value?.trim();
     const password = document.getElementById('registerPassword')?.value;
     const role     = document.getElementById('registerRole')?.value || 'student';
     const errorEl  = document.getElementById('registerError');
+    const btn      = e.target.querySelector('button[type="submit"]');
 
     if (!username || !email || !password) {
         if (errorEl) errorEl.textContent = 'Completá todos los campos';
         return false;
     }
-    if (password.length < 4) {
-        if (errorEl) errorEl.textContent = 'La contraseña debe tener al menos 4 caracteres';
+    if (password.length < 6) {
+        if (errorEl) errorEl.textContent = 'La contraseña debe tener al menos 6 caracteres';
         return false;
     }
 
-    const result = AlephAPI.Auth.register(username, email, password, role);
+    if (btn) btn.textContent = 'Creando cuenta...';
+
+    const result = await AlephAPI.Auth.register(username, email, password, role);
     if (result.ok) {
         window.location.href = './dashboard.html';
     } else {
         if (errorEl) errorEl.textContent = result.error;
+        if (btn) btn.textContent = 'Crear cuenta →';
     }
     return false;
 }
 
 // ─── LOGOUT ──────────────────────────────────────────────────
-function logout() {
-    AlephAPI.Auth.logout();
+async function logout() {
+    await AlephAPI.Auth.logout();
     window.location.href = './index.html';
 }
 
@@ -215,9 +221,9 @@ function showRegister() {
 }
 
 // ─── INIT GLOBAL ─────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-    // Seed datos demo si es primera vez
-    AlephAPI.seedDemo();
+document.addEventListener('DOMContentLoaded', async () => {
+    // Init Supabase auth PRIMERO
+    await AlephAPI.Auth.init();
 
     // Dark mode siempre
     initDarkMode();
@@ -226,10 +232,13 @@ document.addEventListener('DOMContentLoaded', () => {
     setActiveNav();
 
     // Página de login
-    if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/frontend/')) {
+    if (window.location.pathname.includes('index.html') ||
+        window.location.pathname.endsWith('/frontend/') ||
+        window.location.pathname.endsWith('/')) {
         redirectIfLoggedIn();
         document.getElementById('loginForm')?.addEventListener('submit', handleLogin);
         document.getElementById('registerForm')?.addEventListener('submit', handleRegister);
+        return;
     }
 
     // Páginas protegidas
