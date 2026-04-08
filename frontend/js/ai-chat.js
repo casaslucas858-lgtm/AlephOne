@@ -1,13 +1,13 @@
 // ============================================================
 // AlephOne — ai-chat.js
-// Fractal AI: chat con Gemini 1.5 Flash (Versión Estable)
+// Fractal AI: motor estable con Gemini 1.5 Flash (v1)
 // ============================================================
 
 let conversationHistory = [];
 let isLoading = false;
 let currentUser = null;
 
-// REEMPLAZÁ CON TU CLAVE
+// REEMPLAZÁ CON TU API KEY DE GOOGLE AI STUDIO
 const GEMINI_API_KEY = 'AIzaSyCK1C3mkm9xG2tZGATxDLGBSnkWZkmOB5Q'; 
 
 const SYSTEM_PROMPT = `
@@ -56,7 +56,7 @@ Objetivo principal:
 Ayudar a que el estudiante entienda, aprenda y gane autonomía, no solo que “termine rápido”.
 `;
 
-// ─── UTILIDADES ──────────────────────────────────────────────
+// ─── UTILIDADES DE UI ───────────────────────────────────────
 function horaActual() {
     return new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 }
@@ -66,7 +66,14 @@ function scrollToBottom() {
     if (el) el.scrollTop = el.scrollHeight;
 }
 
-// ─── UI: BURBUJAS ───────────────────────────────────────────
+function sanitize(text) {
+    if (!text) return '';
+    const temp = document.createElement('div');
+    temp.textContent = text;
+    return temp.innerHTML;
+}
+
+// ─── BURBUJAS Y FORMATO ─────────────────────────────────────
 function addBubble(role, text, animate = true) {
     const container = document.getElementById('chatMessages');
     const isAI = role === 'ai';
@@ -116,7 +123,7 @@ function hideTyping() {
     document.getElementById('typingRow')?.remove();
 }
 
-// ─── LOGICA DE ENVÍO (SOLUCIÓN COMPLETA) ─────────────────────
+// ─── LÓGICA DE ENVÍO Y API ──────────────────────────────────
 async function enviarMensaje() {
     const input = document.getElementById('chatInput');
     const sendBtn = document.getElementById('sendBtn');
@@ -124,7 +131,7 @@ async function enviarMensaje() {
 
     if (!text || isLoading) return;
 
-    // 1. UI: Mostrar mensaje del usuario y limpiar input
+    // UI Inicial
     addBubble('user', text);
     const sugg = document.getElementById('suggestions');
     if (sugg) sugg.style.display = 'none';
@@ -135,13 +142,15 @@ async function enviarMensaje() {
     sendBtn.disabled = true;
     showTyping();
 
-    // 2. TIMEOUT: Abortar si la API tarda más de 20 segundos
+    // Controlador para abortar si la conexión se cuelga (20 seg)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 20000);
 
     try {
-        // 3. MODELO: Usamos 1.5-flash para mayor estabilidad en Free Tier
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        // ENDPOINT V1: La versión estable de producción
+        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        
+        const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             signal: controller.signal,
@@ -165,13 +174,13 @@ async function enviarMensaje() {
         const data = await response.json();
         hideTyping();
 
-        // 4. MANEJO DE ERRORES DE CUOTA
+        // Manejo de errores de API
         if (data.error) {
-            console.error("Gemini Error:", data.error);
+            console.error("Error de Gemini:", data.error);
             if (data.error.code === 429) {
-                addBubble('ai', '⚠️ El servidor está saturado. Aguantame un minuto y volvé a probar.');
+                addBubble('ai', '⚠️ El servidor está a full. Esperá un minutito y volvé a intentar.');
             } else {
-                addBubble('ai', `⚠️ Error: ${data.error.message || 'No pude generar la respuesta.'}`);
+                addBubble('ai', `⚠️ Error técnico: ${data.error.message}`);
             }
             return;
         }
@@ -179,21 +188,21 @@ async function enviarMensaje() {
         const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
         if (aiText) {
-            // 5. HISTORIAL: Solo guardamos si la respuesta fue exitosa
+            // Guardamos en historial solo si la respuesta fue exitosa
             conversationHistory.push({ role: 'user', content: text });
             conversationHistory.push({ role: 'assistant', content: aiText });
             addBubble('ai', aiText);
         } else {
-            addBubble('ai', 'No recibí contenido de la IA. Intentá de nuevo.');
+            addBubble('ai', 'Fractal AI no pudo generar contenido. Intentá reformular tu duda.');
         }
 
     } catch (err) {
         hideTyping();
         if (err.name === 'AbortError') {
-            addBubble('ai', '⚠️ La conexión tardó demasiado. Probá de nuevo.');
+            addBubble('ai', '⚠️ La conexión tardó demasiado. ¿Tenés buen internet ahí?');
         } else {
-            console.error('Fractal AI error:', err);
-            addBubble('ai', '⚠️ No se pudo conectar con Fractal AI. Verificá tu internet.');
+            console.error('Error fatal:', err);
+            addBubble('ai', '⚠️ Hubo un problema al conectar. Revisá la consola.');
         }
     } finally {
         isLoading = false;
@@ -202,21 +211,22 @@ async function enviarMensaje() {
     }
 }
 
-// ─── FUNCIONES ADICIONALES ──────────────────────────────────
+// ─── EVENTOS Y CONTROLADORES ────────────────────────────────
 function enviarSugerencia(el) {
     document.getElementById('chatInput').value = el.textContent.trim();
     enviarMensaje();
 }
 
 function limpiarChat() {
-    if (conversationHistory.length > 0 && !confirm('¿Limpiar la conversación?')) return;
-    conversationHistory = [];
-    const container = document.getElementById('chatMessages');
-    while (container.children.length > 1) {
-        container.removeChild(container.lastChild);
+    if (conversationHistory.length > 0 && confirm('¿Borrar toda la charla?')) {
+        conversationHistory = [];
+        const container = document.getElementById('chatMessages');
+        while (container.children.length > 1) {
+            container.removeChild(container.lastChild);
+        }
+        const sugg = document.getElementById('suggestions');
+        if (sugg) sugg.style.display = 'flex';
     }
-    const sugg = document.getElementById('suggestions');
-    if (sugg) sugg.style.display = 'flex';
 }
 
 function handleKey(e) {
@@ -242,19 +252,32 @@ function renderAvatar(user) {
     }
 }
 
-// ─── INIT ────────────────────────────────────────────────────
+// ─── INICIALIZACIÓN ──────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    currentUser = requireAuth(); // Asume que requireAuth está en app.js
-    if (!currentUser) return;
-
-    renderAvatar(currentUser);
-    document.getElementById('chatInput')?.addEventListener('keydown', handleKey);
-    document.getElementById('chatInput')?.addEventListener('input', (e) => autoResize(e.target));
-    document.getElementById('chatInput')?.focus();
-    
-    // Rellenar nombre en bienvenida
-    const welcomeMsg = document.querySelector('#welcomeMsg .bubble.ai');
-    if (welcomeMsg && currentUser.username) {
-        welcomeMsg.innerHTML = welcomeMsg.innerHTML.replace('¡Hola!', `¡Hola, <strong>${sanitize(currentUser.username)}</strong>!`);
+    // currentUser se obtiene de app.js (requireAuth)
+    if (typeof requireAuth === 'function') {
+        currentUser = requireAuth();
     }
+    
+    if (currentUser) {
+        renderAvatar(currentUser);
+        // Personalizar bienvenida
+        const welcomeMsg = document.querySelector('#welcomeMsg .bubble.ai');
+        if (welcomeMsg) {
+            welcomeMsg.innerHTML = welcomeMsg.innerHTML.replace('¡Hola!', `¡Hola, <strong>${sanitize(currentUser.username)}</strong>!`);
+        }
+    }
+
+    const input = document.getElementById('chatInput');
+    if (input) {
+        input.addEventListener('keydown', handleKey);
+        input.addEventListener('input', (e) => autoResize(e.target));
+        input.focus();
+    }
+
+    const clearBtn = document.getElementById('clearBtn');
+    if (clearBtn) clearBtn.addEventListener('click', limpiarChat);
+    
+    const sendBtn = document.getElementById('sendBtn');
+    if (sendBtn) sendBtn.addEventListener('click', enviarMensaje);
 });
