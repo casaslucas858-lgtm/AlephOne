@@ -1,10 +1,11 @@
 // ============================================================
-// AlephOne — api.js — FASE 2: Supabase
+// AlephOne — api.js — FASE 2: Supabase (Producción)
 // ============================================================
 
 const SUPABASE_URL = 'https://ikxvbmsvzmsiztxvzdtz.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_cN4exqC8p4r9Hg3ZQYWcWg_gLwcRdui';
 
+// Inicialización del cliente
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const AlephAPI = (() => {
@@ -21,15 +22,22 @@ const AlephAPI = (() => {
             const { data: { session } } = await _sb.auth.getSession();
             if (session?.user) await Auth._loadProfile(session.user);
 
+            // Escuchar cambios de estado (login/logout)
             _sb.auth.onAuthStateChange(async (event, session) => {
-                if (session?.user) await Auth._loadProfile(session.user);
-                else window._alephUser = null;
+                if (session?.user) {
+                    await Auth._loadProfile(session.user);
+                } else {
+                    window._alephUser = null;
+                }
             });
         },
 
         async _loadProfile(authUser) {
             const { data: profile } = await _sb
-                .from('profiles').select('*').eq('id', authUser.id).single();
+                .from('profiles')
+                .select('*')
+                .eq('id', authUser.id)
+                .single();
 
             window._alephUser = {
                 id: authUser.id,
@@ -41,32 +49,71 @@ const AlephAPI = (() => {
         },
 
         async login(username, password) {
-            const email = `${username}@alephone.app`;
+            // Sanitización básica para el login también
+            const safeUsername = username.replace(/[^a-zA-Z0-9_.]/g, '');
+            const email = `${safeUsername}@alephone.app`;
+            
             const { data, error } = await _sb.auth.signInWithPassword({ email, password });
+            
             if (error) return { ok: false, error: 'Usuario o contraseña incorrectos' };
+            
             await Auth._loadProfile(data.user);
             return { ok: true };
         },
 
-        async register(username, email, password, role = 'student') {
-            const { data: existing } = await _sb
-                .from('profiles').select('id').eq('username', username).single();
-            if (existing) return { ok: false, error: 'El usuario ya existe' };
+        async register(username, emailReal, password, role = 'student') {
+            // 1. Sanitización del username
+            const safeUsername = username.replace(/[^a-zA-Z0-9_.]/g, '');
+            if (safeUsername.length < 3) return { ok: false, error: 'El usuario es muy corto o contiene caracteres inválidos' };
 
-            const authEmail = `${username}@alephone.app`;
+            // 2. Verificar si el username ya está en uso en perfiles
+            const { data: existing } = await _sb
+                .from('profiles')
+                .select('id')
+                .eq('username', safeUsername)
+                .single();
+            
+            if (existing) return { ok: false, error: 'El nombre de usuario ya está registrado' };
+
+            // 3. Crear el "email virtual" para el sistema de Auth
+            const authEmail = `${safeUsername}@alephone.app`;
+
+            // 4. Registro en Supabase Auth
             const { data, error } = await _sb.auth.signUp({
                 email: authEmail,
                 password,
-                options: { data: { username, role } }
+                options: { 
+                    data: { 
+                        display_name: safeUsername,
+                        role: role 
+                    } 
+                }
             });
+
             if (error) return { ok: false, error: error.message };
-            await Auth._loadProfile(data.user);
+
+            // 5. Crear el perfil en la tabla pública 'profiles'
+            // Esto es necesario para guardar el rol y el username real
+            if (data.user) {
+                const { error: profileError } = await _sb.from('profiles').insert({
+                    id: data.user.id,
+                    username: safeUsername,
+                    role: role,
+                    email_real: emailReal, // Guardamos el mail real por si acaso
+                    curso: '3A' // Valor por defecto inicial
+                });
+
+                if (profileError) console.error("Error creando perfil:", profileError);
+                await Auth._loadProfile(data.user);
+            }
+
             return { ok: true };
         },
 
         async logout() {
             await _sb.auth.signOut();
             window._alephUser = null;
+            location.href = 'index.html'; // Redirigir al login
         }
     };
 
@@ -101,14 +148,16 @@ const AlephAPI = (() => {
             }));
         },
 
-        async marcarLeido(mensajeId, username) {
+        async marcarLeido(mensajeId) {
             const user = Auth.getCurrentUser();
+            if (!user) return;
             await _sb.from('mensajes_leidos')
                 .upsert({ mensaje_id: mensajeId, user_id: user.id });
         },
 
         async eliminar(mensajeId) {
-            await _sb.from('mensajes').delete().eq('id', mensajeId);
+            const { error } = await _sb.from('mensajes').delete().eq('id', mensajeId);
+            return !error;
         }
     };
 
@@ -129,21 +178,20 @@ const AlephAPI = (() => {
             const { data } = await _sb
                 .from('tareas').select('*, entregas(*)')
                 .eq('curso', curso).order('fecha_cierre', { ascending: true });
-            return (data || []).map(t => ({ ...t, fechaCierre: t.fecha_cierre, entregas: t.entregas || [] }));
-        },
-
-        async getDelDocente(autorUsername) {
-            const { data } = await _sb
-                .from('tareas').select('*, entregas(*)')
-                .eq('autor_username', autorUsername).order('fecha_cierre', { ascending: true });
-            return (data || []).map(t => ({ ...t, fechaCierre: t.fecha_cierre, entregas: t.entregas || [] }));
+            return (data || []).map(t => ({ 
+                ...t, 
+                fechaCierre: t.fecha_cierre, 
+                entregas: t.entregas || [] 
+            }));
         },
 
         async entregar({ tareaId, username, contenido }) {
             const user = Auth.getCurrentUser();
             const { error } = await _sb.from('entregas').insert({
-                tarea_id: tareaId, alumno_id: user.id,
-                alumno_username: username, contenido
+                tarea_id: tareaId, 
+                alumno_id: user.id,
+                alumno_username: username, 
+                contenido
             });
             if (error) {
                 if (error.code === '23505') return { ok: false, error: 'Ya entregaste esta tarea' };
@@ -152,15 +200,11 @@ const AlephAPI = (() => {
             return { ok: true };
         },
 
-        async calificar({ tareaId, username, nota }) {
+        async calificar({ tareaId, alumnoId, nota }) {
             const { error } = await _sb.from('entregas')
                 .update({ nota })
-                .eq('tarea_id', tareaId).eq('alumno_username', username);
+                .eq('tarea_id', tareaId).eq('alumno_id', alumnoId);
             return error ? { ok: false } : { ok: true };
-        },
-
-        async eliminar(tareaId) {
-            await _sb.from('tareas').delete().eq('id', tareaId);
         }
     };
 
@@ -178,6 +222,7 @@ const AlephAPI = (() => {
         },
 
         async agregarCambio(curso, cambio) {
+            // cambio = { fecha, materia, tipo, motivo }
             const { error } = await _sb.from('cambios_horario').insert({ curso, ...cambio });
             return error ? { ok: false } : { ok: true };
         },
@@ -195,7 +240,8 @@ const AlephAPI = (() => {
         async guardarNota({ username, materia, tipo, valor, descripcion }) {
             const user = Auth.getCurrentUser();
             const { error } = await _sb.from('notas').insert({
-                alumno_id: user.id, alumno_username: username,
+                alumno_id: user.id, 
+                alumno_username: username,
                 materia, tipo, valor, descripcion
             });
             return error ? { ok: false } : { ok: true };
@@ -206,29 +252,11 @@ const AlephAPI = (() => {
                 .select('*').eq('alumno_username', username)
                 .order('created_at', { ascending: false });
             return (data || []).map(n => ({ ...n, fecha: n.created_at }));
-        },
-
-        calcularPromedio(notas, materia) {
-            const f = notas.filter(n => n.materia === materia);
-            if (!f.length) return null;
-            return +(f.reduce((a, n) => a + Number(n.valor), 0) / f.length).toFixed(2);
-        },
-
-        simular({ notas, materia, promedioObjetivo }) {
-            const f = notas.filter(n => n.materia === materia);
-            if (!f.length) return null;
-            const suma = f.reduce((a, n) => a + Number(n.valor), 0);
-            return +(promedioObjetivo * (f.length + 1) - suma).toFixed(2);
         }
     };
 
     // ─── CALENDARIO ──────────────────────────────────────────
     const Calendario = {
-        async agregar({ titulo, fecha, tipo, curso, descripcion }) {
-            const { error } = await _sb.from('eventos').insert({ titulo, fecha, tipo, curso, descripcion });
-            return error ? { ok: false } : { ok: true };
-        },
-
         async getProximos(curso, dias = 7) {
             const hoy = new Date().toISOString().slice(0, 10);
             const limite = new Date(Date.now() + dias * 86400000).toISOString().slice(0, 10);
@@ -237,20 +265,12 @@ const AlephAPI = (() => {
                 .gte('fecha', hoy).lte('fecha', limite)
                 .order('fecha', { ascending: true });
             return data || [];
-        },
-
-        async getDelMes(curso, year, month) {
-            const inicio = `${year}-${String(month+1).padStart(2,'0')}-01`;
-            const fin    = `${year}-${String(month+1).padStart(2,'0')}-31`;
-            const { data } = await _sb.from('eventos').select('*')
-                .or(`curso.eq.${curso},curso.eq.todos`)
-                .gte('fecha', inicio).lte('fecha', fin);
-            return data || [];
         }
     };
 
-    async function seedDemo() {}
-
-    return { Auth, Comunicacion, Tareas, Horario, Promedios, Calendario, seedDemo };
+    return { Auth, Comunicacion, Tareas, Horario, Promedios, Calendario };
 
 })();
+
+// Inicializar Auth al cargar el script
+document.addEventListener('DOMContentLoaded', () => AlephAPI.Auth.init());
