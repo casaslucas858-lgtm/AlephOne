@@ -57,55 +57,70 @@ const AlephAPI = (() => {
         },
 
         async login(username, password) {
-            const safeUsername = username.replace(/[^a-zA-Z0-9_.]/g, '');
-            const email = `${safeUsername}@alephone.app`;
+            // El login ahora requiere buscar el email real asociado a ese username en la tabla profiles
+            const { data: profile, error: pError } = await _sb
+                .from('profiles')
+                .select('email_real')
+                .eq('username', username)
+                .single();
+
+            if (pError || !profile) return { ok: false, error: 'Usuario no encontrado' };
             
-            const { data, error } = await _sb.auth.signInWithPassword({ email, password });
+            const { data, error } = await _sb.auth.signInWithPassword({ 
+                email: profile.email_real, 
+                password 
+            });
             
-            if (error) return { ok: false, error: 'Usuario o contraseña incorrectos' };
+            if (error) return { ok: false, error: 'Contraseña incorrecta' };
             
             await Auth._loadProfile(data.user);
             return { ok: true };
         },
 
-        async register(username, emailReal, password, role = 'student') {
-            const safeUsername = username.replace(/[^a-zA-Z0-9_.]/g, '');
-            if (safeUsername.length < 3) return { ok: false, error: 'El usuario es muy corto' };
-
+        async register(username, email, password, role = 'student') {
+            // 1. Verificar si el username ya existe en la tabla profiles
             const { data: existing } = await _sb
                 .from('profiles')
                 .select('id')
-                .eq('username', safeUsername)
+                .eq('username', username)
                 .single();
-            
-            if (existing) return { ok: false, error: 'El nombre de usuario ya está registrado' };
 
-            const authEmail = `${safeUsername}@alephone.app`;
+            if (existing) return { ok: false, error: 'El nombre de usuario ya existe' };
 
+            // 2. Registrar en Supabase Auth con el email REAL
             const { data, error } = await _sb.auth.signUp({
-                email: authEmail,
+                email,
                 password,
                 options: { 
-                    data: { display_name: safeUsername, role: role } 
+                    data: { username, role } 
                 }
             });
 
-            if (error) return { ok: false, error: error.message };
+            if (error) {
+                // Limpieza de sesión si quedó algo pendiente
+                await _sb.auth.signOut();
+                if (error.message.includes('already registered') || error.code === 'user_already_exists') {
+                    return { ok: false, error: 'El correo ya está registrado' };
+                }
+                return { ok: false, error: error.message };
+            }
 
+            // 3. Crear el perfil en la tabla 'profiles' (esto se suele hacer vía Triggers en SQL, 
+            // pero lo mantenemos aquí para asegurar la lógica de la app)
             if (data.user) {
                 const { error: profileError } = await _sb.from('profiles').insert({
                     id: data.user.id,
-                    username: safeUsername,
+                    username: username,
                     role: role,
-                    email_real: emailReal,
+                    email_real: email, // Guardamos el email real para el flujo de login
                     curso: '3A'
                 });
 
                 if (profileError) {
-                    console.error("Error crítico creando perfil:", profileError);
-                    // Opcional: podrías borrar el usuario de Auth aquí para limpieza total
+                    console.error("Error creando perfil:", profileError);
                     return { ok: false, error: "Error al crear el perfil de usuario" };
                 }
+                
                 await Auth._loadProfile(data.user);
             }
 
