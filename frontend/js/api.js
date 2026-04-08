@@ -39,17 +39,24 @@ const AlephAPI = (() => {
                 .eq('id', authUser.id)
                 .single();
 
+            // FIX: Si existe el usuario en Auth pero no tiene fila en Profiles (error de registro parcial)
+            if (!profile) {
+                console.warn("Perfil no encontrado para el usuario activo. Cerrando sesión...");
+                await _sb.auth.signOut();
+                window._alephUser = null;
+                return;
+            }
+
             window._alephUser = {
                 id: authUser.id,
                 email: authUser.email,
-                username: profile?.username || authUser.email.split('@')[0],
-                role: profile?.role || 'student',
-                curso: profile?.curso || '3A'
+                username: profile.username || authUser.email.split('@')[0],
+                role: profile.role || 'student',
+                curso: profile.curso || '3A'
             };
         },
 
         async login(username, password) {
-            // Sanitización básica para el login también
             const safeUsername = username.replace(/[^a-zA-Z0-9_.]/g, '');
             const email = `${safeUsername}@alephone.app`;
             
@@ -62,11 +69,9 @@ const AlephAPI = (() => {
         },
 
         async register(username, emailReal, password, role = 'student') {
-            // 1. Sanitización del username
             const safeUsername = username.replace(/[^a-zA-Z0-9_.]/g, '');
-            if (safeUsername.length < 3) return { ok: false, error: 'El usuario es muy corto o contiene caracteres inválidos' };
+            if (safeUsername.length < 3) return { ok: false, error: 'El usuario es muy corto' };
 
-            // 2. Verificar si el username ya está en uso en perfiles
             const { data: existing } = await _sb
                 .from('profiles')
                 .select('id')
@@ -75,35 +80,32 @@ const AlephAPI = (() => {
             
             if (existing) return { ok: false, error: 'El nombre de usuario ya está registrado' };
 
-            // 3. Crear el "email virtual" para el sistema de Auth
             const authEmail = `${safeUsername}@alephone.app`;
 
-            // 4. Registro en Supabase Auth
             const { data, error } = await _sb.auth.signUp({
                 email: authEmail,
                 password,
                 options: { 
-                    data: { 
-                        display_name: safeUsername,
-                        role: role 
-                    } 
+                    data: { display_name: safeUsername, role: role } 
                 }
             });
 
             if (error) return { ok: false, error: error.message };
 
-            // 5. Crear el perfil en la tabla pública 'profiles'
-            // Esto es necesario para guardar el rol y el username real
             if (data.user) {
                 const { error: profileError } = await _sb.from('profiles').insert({
                     id: data.user.id,
                     username: safeUsername,
                     role: role,
-                    email_real: emailReal, // Guardamos el mail real por si acaso
-                    curso: '3A' // Valor por defecto inicial
+                    email_real: emailReal,
+                    curso: '3A'
                 });
 
-                if (profileError) console.error("Error creando perfil:", profileError);
+                if (profileError) {
+                    console.error("Error crítico creando perfil:", profileError);
+                    // Opcional: podrías borrar el usuario de Auth aquí para limpieza total
+                    return { ok: false, error: "Error al crear el perfil de usuario" };
+                }
                 await Auth._loadProfile(data.user);
             }
 
@@ -113,7 +115,7 @@ const AlephAPI = (() => {
         async logout() {
             await _sb.auth.signOut();
             window._alephUser = null;
-            location.href = 'index.html'; // Redirigir al login
+            location.href = 'index.html';
         }
     };
 
@@ -222,7 +224,6 @@ const AlephAPI = (() => {
         },
 
         async agregarCambio(curso, cambio) {
-            // cambio = { fecha, materia, tipo, motivo }
             const { error } = await _sb.from('cambios_horario').insert({ curso, ...cambio });
             return error ? { ok: false } : { ok: true };
         },
@@ -272,5 +273,4 @@ const AlephAPI = (() => {
 
 })();
 
-// Inicializar Auth al cargar el script
 document.addEventListener('DOMContentLoaded', () => AlephAPI.Auth.init());
