@@ -8,7 +8,7 @@ let isLoading = false;
 let currentUser = null;
 
 // Reemplazá esto por tu clave real o manejala desde un entorno seguro
-const GEMINI_API_KEY = 'TU_KEY_ACÁ'; 
+const GEMINI_API_KEY = 'AIzaSyCK1C3mkm9xG2tZGATxDLGBSnkWZkmOB5Q'; 
 
 const SYSTEM_PROMPT = `
 Sos Fractal AI, el asistente de estudio integrado en AlephOne, una plataforma educativa para escuelas argentinas.
