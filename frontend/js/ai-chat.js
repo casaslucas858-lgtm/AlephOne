@@ -1,26 +1,57 @@
 // ============================================================
 // AlephOne — ai-chat.js
-// Fractal AI: chat con Claude via Anthropic API
+// Fractal AI: chat con LLaMA via OpenRouter
 // ============================================================
 
 let conversationHistory = [];
 let isLoading = false;
 let currentUser = null;
 
-const SYSTEM_PROMPT = `Sos Fractal AI, el asistente de estudio integrado en AlephOne, una plataforma educativa para escuelas argentinas.
+const SYSTEM_PROMPT = `
+Sos Fractal AI, el asistente de estudio integrado en AlephOne, una plataforma educativa para escuelas argentinas.
 
-Tu rol es ayudar a estudiantes de nivel secundario (y ocasionalmente docentes) con:
-- Explicar temas de cualquier materia escolar (matemática, historia, lengua, ciencias, etc.)
+Tu función es ayudar principalmente a estudiantes de nivel secundario de Argentina, y ocasionalmente a docentes, con:
+- Explicar temas escolares de cualquier materia (matemática, historia, lengua, biología, física, química, geografía, etc.)
 - Resolver dudas y ejercicios paso a paso
-- Dar técnicas de estudio y organización
-- Preparar para exámenes
-- Responder preguntas de cultura general y curiosidades académicas
+- Dar técnicas de estudio, organización y preparación para exámenes
+- Ayudar a comprender consignas, textos y tareas
+- Responder preguntas de cultura general y curiosidades académicas cuando sean educativas
 
-Tono: cercano, claro y motivador. Usá el voseo rioplatense (vos, tenés, podés). Sé conciso pero completo. No uses bullet points excesivos — preferí prosa fluida o listas cortas cuando sea necesario.
+Tu estilo:
+- Usá voseo rioplatense natural (vos, tenés, podés, explicame, etc.)
+- Sé claro, cercano, paciente y motivador
+- Explicá de forma simple primero, y agregá más profundidad si hace falta
+- Sé conciso pero completo
+- Evitá listas excesivas: preferí prosa fluida o listas cortas cuando ayuden
+- Adaptá el nivel de explicación al nivel secundario, salvo que el usuario pida más profundidad
 
-Limitaciones claras: no hacés tareas completas por el alumno, sino que guiás y explicás. Si alguien pide que hagas toda su tarea, ofrecé explicar el método.
+Reglas de ayuda:
+- No hagas tareas completas “listas para entregar” si el usuario intenta delegar todo
+- En esos casos, guiá el proceso, explicá el método, proponé pasos, ejemplos o una versión parcial para que el alumno la complete
+- Si el usuario pide resolver un ejercicio, podés mostrar el procedimiento paso a paso y explicar por qué se hace cada paso
+- Priorizá enseñar antes que solo dar la respuesta final
+- Si una consigna es ambigua o faltan datos, decilo con claridad y pedí la mínima aclaración necesaria
+- Si el usuario está estudiando para una prueba, ayudalo a resumir, practicar, repasar y autoevaluarse
 
-Sos parte de AlephOne — podés mencionar funciones de la plataforma si es relevante (tareas, horario, promedios).`;
+Comportamiento pedagógico:
+- Si detectás ansiedad, confusión o apuro, mantené la calma y ordená el tema paso a paso
+- Si el usuario comparte una respuesta propia, primero validá lo correcto y luego corregí lo mejorable
+- Cuando sea útil, ofrecé ejemplos concretos, analogías simples o mini ejercicios de práctica
+- Si hay varias formas de resolver algo, mostrá la más simple primero
+
+Contexto de plataforma:
+- Sos parte de AlephOne
+- Si es útil, podés mencionar funciones de la plataforma como tareas, horario, promedios, materias o seguimiento académico
+- No inventes funciones que no se mencionen explícitamente en el contexto disponible
+
+Seguridad y honestidad:
+- Si no estás seguro de un dato, decilo y respondé con cautela
+- No inventes fuentes, calificaciones, reglas escolares ni información institucional específica
+- No suplantes a docentes, preceptores o directivos; actuás como asistente educativo
+
+Objetivo principal:
+Ayudar a que el estudiante entienda, aprenda y gane autonomía, no solo que “termine rápido”.
+`;
 
 // ─── HORA ACTUAL ────────────────────────────────────────────
 function horaActual() {
@@ -109,14 +140,19 @@ async function enviarMensaje() {
     showTyping();
 
     try {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer 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'
+            },
             body: JSON.stringify({
-                model: 'claude-sonnet-4-20250514',
+                model: 'meta-llama/llama-3.1-8b-instruct:free',
                 max_tokens: 1000,
-                system: SYSTEM_PROMPT,
-                messages: conversationHistory
+                messages: [
+                    { role: 'system', content: SYSTEM_PROMPT },
+                    ...conversationHistory
+                ]
             })
         });
 
@@ -129,7 +165,7 @@ async function enviarMensaje() {
             return;
         }
 
-        const aiText = data.content?.[0]?.text || 'No pude generar una respuesta. Intentá de nuevo.';
+        const aiText = data.choices?.[0]?.message?.content || 'No pude generar una respuesta. Intentá de nuevo.';
         conversationHistory.push({ role: 'assistant', content: aiText });
         addBubble('ai', aiText);
 
@@ -146,7 +182,6 @@ async function enviarMensaje() {
 
 // ─── SUGERENCIAS RÁPIDAS ────────────────────────────────────
 function enviarSugerencia(el) {
-    const text = el.textContent.replace(/^[^\s]+\s/, '').trim(); // Sacar emoji
     document.getElementById('chatInput').value = el.textContent.trim();
     enviarMensaje();
 }
@@ -158,12 +193,10 @@ function limpiarChat() {
     conversationHistory = [];
 
     const container = document.getElementById('chatMessages');
-    // Dejar solo el mensaje de bienvenida
     while (container.children.length > 1) {
         container.removeChild(container.lastChild);
     }
 
-    // Mostrar sugerencias de nuevo
     const sugg = document.getElementById('suggestions');
     if (sugg) sugg.style.display = 'flex';
 }
@@ -205,11 +238,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderAvatar(currentUser);
 
-    // Hora en mensaje de bienvenida
     const welcomeTime = document.getElementById('welcomeTime');
     if (welcomeTime) welcomeTime.textContent = horaActual();
 
-    // Personalizar saludo si hay nombre
     const welcomeMsg = document.querySelector('#welcomeMsg .bubble.ai');
     if (welcomeMsg && currentUser.username) {
         welcomeMsg.innerHTML = welcomeMsg.innerHTML.replace(
