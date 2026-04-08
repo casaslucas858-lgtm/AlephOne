@@ -11,6 +11,7 @@
             border: 1px solid var(--border); color: var(--text);
             width: 38px; height: 38px; border-radius: var(--radius-sm);
             font-size: 1.1em; align-items: center; justify-content: center;
+            cursor: pointer;
         }
         @media (max-width: 900px) { .mobile-nav-btn { display: flex; } }
 
@@ -80,7 +81,7 @@
             font-family: var(--font-display); font-size: 0.82em;
             font-weight: 700; color: var(--text-faint);
             background: var(--bg-subtle) !important;
-            width: 60px;
+            width: 75px;
         }
 
         /* Cambios del día */
@@ -152,25 +153,32 @@
             </div>
         </div>
 
-        <!-- Cambios del día -->
         <div id="cambiosSection" style="margin-bottom:24px; display:none;">
-            <h3 style="margin-bottom:12px;">⚠️ Cambios de hoy</h3>
+            <h3 style="margin-bottom:12px; font-size: 1.1em;">⚠️ Cambios para hoy</h3>
             <div id="cambiosList"></div>
         </div>
 
-        <!-- Tabla horario -->
         <div class="card fade-up" style="padding:0; overflow:hidden;">
             <div class="schedule-wrapper">
                 <table class="schedule-table" id="scheduleTable">
-                    <thead id="scheduleHead"></thead>
-                    <tbody id="scheduleBody"></tbody>
+                    <thead>
+                        <tr>
+                            <th class="time-col">Hora</th>
+                            <th id="th-1">Lunes</th>
+                            <th id="th-2">Martes</th>
+                            <th id="th-3">Miércoles</th>
+                            <th id="th-4">Jueves</th>
+                            <th id="th-5">Viernes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleBody">
+                        </tbody>
                 </table>
             </div>
         </div>
     </main>
 </div>
 
-<!-- Modal cambio del día -->
 <div class="modal-overlay" id="modalCambio" onclick="cerrarModalSiFondo(event,'modalCambio')">
     <div class="modal">
         <div class="modal-header">
@@ -190,46 +198,25 @@
         </div>
         <div class="form-group">
             <label class="form-label">Motivo / Detalle</label>
-            <input type="text" id="cambioMotivo" class="form-input" placeholder="Ej: Docente ausente por enfermedad">
+            <input type="text" id="cambioMotivo" class="form-input" placeholder="Ej: Docente ausente">
         </div>
         <div id="cambioError" class="form-error" style="margin-bottom:8px;"></div>
         <div style="display:flex; gap:10px; justify-content:flex-end;">
             <button class="btn btn-secondary" onclick="cerrarModal('modalCambio')">Cancelar</button>
-            <button class="btn btn-primary" onclick="registrarCambio()">Guardar →</button>
+            <button class="btn btn-primary" id="btnGuardarCambio">Guardar →</button>
         </div>
     </div>
 </div>
 
-<!-- Modal editor de horario -->
-<div class="modal-overlay" id="modalEditor" onclick="cerrarModalSiFondo(event,'modalEditor')">
-    <div class="modal" style="max-width:560px;">
-        <div class="modal-header">
-            <span class="modal-title">✏️ Editar horario</span>
-            <button class="modal-close" onclick="cerrarModal('modalEditor')">✕</button>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Día</label>
-            <select id="editDia" class="form-select" onchange="renderBloqueEditor()">
-                <option value="lunes">Lunes</option>
-                <option value="martes">Martes</option>
-                <option value="miercoles">Miércoles</option>
-                <option value="jueves">Jueves</option>
-                <option value="viernes">Viernes</option>
-            </select>
-        </div>
-        <div id="bloquesEditor" style="margin-bottom:16px;"></div>
-        <button class="btn btn-secondary btn-sm" onclick="agregarBloque()" style="margin-bottom:16px;">
-            + Agregar bloque
-        </button>
-        <div style="display:flex; gap:10px; justify-content:flex-end;">
-            <button class="btn btn-secondary" onclick="cerrarModal('modalEditor')">Cancelar</button>
-            <button class="btn btn-primary" onclick="guardarDia()">Guardar día →</button>
-        </div>
-    </div>
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/api.js"></script>
 <script src="js/app.js"></script>
 <script src="js/horario.js"></script>
+<script>
+    // Utilidades rápidas para modales
+    function abrirModal(id) { document.getElementById(id).classList.add('open'); }
+    function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+    function cerrarModalSiFondo(e, id) { if(e.target.id === id) cerrarModal(id); }
+</script>
 </body>
 </html>
