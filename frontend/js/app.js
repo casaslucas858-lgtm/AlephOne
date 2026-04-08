@@ -187,6 +187,14 @@ async function handleRegister(e) {
         return false;
     }
 
+    // Validación de formato de usuario (letras, números, _ y .)
+    const usernameRegex = /^[a-zA-Z0-9_.]{3,26}$/;
+    if (!usernameRegex.test(username)) {
+        if (errorEl) errorEl.textContent = 'El usuario solo puede tener letras, números, _ y . (3 a 26 caracteres)';
+        if (btn) btn.textContent = 'Crear cuenta →';
+        return false;
+    }
+
     if (btn) btn.textContent = 'Creando cuenta...';
 
     const result = await AlephAPI.Auth.register(username, email, password, role);
@@ -205,21 +213,6 @@ async function logout() {
     window.location.href = './index.html';
 }
 
-// ─── TABS (login/register) ───────────────────────────────────
-function showLogin() {
-    document.getElementById('loginForm').style.display = 'flex';
-    document.getElementById('registerForm').style.display = 'none';
-    document.querySelectorAll('.tab')[0]?.classList.add('active');
-    document.querySelectorAll('.tab')[1]?.classList.remove('active');
-}
-
-function showRegister() {
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('registerForm').style.display = 'flex';
-    document.querySelectorAll('.tab')[0]?.classList.remove('active');
-    document.querySelectorAll('.tab')[1]?.classList.add('active');
-}
-
 // ─── INIT GLOBAL ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
     // Init Supabase auth PRIMERO
@@ -231,19 +224,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Nav activa
     setActiveNav();
 
-    // Página de login
-    if (window.location.pathname.includes('index.html') ||
-        window.location.pathname.endsWith('/frontend/') ||
-        window.location.pathname.endsWith('/')) {
+    // Lógica específica de la página de Auth (Index)
+    const isIndex = window.location.pathname.includes('index.html') || 
+                    window.location.pathname.endsWith('/frontend/') || 
+                    window.location.pathname.endsWith('/');
+
+    if (isIndex) {
         redirectIfLoggedIn();
-        document.getElementById('loginForm')?.addEventListener('submit', handleLogin);
-        document.getElementById('registerForm')?.addEventListener('submit', handleRegister);
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        
+        if (loginForm) loginForm.addEventListener('submit', handleLogin);
+        if (registerForm) registerForm.addEventListener('submit', handleRegister);
         return;
     }
 
     // Páginas protegidas
     const protectedPages = ['dashboard', 'tareas', 'horario', 'promedios', 'comunicacion', 'ai-chat'];
     const isProtected = protectedPages.some(p => window.location.pathname.includes(p));
+    
     if (isProtected) {
         const user = requireAuth();
         if (user) renderHeader(user);
