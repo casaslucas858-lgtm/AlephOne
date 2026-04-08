@@ -5,7 +5,6 @@
 const SUPABASE_URL = 'https://ikxvbmsvzmsiztxvzdtz.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_cN4exqC8p4r9Hg3ZQYWcWg_gLwcRdui';
 
-// Inicialización del cliente
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const AlephAPI = (() => {
@@ -22,26 +21,18 @@ const AlephAPI = (() => {
             const { data: { session } } = await _sb.auth.getSession();
             if (session?.user) await Auth._loadProfile(session.user);
 
-            // Escuchar cambios de estado (login/logout)
             _sb.auth.onAuthStateChange(async (event, session) => {
-                if (session?.user) {
-                    await Auth._loadProfile(session.user);
-                } else {
-                    window._alephUser = null;
-                }
+                if (session?.user) await Auth._loadProfile(session.user);
+                else window._alephUser = null;
             });
         },
 
         async _loadProfile(authUser) {
             const { data: profile } = await _sb
-                .from('profiles')
-                .select('*')
-                .eq('id', authUser.id)
-                .single();
+                .from('profiles').select('*').eq('id', authUser.id).single();
 
-            // FIX: Si existe el usuario en Auth pero no tiene fila en Profiles (error de registro parcial)
             if (!profile) {
-                console.warn("Perfil no encontrado para el usuario activo. Cerrando sesión...");
+                console.warn("Perfil no encontrado. Cerrando sesión...");
                 await _sb.auth.signOut();
                 window._alephUser = null;
                 return;
@@ -57,62 +48,43 @@ const AlephAPI = (() => {
         },
 
         async login(username, password) {
-            // El login ahora requiere buscar el email real asociado a ese username en la tabla profiles
             const { data: profile, error: pError } = await _sb
-                .from('profiles')
-                .select('email_real')
-                .eq('username', username)
-                .single();
+                .from('profiles').select('email_real').eq('username', username).single();
 
             if (pError || !profile) return { ok: false, error: 'Usuario no encontrado' };
-            
-            const { data, error } = await _sb.auth.signInWithPassword({ 
-                email: profile.email_real, 
-                password 
+
+            const { data, error } = await _sb.auth.signInWithPassword({
+                email: profile.email_real, password
             });
-            
+
             if (error) return { ok: false, error: 'Contraseña incorrecta' };
-            
+
             await Auth._loadProfile(data.user);
             return { ok: true };
         },
 
         async register(username, email, password, role = 'student') {
-            // 1. Verificar si el username ya existe en la tabla profiles
             const { data: existing } = await _sb
-                .from('profiles')
-                .select('id')
-                .eq('username', username)
-                .single();
-
+                .from('profiles').select('id').eq('username', username).single();
             if (existing) return { ok: false, error: 'El nombre de usuario ya existe' };
 
-            // 2. Registrar en Supabase Auth con el email REAL
             const { data, error } = await _sb.auth.signUp({
-                email,
-                password,
-                options: { 
-                    data: { username, role } 
-                }
+                email, password,
+                options: { data: { username, role } }
             });
 
             if (error) {
-                // Limpieza de sesión si quedó algo pendiente
                 await _sb.auth.signOut();
-                if (error.message.includes('already registered') || error.code === 'user_already_exists') {
+                if (error.message.includes('already registered') || error.code === 'user_already_exists')
                     return { ok: false, error: 'El correo ya está registrado' };
-                }
                 return { ok: false, error: error.message };
             }
 
-            // 3. Crear el perfil en la tabla 'profiles' (esto se suele hacer vía Triggers en SQL, 
-            // pero lo mantenemos aquí para asegurar la lógica de la app)
             if (data.user) {
                 const { error: profileError } = await _sb.from('profiles').insert({
                     id: data.user.id,
-                    username: username,
-                    role: role,
-                    email_real: email, // Guardamos el email real para el flujo de login
+                    username, role,
+                    email_real: email,
                     curso: '3A'
                 });
 
@@ -120,7 +92,7 @@ const AlephAPI = (() => {
                     console.error("Error creando perfil:", profileError);
                     return { ok: false, error: "Error al crear el perfil de usuario" };
                 }
-                
+
                 await Auth._loadProfile(data.user);
             }
 
@@ -130,7 +102,7 @@ const AlephAPI = (() => {
         async logout() {
             await _sb.auth.signOut();
             window._alephUser = null;
-            location.href = 'index.html';
+            location.href = './index.html';
         }
     };
 
@@ -195,20 +167,25 @@ const AlephAPI = (() => {
             const { data } = await _sb
                 .from('tareas').select('*, entregas(*)')
                 .eq('curso', curso).order('fecha_cierre', { ascending: true });
-            return (data || []).map(t => ({ 
-                ...t, 
-                fechaCierre: t.fecha_cierre, 
-                entregas: t.entregas || [] 
+            return (data || []).map(t => ({
+                ...t, fechaCierre: t.fecha_cierre, entregas: t.entregas || []
+            }));
+        },
+
+        async getDelDocente(autorUsername) {
+            const { data } = await _sb
+                .from('tareas').select('*, entregas(*)')
+                .eq('autor_username', autorUsername).order('fecha_cierre', { ascending: true });
+            return (data || []).map(t => ({
+                ...t, fechaCierre: t.fecha_cierre, entregas: t.entregas || []
             }));
         },
 
         async entregar({ tareaId, username, contenido }) {
             const user = Auth.getCurrentUser();
             const { error } = await _sb.from('entregas').insert({
-                tarea_id: tareaId, 
-                alumno_id: user.id,
-                alumno_username: username, 
-                contenido
+                tarea_id: tareaId, alumno_id: user.id,
+                alumno_username: username, contenido
             });
             if (error) {
                 if (error.code === '23505') return { ok: false, error: 'Ya entregaste esta tarea' };
@@ -222,6 +199,10 @@ const AlephAPI = (() => {
                 .update({ nota })
                 .eq('tarea_id', tareaId).eq('alumno_id', alumnoId);
             return error ? { ok: false } : { ok: true };
+        },
+
+        async eliminar(tareaId) {
+            await _sb.from('tareas').delete().eq('id', tareaId);
         }
     };
 
@@ -256,8 +237,7 @@ const AlephAPI = (() => {
         async guardarNota({ username, materia, tipo, valor, descripcion }) {
             const user = Auth.getCurrentUser();
             const { error } = await _sb.from('notas').insert({
-                alumno_id: user.id, 
-                alumno_username: username,
+                alumno_id: user.id, alumno_username: username,
                 materia, tipo, valor, descripcion
             });
             return error ? { ok: false } : { ok: true };
@@ -268,11 +248,30 @@ const AlephAPI = (() => {
                 .select('*').eq('alumno_username', username)
                 .order('created_at', { ascending: false });
             return (data || []).map(n => ({ ...n, fecha: n.created_at }));
+        },
+
+        // Helpers síncronos — reciben el array de notas ya cargado
+        calcularPromedio(notas, materia) {
+            const f = notas.filter(n => n.materia === materia);
+            if (!f.length) return null;
+            return +(f.reduce((a, n) => a + Number(n.valor), 0) / f.length).toFixed(2);
+        },
+
+        simular({ notas, materia, promedioObjetivo }) {
+            const f = notas.filter(n => n.materia === materia);
+            if (!f.length) return null;
+            const suma = f.reduce((a, n) => a + Number(n.valor), 0);
+            return +(promedioObjetivo * (f.length + 1) - suma).toFixed(2);
         }
     };
 
     // ─── CALENDARIO ──────────────────────────────────────────
     const Calendario = {
+        async agregar({ titulo, fecha, tipo, curso, descripcion }) {
+            const { error } = await _sb.from('eventos').insert({ titulo, fecha, tipo, curso, descripcion });
+            return error ? { ok: false } : { ok: true };
+        },
+
         async getProximos(curso, dias = 7) {
             const hoy = new Date().toISOString().slice(0, 10);
             const limite = new Date(Date.now() + dias * 86400000).toISOString().slice(0, 10);
@@ -287,5 +286,3 @@ const AlephAPI = (() => {
     return { Auth, Comunicacion, Tareas, Horario, Promedios, Calendario };
 
 })();
-
-document.addEventListener('DOMContentLoaded', () => AlephAPI.Auth.init());
