@@ -288,6 +288,7 @@
             font-size: 1.1em;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
         }
 
         @media (max-width: 900px) {
@@ -305,7 +306,6 @@
 <body>
 <div class="app-shell">
 
-    <!-- ── TOPBAR ── -->
     <header class="topbar">
         <div style="display:flex; align-items:center; gap:12px;">
             <button class="mobile-nav-btn" id="mobileNavBtn" onclick="toggleMobileNav()">☰</button>
@@ -322,7 +322,6 @@
         </div>
     </header>
 
-    <!-- ── SIDEBAR ── -->
     <nav class="sidebar" id="sidebar">
         <span class="nav-section-label">Principal</span>
         <a href="dashboard.html" class="nav-link active">
@@ -357,10 +356,8 @@
         </div>
     </nav>
 
-    <!-- ── MAIN ── -->
     <main class="main-content">
 
-        <!-- Saludo dinámico -->
         <div class="day-greeting fade-up" id="dayGreeting">
             <div class="greeting-label">HOY ES <span id="greetingDia"></span></div>
             <h2 id="greetingMsg">Hola 👋</h2>
@@ -368,16 +365,12 @@
             <div class="greeting-badges" id="greetingBadges"></div>
         </div>
 
-        <!-- Stats rápidas -->
         <div class="stats-grid fade-up" id="statsGrid"></div>
 
-        <!-- Grid principal -->
         <div class="dashboard-grid">
 
-            <!-- Columna principal -->
             <div class="dashboard-main">
 
-                <!-- Panel docente: acciones rápidas (solo si es teacher) -->
                 <div class="card fade-up" id="teacherPanel" style="display:none;">
                     <div class="card-header">
                         <span class="card-title">⚡ Acciones rápidas</span>
@@ -385,28 +378,27 @@
                     <div class="teacher-actions">
                         <a href="comunicacion.html" class="action-card">
                             <div class="action-icon">📢</div>
-                            <div class="action-label">Nuevo anuncio</div>
-                            <div class="action-sub">Comunicar al curso</div>
+                            <div class="action-label">Anuncio</div>
+                            <div class="action-sub">Comunicar</div>
                         </a>
                         <a href="tareas.html" class="action-card">
                             <div class="action-icon">📋</div>
-                            <div class="action-label">Nueva tarea</div>
-                            <div class="action-sub">Asignar actividad</div>
+                            <div class="action-label">Tarea</div>
+                            <div class="action-sub">Asignar</div>
                         </a>
                         <a href="horario.html" class="action-card">
                             <div class="action-icon">🗓️</div>
-                            <div class="action-label">Editar horario</div>
-                            <div class="action-sub">Cambios del día</div>
+                            <div class="action-label">Horario</div>
+                            <div class="action-sub">Editar</div>
                         </a>
                         <a href="promedios.html" class="action-card">
                             <div class="action-icon">📊</div>
-                            <div class="action-label">Cargar notas</div>
-                            <div class="action-sub">Registrar calificaciones</div>
+                            <div class="action-label">Notas</div>
+                            <div class="action-sub">Calificar</div>
                         </a>
                     </div>
                 </div>
 
-                <!-- Tareas pendientes -->
                 <div class="card fade-up">
                     <div class="card-header">
                         <span class="card-title">📋 Tareas pendientes</span>
@@ -420,7 +412,6 @@
                     </div>
                 </div>
 
-                <!-- Mensajes recientes -->
                 <div class="card fade-up">
                     <div class="card-header">
                         <span class="card-title">📢 Mensajes recientes</span>
@@ -431,10 +422,8 @@
 
             </div>
 
-            <!-- Columna lateral -->
             <div class="dashboard-side">
 
-                <!-- Clases de hoy -->
                 <div class="card fade-up">
                     <div class="card-header">
                         <span class="card-title">🏫 Clases de hoy</span>
@@ -442,7 +431,6 @@
                     <div id="clasesHoy" class="today-schedule"></div>
                 </div>
 
-                <!-- Próximos eventos -->
                 <div class="card fade-up">
                     <div class="card-header">
                         <span class="card-title">📅 Próximos eventos</span>
@@ -456,6 +444,7 @@
     </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/api.js"></script>
 <script src="js/app.js"></script>
 <script src="js/dashboard.js"></script>
