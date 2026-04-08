@@ -217,7 +217,6 @@
 <body>
 <div class="app-shell">
 
-    <!-- ── TOPBAR ── -->
     <header class="topbar">
         <div style="display:flex; align-items:center; gap:12px;">
             <button class="mobile-nav-btn" onclick="toggleMobileNav()">☰</button>
@@ -234,7 +233,6 @@
         </div>
     </header>
 
-    <!-- ── SIDEBAR ── -->
     <nav class="sidebar" id="sidebar">
         <span class="nav-section-label">Principal</span>
         <a href="dashboard.html" class="nav-link">
@@ -264,7 +262,6 @@
         </div>
     </nav>
 
-    <!-- ── MAIN ── -->
     <main class="main-content">
 
         <div class="page-header" style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px;">
@@ -272,14 +269,11 @@
                 <h2>📢 Comunicación</h2>
                 <p class="text-muted">Anuncios, recordatorios y mensajes del curso.</p>
             </div>
-            <!-- Botón solo visible para docentes/directores -->
-            <button class="btn btn-primary" id="btnNuevoMensaje" style="display:none;"
-                    onclick="abrirModal()">
+            <button class="btn btn-primary" id="btnNuevoMensaje" style="display:none;" onclick="abrirModal()">
                 + Nuevo mensaje
             </button>
         </div>
 
-        <!-- Filtros -->
         <div class="filter-bar">
             <button class="filter-chip active" data-tipo="todos" onclick="filtrar('todos', this)">Todos</button>
             <button class="filter-chip" data-tipo="urgente" onclick="filtrar('urgente', this)">🔴 Urgentes</button>
@@ -287,13 +281,11 @@
             <button class="filter-chip" data-tipo="recordatorio" onclick="filtrar('recordatorio', this)">⏰ Recordatorios</button>
         </div>
 
-        <!-- Lista de mensajes -->
         <div id="mensajesList"></div>
 
     </main>
 </div>
 
-<!-- ── MODAL: Nuevo mensaje (solo docentes) ── -->
 <div class="modal-overlay" id="modalOverlay" onclick="cerrarModalSiEsFondo(event)">
     <div class="modal">
         <div class="modal-header">
@@ -304,32 +296,26 @@
         <div class="form-group">
             <label class="form-label">Tipo de mensaje</label>
             <div style="display:flex; gap:8px;">
-                <button class="filter-chip active" data-tipo="anuncio"
-                        onclick="seleccionarTipo('anuncio', this)">📢 Anuncio</button>
-                <button class="filter-chip" data-tipo="recordatorio"
-                        onclick="seleccionarTipo('recordatorio', this)">⏰ Recordatorio</button>
-                <button class="filter-chip" data-tipo="urgente"
-                        onclick="seleccionarTipo('urgente', this)">🔴 Urgente</button>
+                <button class="filter-chip active" data-tipo="anuncio" onclick="seleccionarTipo('anuncio', this)">📢 Anuncio</button>
+                <button class="filter-chip" data-tipo="recordatorio" onclick="seleccionarTipo('recordatorio', this)">⏰ Recordatorio</button>
+                <button class="filter-chip" data-tipo="urgente" onclick="seleccionarTipo('urgente', this)">🔴 Urgente</button>
             </div>
             <input type="hidden" id="msgTipo" value="anuncio">
         </div>
 
         <div class="form-group">
             <label class="form-label">Título</label>
-            <input type="text" id="msgTitulo" class="form-input"
-                   placeholder="Título del mensaje" maxlength="80">
+            <input type="text" id="msgTitulo" class="form-input" placeholder="Título del mensaje" maxlength="80">
         </div>
 
         <div class="form-group">
             <label class="form-label">Contenido</label>
-            <textarea id="msgContenido" class="form-textarea"
-                      placeholder="Escribí el mensaje acá..." rows="4" maxlength="600"></textarea>
+            <textarea id="msgContenido" class="form-textarea" placeholder="Escribí el mensaje acá..." rows="4" maxlength="600" style="resize: vertical; min-height: 100px;"></textarea>
         </div>
 
         <div class="form-group">
             <label class="form-label">Materia (opcional)</label>
-            <input type="text" id="msgMateria" class="form-input"
-                   placeholder="Ej: Matemática, Historia...">
+            <input type="text" id="msgMateria" class="form-input" placeholder="Ej: Matemática, Historia...">
         </div>
 
         <div id="msgError" class="form-error" style="margin-bottom:8px;"></div>
@@ -341,6 +327,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/api.js"></script>
 <script src="js/app.js"></script>
 <script src="js/comunicacion.js"></script>
