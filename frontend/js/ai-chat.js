@@ -1,73 +1,33 @@
 // ============================================================
 // AlephOne — ai-chat.js
-// Fractal AI: chat con Gemini 2.0 Flash
+// Fractal AI: chat con Gemini 1.5 Flash (Versión Estable)
 // ============================================================
 
 let conversationHistory = [];
 let isLoading = false;
 let currentUser = null;
 
-// Reemplazá esto por tu clave real o manejala desde un entorno seguro
-const GEMINI_API_KEY = 'AIzaSyCK1C3mkm9xG2tZGATxDLGBSnkWZkmOB5Q'; 
+// REEMPLAZÁ CON TU CLAVE
+const GEMINI_API_KEY = 'TU_KEY_ACÁ'; 
 
 const SYSTEM_PROMPT = `
 Sos Fractal AI, el asistente de estudio integrado en AlephOne, una plataforma educativa para escuelas argentinas.
-
-Tu función es ayudar principalmente a estudiantes de nivel secundario de Argentina, y ocasionalmente a docentes, con:
-- Explicar temas escolares de cualquier materia (matemática, historia, lengua, biología, física, química, geografía, etc.)
-- Resolver dudas y ejercicios paso a paso
-- Dar técnicas de estudio, organización y preparación para exámenes
-- Ayudar a comprender consignas, textos y tareas
-- Responder preguntas de cultura general y curiosidades académicas cuando sean educativas
-
-Tu estilo:
-- Usá voseo rioplatense natural (vos, tenés, podés, explicame, etc.)
-- Sé claro, cercano, paciente y motivador
-- Explicá de forma simple primero, y agregá más profundidad si hace falta
-- Sé conciso pero completo
-- Evitá listas excesivas: preferí prosa fluida o listas cortas cuando ayuden
-- Adaptá el nivel de explicación al nivel secundario, salvo que el usuario pida más profundidad
-
-Reglas de ayuda:
-- No hagas tareas completas “listas para entregar” si el usuario intenta delegar todo
-- En esos casos, guiá el proceso, explicá el método, proponé pasos, ejemplos o una versión parcial para que el alumno la complete
-- Si el usuario pide resolver un ejercicio, podés mostrar el procedimiento paso a paso y explicar por qué se hace cada paso
-- Priorizá enseñar antes que solo dar la respuesta final
-- Si una consigna es ambigua o faltan datos, decilo con claridad y pedí la mínima aclaración necesaria
-- Si el usuario está estudiando para una prueba, ayudalo a resumir, practicar, repasar y autoevaluarse
-
-Comportamiento pedagógico:
-- Si detectás ansiedad, confusión o apuro, mantené la calma y ordená el tema paso a paso
-- Si el usuario comparte una respuesta propia, primero validá lo correcto y luego corregí lo mejorable
-- Cuando sea útil, ofrecé ejemplos concretos, analogías simples o mini ejercicios de práctica
-- Si hay varias formas de resolver algo, mostrá la más simple primero
-
-Contexto de plataforma:
-- Sos parte de AlephOne
-- Si es útil, podés mencionar funciones de la plataforma como tareas, horario, promedios, materias o seguimiento académico
-- No inventes funciones que no se mencionen explícitamente en el contexto disponible
-
-Seguridad y honestidad:
-- Si no estás seguro de un dato, decilo y respondé con cautela
-- No inventes fuentes, calificaciones, reglas escolares ni información institucional específica
-- No suplantes a docentes, preceptores o directivos; actuás como asistente educativo
-
-Objetivo principal:
-Ayudar a que el estudiante entienda, aprenda y gane autonomía, no solo que “termine rápido”.
+Tu función es ayudar a estudiantes de nivel secundario de Argentina. 
+Usá voseo rioplatense (vos, tenés, podés). 
+Sé claro, paciente y no resuelvas la tarea completa: guiá al alumno.
 `;
 
-// ─── HORA ACTUAL ────────────────────────────────────────────
+// ─── UTILIDADES ──────────────────────────────────────────────
 function horaActual() {
     return new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 }
 
-// ─── SCROLL AL FONDO ────────────────────────────────────────
 function scrollToBottom() {
     const el = document.getElementById('chatMessages');
-    el.scrollTop = el.scrollHeight;
+    if (el) el.scrollTop = el.scrollHeight;
 }
 
-// ─── AGREGAR BURBUJA ────────────────────────────────────────
+// ─── UI: BURBUJAS ───────────────────────────────────────────
 function addBubble(role, text, animate = true) {
     const container = document.getElementById('chatMessages');
     const isAI = role === 'ai';
@@ -89,7 +49,6 @@ function addBubble(role, text, animate = true) {
     return row;
 }
 
-// ─── FORMATO BÁSICO DE TEXTO ─────────────────────────────────
 function formatText(text) {
     return sanitize(text)
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -98,7 +57,6 @@ function formatText(text) {
         .replace(/\n/g, '<br>');
 }
 
-// ─── TYPING INDICATOR ───────────────────────────────────────
 function showTyping() {
     const container = document.getElementById('chatMessages');
     const row = document.createElement('div');
@@ -119,7 +77,7 @@ function hideTyping() {
     document.getElementById('typingRow')?.remove();
 }
 
-// ─── ENVIAR MENSAJE ──────────────────────────────────────────
+// ─── LOGICA DE ENVÍO (SOLUCIÓN COMPLETA) ─────────────────────
 async function enviarMensaje() {
     const input = document.getElementById('chatInput');
     const sendBtn = document.getElementById('sendBtn');
@@ -127,55 +85,77 @@ async function enviarMensaje() {
 
     if (!text || isLoading) return;
 
-    // Ocultar sugerencias tras primer mensaje
+    // 1. UI: Mostrar mensaje del usuario y limpiar input
+    addBubble('user', text);
     const sugg = document.getElementById('suggestions');
     if (sugg) sugg.style.display = 'none';
-
-    // Mostrar burbuja del usuario
-    addBubble('user', text);
-    conversationHistory.push({ role: 'user', content: text });
 
     input.value = '';
     input.style.height = 'auto';
     isLoading = true;
     sendBtn.disabled = true;
-
     showTyping();
 
+    // 2. TIMEOUT: Abortar si la API tarda más de 20 segundos
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        // 3. MODELO: Usamos 1.5-flash para mayor estabilidad en Free Tier
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json' 
-            },
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
             body: JSON.stringify({
                 system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-                contents: conversationHistory.map(m => ({
-                    role: m.role === 'assistant' ? 'model' : m.role,
-                    parts: [{ text: m.content }]
-                }))
+                contents: [
+                    ...conversationHistory.map(m => ({
+                        role: m.role === 'assistant' ? 'model' : 'user',
+                        parts: [{ text: m.content }]
+                    })),
+                    { role: 'user', parts: [{ text: text }] }
+                ],
+                generationConfig: {
+                    maxOutputTokens: 1000,
+                    temperature: 0.7
+                }
             })
         });
 
+        clearTimeout(timeoutId);
         const data = await response.json();
-
         hideTyping();
 
+        // 4. MANEJO DE ERRORES DE CUOTA
         if (data.error) {
-            addBubble('ai', `⚠️ Error: ${data.error.message || 'No se pudo conectar con Fractal AI.'}`);
+            console.error("Gemini Error:", data.error);
+            if (data.error.code === 429) {
+                addBubble('ai', '⚠️ El servidor está saturado. Aguantame un minuto y volvé a probar.');
+            } else {
+                addBubble('ai', `⚠️ Error: ${data.error.message || 'No pude generar la respuesta.'}`);
+            }
             return;
         }
 
-        const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No pude generar una respuesta. Intentá de nuevo.';
-        
-        // Guardamos 'assistant' en el historial local para mantener la lógica original del array
-        conversationHistory.push({ role: 'assistant', content: aiText });
-        addBubble('ai', aiText);
+        const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (aiText) {
+            // 5. HISTORIAL: Solo guardamos si la respuesta fue exitosa
+            conversationHistory.push({ role: 'user', content: text });
+            conversationHistory.push({ role: 'assistant', content: aiText });
+            addBubble('ai', aiText);
+        } else {
+            addBubble('ai', 'No recibí contenido de la IA. Intentá de nuevo.');
+        }
 
     } catch (err) {
         hideTyping();
-        console.error('Fractal AI error:', err);
-        addBubble('ai', '⚠️ No se pudo conectar con Fractal AI. Verificá tu conexión e intentá de nuevo.');
+        if (err.name === 'AbortError') {
+            addBubble('ai', '⚠️ La conexión tardó demasiado. Probá de nuevo.');
+        } else {
+            console.error('Fractal AI error:', err);
+            addBubble('ai', '⚠️ No se pudo conectar con Fractal AI. Verificá tu internet.');
+        }
     } finally {
         isLoading = false;
         sendBtn.disabled = false;
@@ -183,28 +163,23 @@ async function enviarMensaje() {
     }
 }
 
-// ─── SUGERENCIAS RÁPIDAS ────────────────────────────────────
+// ─── FUNCIONES ADICIONALES ──────────────────────────────────
 function enviarSugerencia(el) {
     document.getElementById('chatInput').value = el.textContent.trim();
     enviarMensaje();
 }
 
-// ─── LIMPIAR CHAT ────────────────────────────────────────────
 function limpiarChat() {
     if (conversationHistory.length > 0 && !confirm('¿Limpiar la conversación?')) return;
-
     conversationHistory = [];
-
     const container = document.getElementById('chatMessages');
     while (container.children.length > 1) {
         container.removeChild(container.lastChild);
     }
-
     const sugg = document.getElementById('suggestions');
     if (sugg) sugg.style.display = 'flex';
 }
 
-// ─── KEYBOARD ────────────────────────────────────────────────
 function handleKey(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -212,13 +187,11 @@ function handleKey(e) {
     }
 }
 
-// ─── AUTO RESIZE TEXTAREA ────────────────────────────────────
 function autoResize(el) {
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 120) + 'px';
 }
 
-// ─── AVATAR / HEADER ────────────────────────────────────────
 function renderAvatar(user) {
     const el = document.getElementById('userAvatar');
     if (el) el.textContent = user.username.charAt(0).toUpperCase();
@@ -230,27 +203,19 @@ function renderAvatar(user) {
     }
 }
 
-function toggleMobileNav() {
-    document.getElementById('sidebar').classList.toggle('open');
-}
-
 // ─── INIT ────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    currentUser = requireAuth();
+    currentUser = requireAuth(); // Asume que requireAuth está en app.js
     if (!currentUser) return;
 
     renderAvatar(currentUser);
-
-    const welcomeTime = document.getElementById('welcomeTime');
-    if (welcomeTime) welcomeTime.textContent = horaActual();
-
+    document.getElementById('chatInput')?.addEventListener('keydown', handleKey);
+    document.getElementById('chatInput')?.addEventListener('input', (e) => autoResize(e.target));
+    document.getElementById('chatInput')?.focus();
+    
+    // Rellenar nombre en bienvenida
     const welcomeMsg = document.querySelector('#welcomeMsg .bubble.ai');
     if (welcomeMsg && currentUser.username) {
-        welcomeMsg.innerHTML = welcomeMsg.innerHTML.replace(
-            '¡Hola!',
-            `¡Hola, <strong>${sanitize(currentUser.username)}</strong>!`
-        );
+        welcomeMsg.innerHTML = welcomeMsg.innerHTML.replace('¡Hola!', `¡Hola, <strong>${sanitize(currentUser.username)}</strong>!`);
     }
-
-    document.getElementById('chatInput').focus();
 });
