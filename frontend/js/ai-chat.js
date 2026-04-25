@@ -198,11 +198,12 @@ const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-
 }
 
 // ─── INICIALIZACIÓN ──────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // 1. Obtener Key globalmente tras carga de DOM
     GEMINI_API_KEY = getApiKey();
 
     if (typeof requireAuth === 'function') {
+        await AlephAPI.Auth.init();
         currentUser = requireAuth();
     }
 
