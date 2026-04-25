@@ -218,6 +218,7 @@ function toggleMobileNav() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    await AlephAPI.Auth.init();
     const user = requireAuth();
     if (!user) return;
 
