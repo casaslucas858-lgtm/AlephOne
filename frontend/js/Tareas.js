@@ -207,6 +207,7 @@ function renderAvatar(user) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    await AlephAPI.Auth.init();
     currentUser = requireAuth();
     if (!currentUser) return;
 
