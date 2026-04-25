@@ -6,6 +6,8 @@ const SUPABASE_URL = 'https://ikxvbmsvzmsiztxvzdtz.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_cN4exqC8p4r9Hg3ZQYWcWg_gLwcRdui';
 
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let _authInitPromise = null;
+let _authListenerBound = false;
 
 const AlephAPI = (() => {
 
@@ -70,13 +72,23 @@ const AlephAPI = (() => {
         },
 
         async init() {
-            const { data: { session } } = await _sb.auth.getSession();
-            if (session?.user) await Auth._loadProfile(session.user);
+            if (_authInitPromise) return _authInitPromise;
 
-            _sb.auth.onAuthStateChange(async (event, session) => {
+            _authInitPromise = (async () => {
+                const { data: { session } } = await _sb.auth.getSession();
                 if (session?.user) await Auth._loadProfile(session.user);
                 else window._alephUser = null;
-            });
+
+                if (!_authListenerBound) {
+                    _sb.auth.onAuthStateChange(async (event, session) => {
+                        if (session?.user) await Auth._loadProfile(session.user);
+                        else window._alephUser = null;
+                    });
+                    _authListenerBound = true;
+                }
+            })();
+
+            return _authInitPromise;
         },
 
         async _getProfileById(userId) {
