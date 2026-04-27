@@ -4,351 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard — AlephOne</title>
+    <meta name="description" content="AlephOne Dashboard — Tu resumen diario de clases, tareas y comunicación escolar.">
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        /* ── GREETING — dark base, light override limpio ── */
-        .day-greeting {
-            background: #13131A;
-            border-radius: var(--radius-xl);
-            padding: 24px 28px;
-            margin-bottom: 20px;
-            color: white;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(38,212,199,0.12);
-        }
-
-        /* Orb radial dark */
-        .day-greeting::before {
-            content: '';
-            position: absolute;
-            width: 380px; height: 380px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(38,212,199,0.11) 0%, transparent 65%);
-            bottom: -140px; right: -90px;
-            pointer-events: none;
-        }
-
-        /* ℵ watermark */
-        .day-greeting::after {
-            content: 'ℵ';
-            position: absolute;
-            font-family: var(--font-display);
-            font-size: 11em;
-            font-weight: 800;
-            color: rgba(255,255,255,0.025);
-            right: -0.05em;
-            top: -0.15em;
-            pointer-events: none;
-            user-select: none;
-        }
-
-        /* ── LIGHT MODE GREETING ── */
-        body:not(.dark-mode) .day-greeting {
-            background: linear-gradient(135deg,
-                rgba(38,212,199,0.10) 0%,
-                rgba(115,194,251,0.12) 50%,
-                rgba(17,17,132,0.06) 100%),
-                var(--bg-card);
-            border-color: rgba(38,212,199,0.18);
-            box-shadow: var(--shadow-md);
-            color: var(--text);
-        }
-
-        body:not(.dark-mode) .day-greeting::before {
-            background: radial-gradient(circle, rgba(38,212,199,0.14) 0%, transparent 65%);
-        }
-
-        body:not(.dark-mode) .day-greeting::after {
-            color: rgba(17,17,19,0.04);
-        }
-
-        body:not(.dark-mode) .day-greeting h2 { color: var(--text); }
-
-        body:not(.dark-mode) .greeting-label {
-            color: var(--text-muted);
-            opacity: 1;
-        }
-
-        body:not(.dark-mode) .greeting-date {
-            color: var(--text-faint);
-            opacity: 1;
-        }
-
-        /* Badges en light */
-        body:not(.dark-mode) .greeting-badge {
-            background: rgba(255,255,255,0.72);
-            border-color: rgba(17,17,19,0.1);
-            color: var(--text);
-            backdrop-filter: blur(6px);
-        }
-
-        body:not(.dark-mode) .greeting-badge.urgent {
-            background: rgba(220,53,69,0.08);
-            border-color: rgba(220,53,69,0.2);
-            color: #8f1f2c;
-        }
-
-        /* ── GREETING INTERNALS ── */
-        .greeting-label {
-            font-size: 0.68em;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            opacity: 0.45;
-            margin-bottom: 4px;
-            font-family: var(--font-display);
-            color: inherit;
-        }
-
-        .day-greeting h2 {
-            color: white;
-            font-size: 1.7em;
-            margin-bottom: 4px;
-        }
-
-        .greeting-date {
-            opacity: 0.4;
-            font-size: 0.82em;
-            color: inherit;
-        }
-
-        .greeting-badges {
-            display: flex;
-            gap: 8px;
-            margin-top: 14px;
-            flex-wrap: wrap;
-        }
-
-        .greeting-badge {
-            background: rgba(255,255,255,0.09);
-            border: 1px solid rgba(255,255,255,0.13);
-            color: rgba(255,255,255,0.78);
-            padding: 3px 12px;
-            border-radius: 999px;
-            font-size: 0.76em;
-            font-weight: 600;
-            font-family: var(--font-display);
-        }
-
-        .greeting-badge.urgent {
-            background: rgba(220,53,69,0.22);
-            border-color: rgba(220,53,69,0.38);
-            color: #f87171;
-        }
-
-        /* ── DASHBOARD GRID ── */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 320px;
-            gap: 16px;
-            align-items: start;
-        }
-
-        .dashboard-main { display: flex; flex-direction: column; gap: 16px; }
-        .dashboard-side  { display: flex; flex-direction: column; gap: 16px; }
-
-        /* ── TEACHER ACTIONS ── */
-        .teacher-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .action-card {
-            padding: 14px;
-            background: var(--bg-subtle);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            cursor: pointer;
-            transition: all var(--t);
-            text-align: center;
-            display: block;
-            text-decoration: none;
-        }
-
-        .action-card:hover {
-            background: var(--bg-hover);
-            border-color: var(--teal);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .action-card .action-icon  { font-size: 1.4em; margin-bottom: 6px; }
-        .action-card .action-label { font-size: 0.8em; font-weight: 700; color: var(--text); font-family: var(--font-display); }
-        .action-card .action-sub   { font-size: 0.72em; color: var(--text-muted); margin-top: 1px; }
-
-        /* ── SCHEDULE ITEMS ── */
-        .today-schedule { display: flex; flex-direction: column; gap: 6px; }
-
-        .schedule-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 12px;
-            background: var(--bg-subtle);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            transition: all var(--t);
-        }
-        .schedule-item:hover { background: var(--bg-hover); }
-        .schedule-item.current {
-            border-color: var(--teal);
-            background: rgba(38,212,199,0.06);
-        }
-
-        .schedule-time {
-            font-family: var(--font-mono);
-            font-size: 0.76em;
-            color: var(--text-faint);
-            width: 42px;
-            flex-shrink: 0;
-            text-align: center;
-        }
-        .schedule-item.current .schedule-time { color: var(--teal-dim); }
-        body.dark-mode .schedule-item.current .schedule-time { color: var(--teal); }
-
-        .schedule-dot {
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            background: var(--border-strong);
-            flex-shrink: 0;
-        }
-        .schedule-item.current .schedule-dot {
-            background: var(--teal);
-            box-shadow: 0 0 0 3px rgba(38,212,199,0.18);
-        }
-
-        .schedule-info { flex: 1; }
-        .schedule-subject { font-weight: 600; font-size: 0.875em; }
-        .schedule-teacher { font-size: 0.74em; color: var(--text-muted); }
-
-        /* ── TAREA ITEMS ── */
-        .tarea-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 11px 14px;
-            background: var(--bg-subtle);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            transition: all var(--t);
-            cursor: pointer;
-        }
-        .tarea-item:hover { background: var(--bg-hover); border-color: var(--teal); }
-        .tarea-item.vence-hoy    { border-left: 3px solid #dc3545; }
-        .tarea-item.vence-pronto { border-left: 3px solid #f59e0b; }
-        .tarea-item.vence-normal { border-left: 3px solid var(--teal); }
-
-        .tarea-check {
-            width: 18px; height: 18px;
-            border: 1.5px solid var(--border-strong);
-            border-radius: 50%;
-            flex-shrink: 0;
-            transition: all var(--t);
-        }
-        .tarea-item:hover .tarea-check { border-color: var(--teal); }
-
-        .tarea-info { flex: 1; min-width: 0; }
-        .tarea-title { font-weight: 600; font-size: 0.875em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .tarea-meta  { font-size: 0.74em; color: var(--text-muted); margin-top: 1px; }
-
-        .dias-badge {
-            font-size: 0.72em;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 4px;
-            flex-shrink: 0;
-            font-family: var(--font-display);
-        }
-        .dias-badge.hoy    { background: rgba(220,53,69,0.1);  color: #dc3545; }
-        .dias-badge.pronto { background: rgba(245,158,11,0.1); color: #b45309; }
-        .dias-badge.normal { background: rgba(38,212,199,0.1); color: var(--teal-dim); }
-        .dias-badge.success { background: rgba(34,197,94,0.1); color: #16a34a; }
-        body.dark-mode .dias-badge.normal { color: var(--teal); }
-
-        /* ── MENSAJE ITEMS ── */
-        .mensaje-item {
-            padding: 12px 14px;
-            background: var(--bg-subtle);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            cursor: pointer;
-            transition: all var(--t);
-            margin-bottom: 6px;
-        }
-        .mensaje-item:hover { background: var(--bg-hover); border-color: var(--teal); }
-        .mensaje-item.urgente      { border-left: 3px solid #dc3545; }
-        .mensaje-item.anuncio      { border-left: 3px solid var(--accent); }
-        .mensaje-item.recordatorio { border-left: 3px solid #f59e0b; }
-
-        .mensaje-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-        .mensaje-titulo { font-weight: 700; font-size: 0.875em; font-family: var(--font-display); }
-        .mensaje-fecha  { font-size: 0.72em; color: var(--text-faint); }
-        .mensaje-preview { font-size: 0.8em; color: var(--text-muted); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        /* ── EVENTOS ── */
-        .evento-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 9px 12px;
-            border-radius: var(--radius);
-            background: var(--bg-subtle);
-            border: 1px solid var(--border);
-            margin-bottom: 6px;
-            font-size: 0.845em;
-        }
-
-        .evento-fecha-box {
-            width: 40px; height: 40px;
-            border-radius: var(--radius);
-            background: linear-gradient(135deg, var(--teal), var(--accent));
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #0a0a0a;
-            flex-shrink: 0;
-        }
-        .evento-dia { font-family: var(--font-display); font-size: 1em; font-weight: 800; line-height: 1; }
-        .evento-mes { font-size: 0.58em; font-weight: 600; text-transform: uppercase; opacity: 0.75; }
-        .evento-info { flex: 1; }
-        .evento-titulo { font-weight: 600; }
-        .evento-tipo-tag { font-size: 0.74em; color: var(--text-muted); }
-
-        /* ── MOBILE ── */
-        .mobile-nav-btn {
-            display: none;
-            background: var(--bg-subtle);
-            border: 1px solid var(--border);
-            color: var(--text);
-            width: 34px; height: 34px;
-            border-radius: var(--radius);
-            font-size: 1em;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        @media (max-width: 900px) {
-            .mobile-nav-btn { display: flex; }
-            .dashboard-grid { grid-template-columns: 1fr; }
-            .dashboard-side { order: -1; }
-            .teacher-actions { grid-template-columns: repeat(4, 1fr); }
-        }
-
-        @media (max-width: 600px) {
-            .teacher-actions { grid-template-columns: 1fr 1fr; }
-        }
-    </style>
 </head>
 <body>
 <div class="app-shell">
 
     <!-- TOPBAR -->
     <header class="topbar">
-        <div style="display:flex;align-items:center;gap:10px;">
+        <div class="topbar-left">
             <button class="mobile-nav-btn" id="mobileNavBtn" onclick="toggleMobileNav()">☰</button>
             <span class="topbar-logo">ℵ AlephOne</span>
         </div>
@@ -407,7 +71,12 @@
         </div>
 
         <!-- Stats -->
-        <div class="stats-grid" id="statsGrid"></div>
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card fade-up"><div class="spinner" style="margin:12px auto;"></div></div>
+            <div class="stat-card fade-up"><div class="spinner" style="margin:12px auto;"></div></div>
+            <div class="stat-card fade-up"><div class="spinner" style="margin:12px auto;"></div></div>
+            <div class="stat-card fade-up"><div class="spinner" style="margin:12px auto;"></div></div>
+        </div>
 
         <!-- Grid -->
         <div class="dashboard-grid">
@@ -450,10 +119,7 @@
                         <a href="tareas.html" class="btn btn-ghost btn-sm">Ver todas →</a>
                     </div>
                     <div id="tareasList" class="item-list">
-                        <div class="empty-state">
-                            <div class="empty-icon">✅</div>
-                            <p>Sin tareas pendientes</p>
-                        </div>
+                        <div style="padding:24px 0;text-align:center;"><div class="spinner"></div></div>
                     </div>
                 </div>
 
@@ -463,7 +129,9 @@
                         <span class="card-title">📢 Mensajes recientes</span>
                         <a href="comunicacion.html" class="btn btn-ghost btn-sm">Ver todos →</a>
                     </div>
-                    <div id="mensajesList"></div>
+                    <div id="mensajesList">
+                        <div style="padding:24px 0;text-align:center;"><div class="spinner"></div></div>
+                    </div>
                 </div>
 
             </div>
@@ -475,7 +143,9 @@
                     <div class="card-header">
                         <span class="card-title">🏫 Clases de hoy</span>
                     </div>
-                    <div id="clasesHoy" class="today-schedule"></div>
+                    <div id="clasesHoy" class="today-schedule">
+                        <div style="padding:24px 0;text-align:center;"><div class="spinner"></div></div>
+                    </div>
                 </div>
 
                 <!-- Eventos -->
@@ -484,7 +154,9 @@
                         <span class="card-title">📅 Próximos eventos</span>
                         <a href="horario.html" class="btn btn-ghost btn-sm">Ver →</a>
                     </div>
-                    <div id="eventosList"></div>
+                    <div id="eventosList">
+                        <div style="padding:24px 0;text-align:center;"><div class="spinner"></div></div>
+                    </div>
                 </div>
 
             </div>
