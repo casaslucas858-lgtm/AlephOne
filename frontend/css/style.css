@@ -54,8 +54,12 @@
     --radius-lg:    12px;
     --radius-xl:    16px;
 
-    /* Transición */
-    --t:            0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Transiciones — Emil Kowalski curves */
+    --ease-out:     cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out:  cubic-bezier(0.77, 0, 0.175, 1);
+    --t:            0.18s var(--ease-out);
+    --t-fast:       0.12s var(--ease-out);
+    --t-med:        0.22s var(--ease-out);
     --transition:   var(--t);
     --primary:      var(--teal);
     --primary-dim:  var(--teal-dim);
@@ -92,7 +96,7 @@ body {
     line-height: 1.6;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
-    transition: background var(--t), color var(--t);
+    transition: background 0.18s var(--ease-out), color 0.18s var(--ease-out);
 }
 a { color: inherit; text-decoration: none; }
 button { font-family: inherit; cursor: pointer; border: none; outline: none; }
@@ -238,7 +242,7 @@ body.dark-mode .sidebar {
     font-size: 0.875em;
     font-weight: 500;
     color: var(--text-muted);
-    transition: all var(--t);
+    transition: background var(--t), color var(--t), border-color var(--t);
 }
 
 .nav-link:hover {
@@ -342,10 +346,7 @@ body.dark-mode .nav-link.active { color: var(--teal); background: rgba(38,212,19
     background: linear-gradient(90deg, var(--teal), var(--accent));
 }
 
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-teal);
-}
+/* Hover transform gated — see bottom of file */
 
 .stat-label {
     font-size: 0.72em;
@@ -386,11 +387,17 @@ body.dark-mode .nav-link.active { color: var(--teal); background: rgba(38,212,19
     border-radius: var(--radius);
     font-size: 0.845em;
     font-weight: 600;
-    transition: all var(--t);
+    transition: transform 0.16s var(--ease-out), background 0.18s var(--ease-out),
+                box-shadow 0.18s var(--ease-out), color 0.18s var(--ease-out),
+                border-color 0.18s var(--ease-out);
     border: none;
     cursor: pointer;
     font-family: var(--font-body);
     white-space: nowrap;
+}
+
+.btn:active {
+    transform: scale(0.97);
 }
 
 .btn-primary {
@@ -401,7 +408,10 @@ body.dark-mode .nav-link.active { color: var(--teal); background: rgba(38,212,19
 .btn-primary:hover {
     background: var(--teal-dim);
     box-shadow: var(--shadow-teal);
-    transform: translateY(-1px);
+}
+.btn-primary:active {
+    transform: scale(0.97);
+    box-shadow: 0 1px 4px rgba(38,212,199,0.15);
 }
 
 .btn-secondary {
@@ -438,9 +448,10 @@ body.dark-mode .nav-link.active { color: var(--teal); background: rgba(38,212,19
     border-radius: var(--radius);
     font-size: 0.95em;
     display: flex; align-items: center; justify-content: center;
-    transition: all var(--t);
+    transition: background var(--t), border-color var(--t);
 }
 .dark-mode-toggle:hover { background: var(--bg-hover); }
+.dark-mode-toggle:active { transform: scale(0.93); }
 
 /* Mobile nav */
 .mobile-nav-btn {
@@ -479,7 +490,7 @@ body.dark-mode .nav-link.active { color: var(--teal); background: rgba(38,212,19
     border-radius: var(--radius);
     font-size: 0.875em;
     color: var(--text);
-    transition: all var(--t);
+    transition: border-color var(--t), background var(--t), box-shadow var(--t);
     width: 100%;
     font-family: var(--font-body);
 }
@@ -537,11 +548,12 @@ body.dark-mode .tag-accent { color: var(--accent); }
     background: var(--bg-subtle);
     color: var(--text-muted);
     cursor: pointer;
-    transition: all var(--t);
+    transition: background var(--t), border-color var(--t), color var(--t), box-shadow var(--t);
     font-family: var(--font-display);
 }
 
 .filter-chip:hover { border-color: var(--teal); color: var(--text); }
+.filter-chip:active { transform: scale(0.96); }
 
 .filter-chip.active {
     background: var(--teal);
@@ -561,15 +573,18 @@ body.dark-mode .tag-accent { color: var(--accent); }
     background: var(--bg-subtle);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    transition: all var(--t);
+    transition: background var(--t), border-color var(--t), transform var(--t-fast), box-shadow var(--t);
     cursor: pointer;
 }
 
-.item:hover {
-    background: var(--bg-hover);
-    border-color: var(--teal);
-    transform: translateX(2px);
+@media (hover: hover) and (pointer: fine) {
+    .item:hover {
+        background: var(--bg-hover);
+        border-color: var(--teal);
+        transform: translateX(2px);
+    }
 }
+.item:active { transform: scale(0.99); }
 
 .item-icon {
     width: 36px; height: 36px;
@@ -664,8 +679,9 @@ body.dark-mode .modal {
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
     font-size: 0.9em;
-    transition: all var(--t);
+    transition: background var(--t), color var(--t);
 }
+.modal-close:active { transform: scale(0.9); }
 .modal-close:hover { background: var(--bg-hover); color: var(--text); }
 
 /* ─── SCHEDULE TABLE ────────────────────────────────────── */
@@ -872,7 +888,7 @@ body.dark-mode .chat-header {
     resize: none;
     max-height: 100px;
     overflow-y: auto;
-    transition: all var(--t);
+    transition: border-color var(--t), background var(--t), box-shadow var(--t);
     line-height: 1.5;
     font-family: var(--font-body);
 }
@@ -892,9 +908,10 @@ body.dark-mode .chat-header {
     font-size: 1em;
     flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(38,212,199,0.25);
-    transition: all var(--t);
+    transition: transform var(--t-fast), background var(--t), box-shadow var(--t);
 }
-.send-btn:hover { background: var(--teal-dim); transform: translateY(-1px); box-shadow: var(--shadow-teal); }
+.send-btn:active { transform: scale(0.92); }
+.send-btn:hover { background: var(--teal-dim); box-shadow: var(--shadow-teal); }
 .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
 .suggestion-chip {
@@ -906,7 +923,7 @@ body.dark-mode .chat-header {
     background: var(--bg-subtle);
     color: var(--text-muted);
     cursor: pointer;
-    transition: all var(--t);
+    transition: border-color var(--t), color var(--t), background var(--t);
     white-space: nowrap;
 }
 .suggestion-chip:hover { border-color: var(--teal); color: var(--text); }
@@ -1036,7 +1053,7 @@ body.dark-mode .chat-header {
     font-weight: 600;
     color: var(--text-muted);
     background: transparent;
-    transition: all var(--t);
+    transition: background var(--t), border-color var(--t), box-shadow var(--t), transform var(--t-fast), color var(--t);
     text-align: center;
     font-family: var(--font-display);
     cursor: pointer;
@@ -1080,7 +1097,7 @@ body.dark-mode .auth-demo strong { color: var(--teal); }
     background: var(--bg-subtle);
     cursor: pointer;
     text-align: center;
-    transition: all var(--t);
+    transition: background var(--t), border-color var(--t), box-shadow var(--t), transform var(--t-fast), color var(--t);
     font-size: 0.82em;
     font-weight: 600;
     color: var(--text-muted);
@@ -1235,7 +1252,7 @@ body:not(.dark-mode) .greeting-badge.urgent {
     background: var(--bg-subtle);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    transition: all var(--t);
+    transition: background var(--t), border-color var(--t), box-shadow var(--t), transform var(--t-fast), color var(--t);
 }
 .schedule-item:hover { background: var(--bg-hover); }
 .schedule-item.current { border-color: var(--teal); background: rgba(38,212,199,0.06); }
@@ -1275,7 +1292,7 @@ body.dark-mode .schedule-item.current .schedule-time { color: var(--teal); }
     background: var(--bg-subtle);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    transition: all var(--t);
+    transition: background var(--t), border-color var(--t), box-shadow var(--t), transform var(--t-fast), color var(--t);
     cursor: pointer;
 }
 .tarea-item:hover { background: var(--bg-hover); border-color: var(--teal); }
@@ -1288,7 +1305,7 @@ body.dark-mode .schedule-item.current .schedule-time { color: var(--teal); }
     border: 1.5px solid var(--border-strong);
     border-radius: 50%;
     flex-shrink: 0;
-    transition: all var(--t);
+    transition: background var(--t), border-color var(--t), box-shadow var(--t), transform var(--t-fast), color var(--t);
 }
 .tarea-item:hover .tarea-check { border-color: var(--teal); }
 
@@ -1317,7 +1334,7 @@ body.dark-mode .dias-badge.normal { color: var(--teal); }
     border: 1px solid var(--border);
     border-radius: var(--radius);
     cursor: pointer;
-    transition: all var(--t);
+    transition: background var(--t), border-color var(--t), box-shadow var(--t), transform var(--t-fast), color var(--t);
     margin-bottom: 6px;
 }
 .mensaje-item:hover { background: var(--bg-hover); border-color: var(--teal); }
@@ -1374,15 +1391,13 @@ body.dark-mode .dias-badge.normal { color: var(--teal); }
     border: 1px solid var(--border);
     border-radius: var(--radius);
     cursor: pointer;
-    transition: all var(--t);
+    transition: background var(--t), border-color var(--t), box-shadow var(--t), transform var(--t-fast), color var(--t);
     text-align: center;
     display: block;
 }
 .action-card:hover {
     background: var(--bg-hover);
     border-color: var(--teal);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
 }
 .action-card .action-icon  { font-size: 1.4em; margin-bottom: 6px; }
 .action-card .action-label { font-size: 0.8em; font-weight: 700; color: var(--text); font-family: var(--font-display); }
@@ -1396,7 +1411,7 @@ body.dark-mode .dias-badge.normal { color: var(--teal); }
     padding: 16px 18px;
     margin-bottom: 10px;
     cursor: pointer;
-    transition: all var(--t);
+    transition: background var(--t), border-color var(--t), box-shadow var(--t), transform var(--t-fast), color var(--t);
     position: relative;
     overflow: hidden;
 }
@@ -1409,7 +1424,7 @@ body.dark-mode .dias-badge.normal { color: var(--teal); }
 .msg-card.urgente::before      { background: #dc3545; }
 .msg-card.anuncio::before      { background: var(--accent); }
 .msg-card.recordatorio::before { background: #f59e0b; }
-.msg-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.msg-card:hover { box-shadow: var(--shadow-md); }
 .msg-card.no-leido { background: var(--bg-subtle); }
 
 .msg-header {
@@ -1465,7 +1480,7 @@ body.dark-mode .dias-badge.normal { color: var(--teal); }
     border-radius: var(--radius-lg);
     padding: 16px 18px;
     margin-bottom: 10px;
-    transition: all var(--t);
+    transition: background var(--t), border-color var(--t), box-shadow var(--t), transform var(--t-fast), color var(--t);
     position: relative;
     overflow: hidden;
 }
@@ -1479,7 +1494,7 @@ body.dark-mode .dias-badge.normal { color: var(--teal); }
 .tarea-card.pronto::before   { background: #f59e0b; }
 .tarea-card.normal::before   { background: var(--teal); }
 .tarea-card.entregada::before { background: #22c55e; }
-.tarea-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.tarea-card:hover { box-shadow: var(--shadow-md); }
 
 .tarea-header {
     display: flex;
@@ -1540,7 +1555,7 @@ body.dark-mode .dias-badge.normal { color: var(--teal); }
     border-radius: var(--radius-lg);
     padding: 18px 20px;
     margin-bottom: 12px;
-    transition: all var(--t);
+    transition: background var(--t), border-color var(--t), box-shadow var(--t), transform var(--t-fast), color var(--t);
 }
 .materia-card:hover { box-shadow: var(--shadow-md); }
 
@@ -1637,18 +1652,19 @@ body.dark-mode .sim-result strong { color: var(--teal); }
 
 /* ─── ANIMACIONES ───────────────────────────────────────── */
 @keyframes spin      { to { transform: rotate(360deg); } }
-@keyframes fadeUp    { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-@keyframes slideIn   { from { opacity:0; transform:translateX(16px); } to { opacity:1; transform:translateX(0); } }
+@keyframes fadeUp    { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes slideIn   { from { opacity:0; transform:translateX(12px); } to { opacity:1; transform:translateX(0); } }
 @keyframes pulse     { 0%,100%{opacity:1} 50%{opacity:0.4} }
 @keyframes typingBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
 
-.fade-up  { animation: fadeUp  0.35s ease both; }
-.slide-in { animation: slideIn 0.25s ease both; }
+.fade-up  { animation: fadeUp 0.3s var(--ease-out) both; }
+.slide-in { animation: slideIn 0.22s var(--ease-out) both; }
 
-.fade-up:nth-child(1) { animation-delay:0.04s; }
-.fade-up:nth-child(2) { animation-delay:0.08s; }
-.fade-up:nth-child(3) { animation-delay:0.12s; }
-.fade-up:nth-child(4) { animation-delay:0.16s; }
+/* Stagger: 50ms between items (Emil's 30-80ms sweet spot) */
+.fade-up:nth-child(1) { animation-delay:0s; }
+.fade-up:nth-child(2) { animation-delay:0.05s; }
+.fade-up:nth-child(3) { animation-delay:0.10s; }
+.fade-up:nth-child(4) { animation-delay:0.15s; }
 .fade-up:nth-child(5) { animation-delay:0.20s; }
 
 /* ─── SCROLLBAR ─────────────────────────────────────────── */
@@ -1688,4 +1704,44 @@ body.dark-mode .sim-result strong { color: var(--teal); }
     .stats-grid { grid-template-columns: 1fr 1fr; }
     .bubble { max-width: 88%; }
     .teacher-actions { grid-template-columns: 1fr 1fr; }
+}
+
+/* ─── REDUCED MOTION ───────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    /* Keep opacity for comprehension */
+    .fade-up, .slide-in {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* ─── HOVER GATE — touch safety ────────────────────────── */
+@media (hover: hover) and (pointer: fine) {
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-teal);
+    }
+    .card:hover { box-shadow: var(--shadow-md); }
+    .action-card:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+    .btn-primary:hover {
+        transform: translateY(-1px);
+    }
+    .send-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-teal);
+    }
+    .tarea-card:hover,
+    .msg-card:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
 }
