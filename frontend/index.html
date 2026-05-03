@@ -3,148 +3,335 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AlephOne — Ingreso</title>
-    <meta name="description" content="AlephOne — La plataforma que organiza la vida escolar en un solo lugar.">
-    <link rel="stylesheet" href="css/style.css">
+    <title>AlephOne</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
     <style>
-        /* Auth-specific: symbol grande + mobile branding + dark mode toggle position */
-        .auth-logo-symbol {
-            font-family: var(--font-display);
-            font-size: 5em;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--teal), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            line-height: 1;
-            margin-bottom: 2px;
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        html,body{width:100%;height:100%;overflow:hidden}
+
+        body {
+            font-family:'DM Sans',sans-serif;
+            background:#13131A;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            min-height:100vh;
+            position:relative;
         }
 
-        .auth-mobile-brand {
-            display: none;
-            text-align: center;
-            margin-bottom: 24px;
+        /* ── FONDO ANIMADO ── */
+        .bg {
+            position:fixed;inset:0;z-index:0;overflow:hidden;
         }
-        .auth-mobile-brand .auth-logo {
-            font-size: 1.6em;
-            margin-bottom: 0;
+        .orb {
+            position:absolute;border-radius:50%;
+            filter:blur(72px);pointer-events:none;
+        }
+        .orb-1{
+            width:560px;height:560px;
+            background:radial-gradient(circle,rgba(38,212,199,0.45) 0%,transparent 70%);
+            top:-180px;left:-120px;
+            animation:o1 20s ease-in-out infinite;
+        }
+        .orb-2{
+            width:460px;height:460px;
+            background:radial-gradient(circle,rgba(17,17,132,0.7) 0%,transparent 70%);
+            bottom:-120px;right:-100px;
+            animation:o2 25s ease-in-out infinite;
+        }
+        .orb-3{
+            width:300px;height:300px;
+            background:radial-gradient(circle,rgba(115,194,251,0.35) 0%,transparent 70%);
+            top:45%;right:8%;
+            animation:o3 17s ease-in-out infinite;
+        }
+        .orb-4{
+            width:220px;height:220px;
+            background:radial-gradient(circle,rgba(38,212,199,0.22) 0%,transparent 70%);
+            bottom:18%;left:8%;
+            animation:o4 22s ease-in-out infinite;
         }
 
-        .auth-theme-row {
-            display: flex;
-            justify-content: center;
-            margin-top: 14px;
+        @keyframes o1{0%,100%{transform:translate(0,0) scale(1)}40%{transform:translate(70px,90px) scale(1.1)}70%{transform:translate(-30px,130px) scale(0.93)}}
+        @keyframes o2{0%,100%{transform:translate(0,0) scale(1)}35%{transform:translate(-90px,-70px) scale(1.12)}70%{transform:translate(50px,-110px) scale(0.9)}}
+        @keyframes o3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-70px,90px) scale(1.18)}}
+        @keyframes o4{0%,100%{transform:translate(0,0)}50%{transform:translate(90px,-70px)}}
+
+        /* ── LAYOUT ── */
+        .wrap {
+            position:relative;z-index:10;
+            width:100%;max-width:400px;
+            padding:16px;
+            display:flex;flex-direction:column;gap:10px;
+            animation:pageIn 0.45s cubic-bezier(0.4,0,0.2,1) both;
         }
 
-        /* Single page entrance animation */
-        .auth-page { animation: fadeUp 0.4s ease both; }
+        @keyframes pageIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 
-        @media (max-width: 900px) {
-            .auth-mobile-brand { display: block; }
+        /* ── CARD LOGO — Mica ── */
+        .logo-card {
+            background:rgba(19,19,26,0.80);
+            backdrop-filter:blur(24px);
+            -webkit-backdrop-filter:blur(24px);
+            border:1px solid rgba(38,212,199,0.16);
+            border-radius:16px;
+            padding:26px 28px 22px;
+            text-align:center;
+            position:relative;overflow:hidden;
+        }
+        .logo-card::before{
+            content:'';position:absolute;
+            top:0;left:0;right:0;height:1px;
+            background:linear-gradient(90deg,transparent,rgba(38,212,199,0.55),transparent);
+        }
+
+        .logo-sym {
+            font-family:'Syne',sans-serif;
+            font-size:2.6em;font-weight:800;
+            background:linear-gradient(135deg,#26D4C7,#73C2FB);
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+            background-clip:text;
+            line-height:1;display:block;margin-bottom:5px;
+        }
+        .logo-name {
+            font-family:'Syne',sans-serif;
+            font-size:1.5em;font-weight:800;
+            background:linear-gradient(135deg,#26D4C7,#73C2FB);
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+            background-clip:text;
+            letter-spacing:0.5px;display:block;margin-bottom:7px;
+        }
+        .logo-tag{
+            font-size:0.8em;
+            color:rgba(255,255,255,0.35);
+            line-height:1.55;
+        }
+
+        /* ── CARD FORM — Mica ── */
+        .form-card {
+            background:rgba(19,19,26,0.80);
+            backdrop-filter:blur(24px);
+            -webkit-backdrop-filter:blur(24px);
+            border:1px solid rgba(255,255,255,0.06);
+            border-radius:16px;
+            padding:22px 26px 20px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display:flex;gap:3px;
+            background:rgba(255,255,255,0.03);
+            border:1px solid rgba(255,255,255,0.06);
+            padding:3px;border-radius:10px;
+            margin-bottom:20px;
+        }
+        .tab-btn {
+            flex:1;padding:7px 8px;
+            border-radius:8px;font-size:0.8em;font-weight:600;
+            color:rgba(255,255,255,0.3);
+            background:transparent;border:none;cursor:pointer;
+            transition:all 0.17s ease;
+            font-family:'Syne',sans-serif;
+        }
+        .tab-btn.active{
+            background:rgba(38,212,199,0.11);
+            color:#26D4C7;
+            border:1px solid rgba(38,212,199,0.18);
+        }
+
+        /* Forms */
+        .aform{display:none;flex-direction:column;gap:13px;}
+        .aform.show{display:flex;}
+
+        .flabel{
+            display:block;font-size:0.72em;font-weight:700;
+            color:rgba(255,255,255,0.38);
+            margin-bottom:5px;letter-spacing:0.5px;
+            text-transform:uppercase;font-family:'Syne',sans-serif;
+        }
+        .finput{
+            width:100%;padding:9px 12px;
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:8px;font-size:0.85em;
+            color:rgba(255,255,255,0.88);
+            font-family:'DM Sans',sans-serif;
+            transition:all 0.17s ease;
+        }
+        .finput::placeholder{color:rgba(255,255,255,0.2);}
+        .finput:focus{
+            outline:none;
+            border-color:rgba(38,212,199,0.42);
+            background:rgba(38,212,199,0.04);
+            box-shadow:0 0 0 3px rgba(38,212,199,0.07);
+        }
+
+        /* Roles */
+        .roles{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+        .role-opt{
+            padding:8px 7px;
+            border:1px solid rgba(255,255,255,0.07);
+            border-radius:8px;
+            background:rgba(255,255,255,0.03);
+            cursor:pointer;text-align:center;
+            transition:all 0.17s ease;
+            font-size:0.78em;font-weight:600;
+            color:rgba(255,255,255,0.32);
+            font-family:'Syne',sans-serif;
+        }
+        .role-opt:hover{border-color:rgba(38,212,199,0.28);color:rgba(255,255,255,0.55);}
+        .role-opt.sel{
+            border-color:rgba(38,212,199,0.38);
+            background:rgba(38,212,199,0.07);
+            color:#26D4C7;
+        }
+        .role-emoji{display:block;font-size:1.25em;margin-bottom:3px;}
+
+        /* Submit */
+        .btn-go{
+            width:100%;padding:11px;
+            background:linear-gradient(135deg,#26D4C7,#73C2FB);
+            border:none;border-radius:8px;
+            font-size:0.86em;font-weight:700;color:#0a0a0a;
+            cursor:pointer;font-family:'Syne',sans-serif;
+            letter-spacing:0.3px;
+            transition:all 0.17s ease;
+            box-shadow:0 3px 14px rgba(38,212,199,0.22);
+        }
+        .btn-go:hover{transform:translateY(-1px);box-shadow:0 5px 22px rgba(38,212,199,0.35);}
+
+        .ferr{font-size:0.76em;color:#f87171;min-height:15px;}
+
+        /* Demo */
+        .demo{
+            margin-top:6px;text-align:center;
+            font-size:0.72em;color:rgba(255,255,255,0.18);
+            line-height:1.7;
+        }
+        .demo strong{color:rgba(38,212,199,0.5);}
+
+        /* Bottom bar */
+        .bar{display:flex;justify-content:center;padding-top:2px;}
+        .theme-btn{
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.07);
+            color:rgba(255,255,255,0.3);
+            width:32px;height:32px;
+            border-radius:8px;font-size:0.9em;
+            display:flex;align-items:center;justify-content:center;
+            cursor:pointer;transition:all 0.17s ease;
+        }
+        .theme-btn:hover{background:rgba(255,255,255,0.09);color:rgba(255,255,255,0.6);}
+
+        /* Light mode */
+        body.lm{background:#F5F4F0;}
+        body.lm .orb-1{opacity:0.2;}
+        body.lm .orb-2{opacity:0.18;}
+        body.lm .orb-3{opacity:0.12;}
+        body.lm .orb-4{opacity:0.1;}
+        body.lm .logo-card,body.lm .form-card{
+            background:rgba(245,244,240,0.86);
+            border-color:rgba(17,17,19,0.1);
+        }
+        body.lm .logo-tag{color:rgba(17,17,19,0.42);}
+        body.lm .tabs{background:rgba(17,17,19,0.03);border-color:rgba(17,17,19,0.07);}
+        body.lm .tab-btn{color:rgba(17,17,19,0.32);}
+        body.lm .tab-btn.active{color:#1aab9f;background:rgba(38,212,199,0.08);}
+        body.lm .flabel{color:rgba(17,17,19,0.45);}
+        body.lm .finput{background:rgba(17,17,19,0.04);border-color:rgba(17,17,19,0.1);color:#111113;}
+        body.lm .finput::placeholder{color:rgba(17,17,19,0.25);}
+        body.lm .finput:focus{border-color:rgba(38,212,199,0.45);background:rgba(38,212,199,0.04);}
+        body.lm .role-opt{color:rgba(17,17,19,0.35);border-color:rgba(17,17,19,0.08);}
+        body.lm .role-opt.sel{color:#1aab9f;}
+        body.lm .demo{color:rgba(17,17,19,0.28);}
+        body.lm .demo strong{color:rgba(26,171,159,0.65);}
+        body.lm .theme-btn{color:rgba(17,17,19,0.38);background:rgba(17,17,19,0.04);border-color:rgba(17,17,19,0.08);}
+
+        @media(max-width:440px){
+            .wrap{padding:12px;}
+            .logo-card{padding:20px 18px 16px;}
+            .form-card{padding:18px;}
         }
     </style>
 </head>
 <body>
 
-<div class="auth-page">
+<div class="bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+</div>
 
-    <!-- LEFT — Branding panel (dark, card hero gradient via ::before/::after) -->
-    <div class="auth-left">
-        <div class="auth-left-content">
-            <div class="auth-logo-symbol">ℵ</div>
-            <div class="auth-logo">AlephOne</div>
-            <p class="auth-tagline">La plataforma que organiza la vida<br>escolar en un solo lugar.</p>
+<div class="wrap">
 
-            <div class="auth-features">
-                <div class="auth-feature">
-                    <div class="auth-feature-icon">📋</div>
-                    <span>Tareas con fecha de cierre y entrega digital</span>
-                </div>
-                <div class="auth-feature">
-                    <div class="auth-feature-icon">📢</div>
-                    <span>Comunicación directa docente → alumno</span>
-                </div>
-                <div class="auth-feature">
-                    <div class="auth-feature-icon">📊</div>
-                    <span>Promedios y notas en tiempo real</span>
-                </div>
-                <div class="auth-feature">
-                    <div class="auth-feature-icon">🗓️</div>
-                    <span>Horario semanal editable</span>
-                </div>
+    <!-- Logo Mica card -->
+    <div class="logo-card">
+        <span class="logo-sym">ℵ</span>
+        <span class="logo-name">AlephOne</span>
+        <p class="logo-tag">La plataforma que organiza la vida<br>escolar en un solo lugar.</p>
+    </div>
+
+    <!-- Form Mica card -->
+    <div class="form-card">
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showLogin()">Ingresar</button>
+            <button class="tab-btn" onclick="showReg()">Registrarse</button>
+        </div>
+
+        <!-- LOGIN -->
+        <form id="loginForm" class="aform show">
+            <div>
+                <label class="flabel">Usuario</label>
+                <input type="text" id="loginUsername" class="finput" placeholder="Tu nombre de usuario" required autocomplete="username">
             </div>
+            <div>
+                <label class="flabel">Contraseña</label>
+                <input type="password" id="loginPassword" class="finput" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+            <div id="loginError" class="ferr"></div>
+            <button type="submit" class="btn-go">Ingresar →</button>
+        </form>
+
+        <!-- REGISTER -->
+        <form id="registerForm" class="aform">
+            <div>
+                <label class="flabel">Usuario</label>
+                <input type="text" id="registerUsername" class="finput" placeholder="3–26 caracteres, sin espacios" required autocomplete="username">
+            </div>
+            <div>
+                <label class="flabel">Email</label>
+                <input type="email" id="registerEmail" class="finput" placeholder="tu@email.com" required autocomplete="email">
+            </div>
+            <div>
+                <label class="flabel">Contraseña</label>
+                <input type="password" id="registerPassword" class="finput" placeholder="Mínimo 6 caracteres" required autocomplete="new-password">
+            </div>
+            <div>
+                <label class="flabel">Soy...</label>
+                <div class="roles">
+                    <div class="role-opt sel" onclick="pickRole('student',this)">
+                        <span class="role-emoji">🎒</span>Estudiante
+                    </div>
+                    <div class="role-opt" onclick="pickRole('teacher',this)">
+                        <span class="role-emoji">📖</span>Docente
+                    </div>
+                </div>
+                <input type="hidden" id="registerRole" value="student">
+            </div>
+            <div id="registerError" class="ferr"></div>
+            <button type="submit" class="btn-go">Crear cuenta →</button>
+        </form>
+
+        <div class="demo">
+            Demo — <strong>alumno_demo / 123456</strong> · <strong>profe_demo / 123456</strong>
         </div>
     </div>
 
-    <!-- RIGHT — Forms -->
-    <div class="auth-right">
-        <div class="auth-box">
-
-            <!-- Mobile-only branding (auth-left hidden on mobile) -->
-            <div class="auth-mobile-brand">
-                <div class="auth-logo">ℵ AlephOne</div>
-            </div>
-
-            <h2>Bienvenido</h2>
-            <p class="auth-sub">Ingresá o creá tu cuenta para continuar.</p>
-
-            <div class="auth-tabs">
-                <button class="auth-tab active" id="tabLogin" onclick="showLogin()">Ingresar</button>
-                <button class="auth-tab" id="tabRegister" onclick="showReg()">Registrarse</button>
-            </div>
-
-            <!-- LOGIN -->
-            <form id="loginForm" class="auth-form visible">
-                <div class="form-group">
-                    <label class="form-label">Usuario</label>
-                    <input type="text" id="loginUsername" class="form-input" placeholder="Tu nombre de usuario" required autocomplete="username">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Contraseña</label>
-                    <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required autocomplete="current-password">
-                </div>
-                <div id="loginError" class="form-error"></div>
-                <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">Ingresar →</button>
-            </form>
-
-            <!-- REGISTER -->
-            <form id="registerForm" class="auth-form">
-                <div class="form-group">
-                    <label class="form-label">Usuario</label>
-                    <input type="text" id="registerUsername" class="form-input" placeholder="3–26 caracteres, sin espacios" required autocomplete="username">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="registerEmail" class="form-input" placeholder="tu@email.com" required autocomplete="email">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Contraseña</label>
-                    <input type="password" id="registerPassword" class="form-input" placeholder="Mínimo 6 caracteres" required autocomplete="new-password">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Soy...</label>
-                    <div class="role-selector">
-                        <div class="role-option selected" onclick="pickRole('student',this)">
-                            <span class="role-emoji">🎒</span>Estudiante
-                        </div>
-                        <div class="role-option" onclick="pickRole('teacher',this)">
-                            <span class="role-emoji">📖</span>Docente
-                        </div>
-                    </div>
-                    <input type="hidden" id="registerRole" value="student">
-                </div>
-                <div id="registerError" class="form-error"></div>
-                <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">Crear cuenta →</button>
-            </form>
-
-            <div class="auth-demo">
-                Demo — <strong>alumno_demo / 123456</strong> · <strong>profe_demo / 123456</strong>
-            </div>
-
-            <div class="auth-theme-row">
-                <button class="dark-mode-toggle" id="darkModeBtn" title="Cambiar tema">🌙</button>
-            </div>
-        </div>
+    <div class="bar">
+        <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
     </div>
 
 </div>
@@ -154,25 +341,37 @@
 <script src="js/app.js"></script>
 <script>
     function pickRole(role, el) {
-        document.querySelectorAll('.role-option').forEach(o => o.classList.remove('selected'));
-        el.classList.add('selected');
+        document.querySelectorAll('.role-opt').forEach(o => o.classList.remove('sel'));
+        el.classList.add('sel');
         document.getElementById('registerRole').value = role;
     }
 
     function showLogin() {
-        document.getElementById('loginForm').classList.add('visible');
-        document.getElementById('registerForm').classList.remove('visible');
-        document.getElementById('tabLogin').classList.add('active');
-        document.getElementById('tabRegister').classList.remove('active');
+        document.getElementById('loginForm').classList.add('show');
+        document.getElementById('registerForm').classList.remove('show');
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.querySelectorAll('.tab-btn')[1].classList.remove('active');
         document.getElementById('loginError').textContent = '';
     }
 
     function showReg() {
-        document.getElementById('registerForm').classList.add('visible');
-        document.getElementById('loginForm').classList.remove('visible');
-        document.getElementById('tabRegister').classList.add('active');
-        document.getElementById('tabLogin').classList.remove('active');
+        document.getElementById('registerForm').classList.add('show');
+        document.getElementById('loginForm').classList.remove('show');
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.querySelectorAll('.tab-btn')[0].classList.remove('active');
         document.getElementById('registerError').textContent = '';
+    }
+
+    function toggleTheme() {
+        const isLight = document.body.classList.toggle('lm');
+        localStorage.setItem('aleph_theme', isLight ? 'light' : 'dark');
+        document.getElementById('themeBtn').textContent = isLight ? '🌙' : '☀️';
+    }
+
+    // Restaurar tema
+    if (localStorage.getItem('aleph_theme') === 'light') {
+        document.body.classList.add('lm');
+        document.getElementById('themeBtn').textContent = '🌙';
     }
 </script>
 </body>
