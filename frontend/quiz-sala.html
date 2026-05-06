@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala en vivo — AlephOne</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        :root {
+            --opt-a: #7C3AED;
+            --opt-b: #0EA5E9;
+            --opt-c: #1CE6C1;
+            --opt-d: #4BE61C;
+        }
+
+        body { overflow: hidden; }
+
+        /* ── SALA SHELL: 3 columnas ── */
+        .sala-shell {
+            display: grid;
+            grid-template-columns: 260px 1fr 220px;
+            grid-template-rows: var(--header-h) 1fr;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sala-topbar {
+            grid-column: 1 / -1;
+            height: var(--header-h);
+            background: rgba(19,19,26,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .sala-topbar-logo {
+            font-family: var(--font-display);
+            font-size: 1.1em;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--teal), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sala-code {
+            font-family: var(--font-mono);
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--teal);
+            letter-spacing: 4px;
+            background: rgba(38,212,199,0.08);
+            border: 1px solid rgba(38,212,199,0.2);
+            padding: 4px 16px;
+            border-radius: var(--radius);
+        }
+
+        .sala-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.82em;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* ── PANEL IZQUIERDO: participantes ── */
+        .panel-participantes {
+            background: #13131A;
+            border-right: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            flex-shrink: 0;
+        }
+
+        .panel-header-title {
+            font-family: var(--font-display);
+            font-size: 0.72em;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .panel-header-count {
+            font-family: var(--font-display);
+            font-size: 1.8em;
+            font-weight: 800;
+            color: white;
+            line-height: 1;
+            margin-top: 2px;
+        }
+
+        .participante-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .participante-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: var(--radius);
+            background: rgba(255,255,255,0.04);
+            font-size: 0.82em;
+            transition: all var(--t);
+        }
+
+        .participante-item.respondio {
+            background: rgba(38,212,199,0.08);
+            border: 1px solid rgba(38,212,199,0.15);
+        }
+
+        .participante-avatar {
+            width: 24px; height: 24px;
+            border-radius: var(--radius);
+            background: linear-gradient(135deg, var(--teal), var(--blue));
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-display);
+            font-size: 0.68em;
+            font-weight: 800;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .participante-name {
+            flex: 1;
+            color: rgba(255,255,255,0.75);
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .participante-pts {
+            font-family: var(--font-display);
+            font-size: 0.78em;
+            font-weight: 700;
+            color: var(--teal);
+        }
+
+        .participante-check {
+            font-size: 0.85em;
+            opacity: 0;
+            transition: opacity var(--t);
+        }
+        .participante-item.respondio .participante-check { opacity: 1; }
+
+        /* ── CENTRO: pregunta / ranking / espera ── */
+        .panel-centro {
+            background: #13131A;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Estado: waiting */
+        .estado-waiting {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .waiting-code {
+            font-family: var(--font-mono);
+            font-size: 4em;
+            font-weight: 700;
+            color: var(--teal);
+            letter-spacing: 8px;
+            line-height: 1;
+        }
+
+        .waiting-label {
+            font-family: var(--font-display);
+            font-size: 0.78em;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .waiting-count {
+            font-family: var(--font-display);
+            font-size: 1.1em;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* Estado: pregunta_activa */
+        .estado-pregunta {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 28px;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .pregunta-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .pregunta-num-badge {
+            font-family: var(--font-display);
+            font-size: 0.78em;
+            font-weight: 700;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Timer */
+        .timer-ring {
+            position: relative;
+            width: 64px; height: 64px;
+            flex-shrink: 0;
+        }
+
+        .timer-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .timer-ring .ring-bg {
+            fill: none;
+            stroke: rgba(255,255,255,0.08);
+            stroke-width: 4;
+        }
+
+        .timer-ring .ring-fill {
+            fill: none;
+            stroke: var(--teal);
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-dasharray: 163;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+        }
+
+        .timer-ring .ring-fill.urgente { stroke: #dc3545; }
+
+        .timer-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-size: 1.1em;
+            font-weight: 800;
+            color: white;
+        }
+
+        .pregunta-enunciado {
+            font-family: var(--font-display);
+            font-size: 1.4em;
+            font-weight: 700;
+            color: white;
+            line-height: 1.4;
+            flex: 1;
+        }
+
+        /* Contador respuestas */
+        .respuestas-counter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82em;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .respuestas-bar {
+            flex: 1;
+            height: 4px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .respuestas-fill {
+            height: 100%;
+            background: var(--teal);
+            border-radius: 999px;
+            transition: width 0.3s ease;
+        }
+
+        /* Opciones en modo sala (decorativas, no clickeables) */
+        .opciones-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .opcion-sala {
+            padding: 14px 16px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .opcion-sala[data-opt="A"] { background: rgba(124,58,237,0.25); border: 1px solid rgba(124,58,237,0.4); }
+        .opcion-sala[data-opt="B"] { background: rgba(14,165,233,0.25); border: 1px solid rgba(14,165,233,0.4); }
+        .opcion-sala[data-opt="C"] { background: rgba(28,230,193,0.25); border: 1px solid rgba(28,230,193,0.4); }
+        .opcion-sala[data-opt="D"] { background: rgba(75,230,28,0.25);  border: 1px solid rgba(75,230,28,0.4); }
+
+        .opcion-sala .opt-letra {
+            width: 28px; height: 28px;
+            border-radius: var(--radius);
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-display);
+            font-size: 0.82em;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .opcion-sala[data-opt="A"] .opt-letra { background: var(--opt-a); }
+        .opcion-sala[data-opt="B"] .opt-letra { background: var(--opt-b); }
+        .opcion-sala[data-opt="C"] .opt-letra { background: var(--opt-c); color: #0a0a0a; }
+        .opcion-sala[data-opt="D"] .opt-letra { background: var(--opt-d); color: #0a0a0a; }
+
+        /* Estado: ranking */
+        .estado-ranking {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 28px;
+            gap: 12px;
+            overflow-y: auto;
+        }
+
+        .ranking-title {
+            font-family: var(--font-display);
+            font-size: 1.3em;
+            font-weight: 800;
+            color: white;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .ranking-item:nth-child(1) { background: rgba(255,215,0,0.1); border-color: rgba(255,215,0,0.25); }
+        .ranking-item:nth-child(2) { background: rgba(192,192,192,0.08); border-color: rgba(192,192,192,0.2); }
+        .ranking-item:nth-child(3) { background: rgba(205,127,50,0.08); border-color: rgba(205,127,50,0.2); }
+
+        .ranking-pos {
+            font-family: var(--font-display);
+            font-size: 1em;
+            font-weight: 800;
+            width: 28px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .ranking-item:nth-child(1) .ranking-pos { color: gold; }
+        .ranking-item:nth-child(2) .ranking-pos { color: silver; }
+        .ranking-item:nth-child(3) .ranking-pos { color: #cd7f32; }
+
+        .ranking-name {
+            flex: 1;
+            color: rgba(255,255,255,0.85);
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .ranking-pts {
+            font-family: var(--font-display);
+            font-weight: 800;
+            color: var(--teal);
+            font-size: 1em;
+        }
+
+        /* ── PANEL DERECHO: controles ── */
+        .panel-controles {
+            background: #1A1A24;
+            border-left: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 16px;
+            gap: 12px;
+        }
+
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-label {
+            font-size: 0.65em;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.25);
+            font-family: var(--font-display);
+            padding-bottom: 4px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .btn-control {
+            width: 100%;
+            padding: 11px;
+            border-radius: var(--radius);
+            font-family: var(--font-display);
+            font-size: 0.82em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--t);
+            border: none;
+            text-align: center;
+        }
+
+        .btn-control.primary {
+            background: var(--teal);
+            color: #0a0a0a;
+            box-shadow: 0 2px 8px rgba(38,212,199,0.25);
+        }
+        .btn-control.primary:hover {
+            background: var(--teal-dim);
+            transform: translateY(-1px);
+        }
+        .btn-control.primary:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-control.secondary {
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.6);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .btn-control.secondary:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .btn-control.danger {
+            background: rgba(220,53,69,0.12);
+            color: #f87171;
+            border: 1px solid rgba(220,53,69,0.2);
+        }
+        .btn-control.danger:hover { background: #dc3545; color: white; }
+
+        .control-spacer { flex: 1; }
+
+        /* Progreso */
+        .progreso-info {
+            text-align: center;
+            font-size: 0.72em;
+            color: rgba(255,255,255,0.3);
+            font-family: var(--font-display);
+            font-weight: 700;
+        }
+
+        .progreso-bar {
+            height: 3px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .progreso-fill {
+            height: 100%;
+            background: var(--teal);
+            border-radius: 999px;
+            transition: width 0.4s ease;
+        }
+
+        @media (max-width: 900px) {
+            .sala-shell { grid-template-columns: 1fr; grid-template-rows: var(--header-h) auto 1fr auto; }
+            .panel-participantes { display: none; }
+            .panel-controles { flex-direction: row; flex-wrap: wrap; padding: 12px; }
+            .btn-control { width: auto; flex: 1; min-width: 100px; }
+        }
+    </style>
+</head>
+<body>
+<div class="sala-shell">
+
+    <!-- TOPBAR -->
+    <div class="sala-topbar">
+        <span class="sala-topbar-logo">ℵ AlephOne — Sala en vivo</span>
+        <span class="sala-code" id="salaCode">——————</span>
+        <div class="sala-info">
+            <span id="quizNombre">Cargando...</span>
+            <button class="btn btn-ghost btn-sm" style="color:rgba(255,255,255,0.4);"
+                    onclick="if(confirm('¿Salir de la sala?'))window.location.href='quizzit.html'">✕ Salir</button>
+        </div>
+    </div>
+
+    <!-- PARTICIPANTES -->
+    <div class="panel-participantes">
+        <div class="panel-header">
+            <div class="panel-header-title">Participantes</div>
+            <div class="panel-header-count" id="participantesCount">0</div>
+        </div>
+        <div class="participante-list" id="participanteList"></div>
+    </div>
+
+    <!-- CENTRO -->
+    <div class="panel-centro" id="panelCentro">
+        <!-- Estado inicial: waiting -->
+        <div class="estado-waiting" id="estadoWaiting">
+            <div class="waiting-label">Código de sala</div>
+            <div class="waiting-code" id="waitingCode">——————</div>
+            <div class="waiting-count" id="waitingCount">Esperando participantes...</div>
+            <p style="font-size:0.82em;color:rgba(255,255,255,0.25);max-width:280px;line-height:1.6;">
+                Los alumnos ingresan el código en Quizzit para unirse
+            </p>
+        </div>
+
+        <!-- Estado: pregunta activa (oculto inicialmente) -->
+        <div class="estado-pregunta" id="estadoPregunta" style="display:none;">
+            <div class="pregunta-header">
+                <span class="pregunta-num-badge" id="preguntaNumBadge">Pregunta 1 de N</span>
+                <div class="timer-ring" id="timerRing">
+                    <svg width="64" height="64" viewBox="0 0 64 64">
+                        <circle class="ring-bg" cx="32" cy="32" r="26"/>
+                        <circle class="ring-fill" id="ringFill" cx="32" cy="32" r="26"/>
+                    </svg>
+                    <div class="timer-text" id="timerText">30</div>
+                </div>
+            </div>
+
+            <div class="pregunta-enunciado" id="preguntaEnunciado"></div>
+
+            <div id="opcionesDisplay"></div>
+
+            <div class="respuestas-counter">
+                <span id="respuestasTexto">0 respuestas</span>
+                <div class="respuestas-bar">
+                    <div class="respuestas-fill" id="respuestasFill" style="width:0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estado: ranking (oculto inicialmente) -->
+        <div class="estado-ranking" id="estadoRanking" style="display:none;">
+            <div class="ranking-title">🏆 Ranking</div>
+            <div id="rankingList"></div>
+        </div>
+    </div>
+
+    <!-- CONTROLES -->
+    <div class="panel-controles">
+        <div class="control-section">
+            <div class="control-label">Juego</div>
+
+            <!-- Botón dinámico según estado -->
+            <button class="btn-control primary" id="btnAccion" onclick="accionPrincipal()">
+                ▶ Comenzar
+            </button>
+
+            <button class="btn-control secondary" id="btnRanking"
+                    onclick="mostrarRanking()" style="display:none;">
+                🏆 Ver ranking
+            </button>
+        </div>
+
+        <div class="control-spacer"></div>
+
+        <div class="control-section">
+            <div class="progreso-info" id="progresoInfo">—</div>
+            <div class="progreso-bar">
+                <div class="progreso-fill" id="progresoFill" style="width:0%"></div>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="control-label">Sala</div>
+            <button class="btn-control danger" onclick="terminarSala()">
+                ⏹ Terminar sala
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script>
+// ── Estado ────────────────────────────────────────────────
+let sala = null;
+let preguntas = [];
+let participantes = [];
+let respuestasActuales = [];
+let timerInterval = null;
+let tiempoRestante = 0;
+let suscripciones = [];
+let currentUser = null;
+
+const LETRAS = ['A','B','C','D'];
+
+// ── Init ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+    await AlephAPI.Auth.init();
+    currentUser = requireAuth();
+    if (!currentUser) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const salaId = params.get('sala');
+    if (!salaId) { window.location.href = 'quizzit.html'; return; }
+
+    // Cargar sala
+    const { data: salaData } = await _sb
+        .from('salas')
+        .select('*, quizzes(*, preguntas(*))')
+        .eq('id', salaId)
+        .single();
+
+    if (!salaData) { showToast('Sala no encontrada', 'error'); window.location.href = 'quizzit.html'; return; }
+
+    sala = salaData;
+    preguntas = (sala.quizzes?.preguntas || []).sort((a,b) => a.orden - b.orden);
+
+    // UI inicial
+    document.getElementById('salaCode').textContent = sala.codigo;
+    document.getElementById('waitingCode').textContent = sala.codigo;
+    document.getElementById('quizNombre').textContent = sala.quizzes?.titulo || 'Quiz';
+
+    // Suscribir Realtime
+    suscribirRealtime(salaId);
+
+    // Cargar participantes iniciales
+    await cargarParticipantes();
+});
+
+// ── Realtime ──────────────────────────────────────────────
+function suscribirRealtime(salaId) {
+    const subPart = AlephAPI.Sala.suscribirParticipantes(salaId, () => cargarParticipantes());
+    const subResp = AlephAPI.Sala.suscribirRespuestas(salaId, () => cargarRespuestasActuales());
+    suscripciones = [subPart, subResp];
+}
+
+async function cargarParticipantes() {
+    participantes = await AlephAPI.Sala.getParticipantes(sala.id);
+    renderParticipantes();
+}
+
+async function cargarRespuestasActuales() {
+    if (!preguntas[sala.pregunta_actual]) return;
+    const pregId = preguntas[sala.pregunta_actual].id;
+    respuestasActuales = await AlephAPI.Sala.getRespuestasDePregunta(sala.id, pregId);
+    renderContadorRespuestas();
+}
+
+// ── Render participantes ──────────────────────────────────
+function renderParticipantes() {
+    const lista = document.getElementById('participanteList');
+    const count = document.getElementById('participantesCount');
+    const waitCount = document.getElementById('waitingCount');
+
+    count.textContent = participantes.length;
+    waitCount.textContent = participantes.length === 0
+        ? 'Esperando participantes...'
+        : `${participantes.length} conectado${participantes.length !== 1 ? 's' : ''}`;
+
+    const respondioIds = new Set(respuestasActuales.map(r => r.user_id));
+
+    lista.innerHTML = participantes.map(p => `
+        <div class="participante-item ${respondioIds.has(p.user_id) ? 'respondio' : ''}">
+            <div class="participante-avatar">${p.username.charAt(0).toUpperCase()}</div>
+            <span class="participante-name">${sanitize(p.username)}</span>
+            <span class="participante-pts">${p.puntaje}</span>
+            <span class="participante-check">✓</span>
+        </div>`).join('');
+}
+
+// ── Render contador respuestas ────────────────────────────
+function renderContadorRespuestas() {
+    const total = participantes.length;
+    const respondieron = respuestasActuales.length;
+    const pct = total > 0 ? (respondieron / total) * 100 : 0;
+
+    document.getElementById('respuestasTexto').textContent =
+        `${respondieron} de ${total} respuesta${respondieron !== 1 ? 's' : ''}`;
+    document.getElementById('respuestasFill').style.width = pct + '%';
+
+    renderParticipantes();
+
+    // Todos respondieron — avisar
+    if (total > 0 && respondieron >= total) {
+        document.getElementById('timerText').style.color = var_teal();
+    }
+}
+
+function var_teal() { return getComputedStyle(document.documentElement).getPropertyValue('--teal').trim(); }
+
+// ── Mostrar pregunta ──────────────────────────────────────
+function mostrarPregunta(idx) {
+    const p = preguntas[idx];
+    if (!p) return;
+
+    // Ocultar estados anteriores
+    document.getElementById('estadoWaiting').style.display  = 'none';
+    document.getElementById('estadoRanking').style.display  = 'none';
+    document.getElementById('estadoPregunta').style.display = 'flex';
+
+    // Badge
+    document.getElementById('preguntaNumBadge').textContent =
+        `Pregunta ${idx + 1} de ${preguntas.length}`;
+
+    // Enunciado
+    document.getElementById('preguntaEnunciado').textContent = p.enunciado;
+
+    // Opciones decorativas
+    const opcDisplay = document.getElementById('opcionesDisplay');
+    if (p.tipo === 'multiple_choice' && p.opciones) {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : p.opciones;
+        opcDisplay.innerHTML = `<div class="opciones-grid">
+            ${opts.map((op, i) => `
+                <div class="opcion-sala" data-opt="${LETRAS[i]}">
+                    <div class="opt-letra">${LETRAS[i]}</div>
+                    <span>${sanitize(op)}</span>
+                </div>`).join('')}
+        </div>`;
+    } else if (p.tipo === 'verdadero_falso') {
+        opcDisplay.innerHTML = `<div class="opciones-grid">
+            <div class="opcion-sala" data-opt="C"><div class="opt-letra">V</div><span>Verdadero</span></div>
+            <div class="opcion-sala" data-opt="A"><div class="opt-letra">F</div><span>Falso</span></div>
+        </div>`;
+    } else {
+        opcDisplay.innerHTML = `<p style="color:rgba(255,255,255,0.4);font-size:0.88em;">
+            Respuesta ${p.tipo === 'numerica' ? 'numérica' : 'de texto libre'}
+        </p>`;
+    }
+
+    // Progreso
+    const pct = ((idx + 1) / preguntas.length) * 100;
+    document.getElementById('progresoInfo').textContent = `${idx + 1} / ${preguntas.length}`;
+    document.getElementById('progresoFill').style.width = pct + '%';
+
+    // Respuestas
+    respuestasActuales = [];
+    renderContadorRespuestas();
+
+    // Timer
+    iniciarTimer(p.tiempo_segundos || 30);
+
+    // Botones
+    document.getElementById('btnAccion').textContent = '⏭ Siguiente pregunta';
+    document.getElementById('btnAccion').disabled = false;
+    document.getElementById('btnRanking').style.display = 'block';
+}
+
+// ── Timer ─────────────────────────────────────────────────
+function iniciarTimer(segundos) {
+    clearInterval(timerInterval);
+    tiempoRestante = segundos;
+    const circumference = 163;
+
+    function tick() {
+        const pct = tiempoRestante / segundos;
+        const offset = circumference * (1 - pct);
+        const ring = document.getElementById('ringFill');
+        const text = document.getElementById('timerText');
+
+        if (!ring || !text) { clearInterval(timerInterval); return; }
+
+        ring.style.strokeDashoffset = offset;
+        text.textContent = tiempoRestante;
+
+        if (tiempoRestante <= 5) ring.classList.add('urgente');
+        else ring.classList.remove('urgente');
+
+        if (tiempoRestante <= 0) {
+            clearInterval(timerInterval);
+            text.textContent = '⏱';
+        } else {
+            tiempoRestante--;
+        }
+    }
+
+    tick();
+    timerInterval = setInterval(tick, 1000);
+}
+
+// ── Acción principal (botón dinámico) ────────────────────
+async function accionPrincipal() {
+    if (!sala) return;
+
+    if (sala.estado === 'waiting') {
+        // Comenzar — ir a primera pregunta
+        await AlephAPI.Sala.actualizarEstado({
+            salaId: sala.id,
+            estado: 'pregunta_activa',
+            preguntaActual: 0
+        });
+        sala.estado = 'pregunta_activa';
+        sala.pregunta_actual = 0;
+        mostrarPregunta(0);
+
+    } else if (sala.estado === 'pregunta_activa' || sala.estado === 'mostrando_ranking') {
+        // Siguiente pregunta
+        const siguiente = sala.pregunta_actual + 1;
+
+        if (siguiente >= preguntas.length) {
+            // Fin del quiz
+            await terminarSala();
+            return;
+        }
+
+        clearInterval(timerInterval);
+        await AlephAPI.Sala.actualizarEstado({
+            salaId: sala.id,
+            estado: 'pregunta_activa',
+            preguntaActual: siguiente
+        });
+        sala.estado = 'pregunta_activa';
+        sala.pregunta_actual = siguiente;
+        mostrarPregunta(siguiente);
+    }
+}
+
+// ── Mostrar ranking ───────────────────────────────────────
+async function mostrarRanking() {
+    clearInterval(timerInterval);
+
+    await AlephAPI.Sala.actualizarEstado({
+        salaId: sala.id,
+        estado: 'mostrando_ranking',
+        preguntaActual: sala.pregunta_actual
+    });
+    sala.estado = 'mostrando_ranking';
+
+    // Recargar puntajes
+    await cargarParticipantes();
+
+    document.getElementById('estadoPregunta').style.display = 'none';
+    document.getElementById('estadoWaiting').style.display  = 'none';
+    document.getElementById('estadoRanking').style.display  = 'flex';
+
+    const top10 = [...participantes].sort((a,b) => b.puntaje - a.puntaje).slice(0,10);
+    const medallas = ['🥇','🥈','🥉'];
+
+    document.getElementById('rankingList').innerHTML = top10.map((p, i) => `
+        <div class="ranking-item" style="animation-delay:${i*0.06}s">
+            <span class="ranking-pos">${medallas[i] || (i+1)}</span>
+            <span class="ranking-name">${sanitize(p.username)}</span>
+            <span class="ranking-pts">${p.puntaje} pts</span>
+        </div>`).join('');
+
+    const esUltima = sala.pregunta_actual >= preguntas.length - 1;
+    document.getElementById('btnAccion').textContent = esUltima ? '🏁 Terminar' : '⏭ Siguiente pregunta';
+    document.getElementById('btnRanking').style.display = 'none';
+}
+
+// ── Terminar sala ─────────────────────────────────────────
+async function terminarSala() {
+    clearInterval(timerInterval);
+    suscripciones.forEach(s => s?.unsubscribe?.());
+
+    await AlephAPI.Sala.actualizarEstado({
+        salaId: sala.id,
+        estado: 'finalizado',
+        preguntaActual: sala.pregunta_actual
+    });
+
+    window.location.href = `quiz-resultados.html?sala=${sala.id}`;
+}
+</script>
+</body>
+</html>
