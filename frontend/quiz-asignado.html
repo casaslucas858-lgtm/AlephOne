@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz — AlephOne</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        :root {
+            --opt-a: #7C3AED;
+            --opt-b: #0EA5E9;
+            --opt-c: #1CE6C1;
+            --opt-d: #4BE61C;
+        }
+
+        body { background: #13131A; min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* ── TOPBAR ── */
+        .asig-topbar {
+            height: var(--header-h);
+            background: rgba(19,19,26,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            flex-shrink: 0;
+        }
+
+        .asig-logo {
+            font-family: var(--font-display);
+            font-size: 1.1em;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--teal), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .asig-timer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-display);
+            font-size: 1.2em;
+            font-weight: 800;
+            color: white;
+        }
+
+        .asig-timer.urgente { color: #f87171; }
+
+        .asig-info {
+            font-size: 0.82em;
+            color: rgba(255,255,255,0.35);
+            font-family: var(--font-display);
+        }
+
+        /* ── PROGRESS BAR global ── */
+        .global-progress {
+            height: 3px;
+            background: rgba(255,255,255,0.06);
+            flex-shrink: 0;
+        }
+
+        .global-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--teal), var(--accent));
+            transition: width 0.4s ease;
+        }
+
+        /* ── MAIN ── */
+        .asig-main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px 20px;
+            overflow-y: auto;
+        }
+
+        /* ── PANTALLA: cargando / inicio ── */
+        .pantalla-inicio {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            text-align: center;
+            max-width: 440px;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .inicio-icon { font-size: 3.5em; }
+
+        .inicio-titulo {
+            font-family: var(--font-display);
+            font-size: 1.5em;
+            font-weight: 800;
+            color: white;
+        }
+
+        .inicio-meta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .inicio-tag {
+            padding: 5px 14px;
+            border-radius: 999px;
+            font-size: 0.78em;
+            font-weight: 700;
+            font-family: var(--font-display);
+        }
+
+        .inicio-tag.teal { background: rgba(38,212,199,0.12); color: var(--teal); border: 1px solid rgba(38,212,199,0.2); }
+        .inicio-tag.warn { background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
+
+        .inicio-aviso {
+            padding: 12px 18px;
+            background: rgba(245,158,11,0.08);
+            border: 1px solid rgba(245,158,11,0.18);
+            border-radius: var(--radius);
+            font-size: 0.82em;
+            color: rgba(255,255,255,0.45);
+            line-height: 1.6;
+        }
+
+        /* ── PANTALLA: pregunta ── */
+        .pantalla-pregunta {
+            width: 100%;
+            max-width: 620px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            animation: fadeUp 0.3s ease both;
+        }
+
+        .preg-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .preg-badge {
+            font-family: var(--font-display);
+            font-size: 0.72em;
+            font-weight: 700;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .preg-pts-badge {
+            padding: 3px 10px;
+            background: rgba(38,212,199,0.1);
+            border: 1px solid rgba(38,212,199,0.18);
+            border-radius: 999px;
+            font-family: var(--font-display);
+            font-size: 0.72em;
+            font-weight: 700;
+            color: var(--teal);
+        }
+
+        .preg-enunciado {
+            font-family: var(--font-display);
+            font-size: 1.3em;
+            font-weight: 700;
+            color: white;
+            line-height: 1.45;
+        }
+
+        /* Opciones */
+        .opciones-asig {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .opc-asig {
+            padding: 16px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.88em;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all var(--t);
+            border: 2px solid transparent;
+        }
+
+        .opc-asig[data-opt="A"] { background: rgba(124,58,237,0.18); border-color: rgba(124,58,237,0.3); }
+        .opc-asig[data-opt="B"] { background: rgba(14,165,233,0.18); border-color: rgba(14,165,233,0.3); }
+        .opc-asig[data-opt="C"] { background: rgba(28,230,193,0.18); border-color: rgba(28,230,193,0.3); }
+        .opc-asig[data-opt="D"] { background: rgba(75,230,28,0.18);  border-color: rgba(75,230,28,0.3); }
+
+        .opc-asig:hover:not(.bloqueada) {
+            transform: translateY(-2px) scale(1.02);
+            filter: brightness(1.2);
+        }
+
+        .opc-asig.seleccionada {
+            border-width: 3px;
+            filter: brightness(1.25);
+        }
+        .opc-asig[data-opt="A"].seleccionada { border-color: var(--opt-a); background: rgba(124,58,237,0.32); }
+        .opc-asig[data-opt="B"].seleccionada { border-color: var(--opt-b); background: rgba(14,165,233,0.32); }
+        .opc-asig[data-opt="C"].seleccionada { border-color: var(--opt-c); background: rgba(28,230,193,0.32); }
+        .opc-asig[data-opt="D"].seleccionada { border-color: var(--opt-d); background: rgba(75,230,28,0.32); }
+
+        .opc-asig.correcta-reveal {
+            background: rgba(34,197,94,0.2) !important;
+            border-color: #22c55e !important;
+        }
+
+        .opc-asig.incorrecta-reveal {
+            opacity: 0.4;
+        }
+
+        .opc-asig.bloqueada { cursor: not-allowed; }
+
+        .opc-letra {
+            width: 30px; height: 30px;
+            border-radius: var(--radius);
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-display);
+            font-size: 0.82em;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+        .opc-asig[data-opt="A"] .opc-letra { background: var(--opt-a); }
+        .opc-asig[data-opt="B"] .opc-letra { background: var(--opt-b); }
+        .opc-asig[data-opt="C"] .opc-letra { background: var(--opt-c); color: #0a0a0a; }
+        .opc-asig[data-opt="D"] .opc-letra { background: var(--opt-d); color: #0a0a0a; }
+
+        /* VF */
+        .vf-asig {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .vf-asig-btn {
+            padding: 18px;
+            border-radius: var(--radius-lg);
+            border: 2px solid;
+            font-family: var(--font-display);
+            font-size: 0.95em;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all var(--t);
+            text-align: center;
+            color: white;
+        }
+
+        .vf-asig-btn.verd { background: rgba(75,230,28,0.15); border-color: rgba(75,230,28,0.3); }
+        .vf-asig-btn.fals { background: rgba(220,53,69,0.15); border-color: rgba(220,53,69,0.3); }
+        .vf-asig-btn.sel-v { background: rgba(75,230,28,0.3); border-color: var(--opt-d); }
+        .vf-asig-btn.sel-f { background: rgba(220,53,69,0.3); border-color: #dc3545; }
+        .vf-asig-btn:hover:not(.bloqueada) { filter: brightness(1.2); transform: translateY(-2px); }
+        .vf-asig-btn.bloqueada { cursor: not-allowed; }
+
+        /* Input texto */
+        .texto-wrap {
+            display: flex; gap: 10px;
+        }
+
+        .texto-input {
+            flex: 1;
+            padding: 13px 16px;
+            background: rgba(255,255,255,0.06);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius-lg);
+            font-size: 0.95em;
+            color: white;
+            font-family: var(--font-body);
+            transition: all var(--t);
+        }
+        .texto-input:focus { outline: none; border-color: var(--teal); background: rgba(38,212,199,0.06); }
+        .texto-input::placeholder { color: rgba(255,255,255,0.25); }
+
+        .btn-enviar-asig {
+            padding: 13px 22px;
+            background: var(--teal);
+            color: #0a0a0a;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-family: var(--font-display);
+            font-size: 0.85em;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all var(--t);
+        }
+        .btn-enviar-asig:hover { background: var(--teal-dim); }
+        .btn-enviar-asig:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Feedback inline */
+        .feedback-inline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            font-size: 0.88em;
+            font-weight: 600;
+            animation: fadeUp 0.25s ease both;
+        }
+        .feedback-inline.ok { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); color: #4ade80; }
+        .feedback-inline.mal { background: rgba(220,53,69,0.1); border: 1px solid rgba(220,53,69,0.2); color: #f87171; }
+
+        /* Nav preguntas */
+        .nav-preguntas {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        /* ── PANTALLA: resultados ── */
+        .pantalla-resultados {
+            width: 100%;
+            max-width: 520px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .res-header {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .res-emoji { font-size: 3.5em; margin-bottom: 8px; display: block; }
+
+        .res-titulo {
+            font-family: var(--font-display);
+            font-size: 1.5em;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .res-pts {
+            font-family: var(--font-display);
+            font-size: 2.8em;
+            font-weight: 800;
+            color: var(--teal);
+            line-height: 1;
+        }
+
+        /* Stats grid */
+        .res-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .res-stat {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: var(--radius-lg);
+            padding: 14px;
+            text-align: center;
+        }
+
+        .res-stat-val {
+            font-family: var(--font-display);
+            font-size: 1.6em;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .res-stat-val.verde  { color: #4ade80; }
+        .res-stat-val.rojo   { color: #f87171; }
+        .res-stat-val.blanco { color: white; }
+
+        .res-stat-label {
+            font-size: 0.7em;
+            color: rgba(255,255,255,0.3);
+            font-family: var(--font-display);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Detalle por pregunta */
+        .detalle-lista { display: flex; flex-direction: column; gap: 6px; }
+
+        .detalle-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: var(--radius);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            font-size: 0.82em;
+        }
+
+        .detalle-item.ok  { border-left: 3px solid #22c55e; }
+        .detalle-item.mal { border-left: 3px solid #dc3545; }
+        .detalle-item.skip { border-left: 3px solid rgba(255,255,255,0.15); }
+
+        .detalle-icon { font-size: 1em; flex-shrink: 0; }
+        .detalle-text { flex: 1; color: rgba(255,255,255,0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .detalle-pts  { font-family: var(--font-display); font-weight: 700; color: var(--teal); font-size: 0.85em; flex-shrink: 0; }
+    </style>
+</head>
+<body>
+
+<div class="asig-topbar">
+    <span class="asig-logo">ℵ AlephOne</span>
+    <div class="asig-timer" id="asigTimer">—:——</div>
+    <div class="asig-info" id="asigInfo">—</div>
+</div>
+
+<div class="global-progress">
+    <div class="global-progress-fill" id="globalProgress" style="width:0%"></div>
+</div>
+
+<div class="asig-main" id="asigMain">
+    <div class="empty-state"><div class="spinner"></div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script>
+// ── Estado ────────────────────────────────────────────────
+let asignacion   = null;
+let preguntas    = [];
+let respuestas   = {};   // { preguntaId: { valor, esCorrecta, puntosGanados } }
+let idx          = 0;
+let timerInterval = null;
+let tiempoTotal  = 0;
+let tiempoRestante = 0;
+let terminado    = false;
+let currentUser  = null;
+
+const LETRAS = ['A','B','C','D'];
+
+// ── Init ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+    await AlephAPI.Auth.init();
+    currentUser = requireAuth();
+    if (!currentUser) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const asigId = params.get('id');
+    if (!asigId) { window.location.href = 'quizzit.html'; return; }
+
+    // Cargar asignación
+    const asigs = await AlephAPI.Asignacion.getParaCurso(currentUser.curso || '3A');
+    asignacion = asigs.find(a => a.id === asigId);
+
+    if (!asignacion) {
+        showToast('Asignación no encontrada', 'error');
+        window.location.href = 'quizzit.html';
+        return;
+    }
+
+    preguntas = (asignacion.quizzes?.preguntas || []).sort((a,b) => a.orden - b.orden);
+    tiempoTotal = preguntas.reduce((a, p) => a + (p.tiempo_segundos || 30), 0);
+    tiempoRestante = tiempoTotal;
+
+    document.getElementById('asigInfo').textContent =
+        `${preguntas.length} preguntas · ${currentUser.username}`;
+
+    renderInicio();
+});
+
+// ── PANTALLA: Inicio ──────────────────────────────────────
+function renderInicio() {
+    const minutos = Math.ceil(tiempoTotal / 60);
+    document.getElementById('asigMain').innerHTML = `
+        <div class="pantalla-inicio">
+            <div class="inicio-icon">🧪</div>
+            <div class="inicio-titulo">${sanitize(asignacion.quizzes?.titulo || 'Quiz')}</div>
+            <div class="inicio-meta">
+                <span class="inicio-tag teal">${preguntas.length} preguntas</span>
+                <span class="inicio-tag warn">⏱ ${minutos} min total</span>
+            </div>
+            <div class="inicio-aviso">
+                ⚠️ Una vez que respondas cada pregunta, no podés cambiarla.<br>
+                El tiempo corre desde que presionás "Comenzar".
+            </div>
+            <button class="btn btn-primary btn-lg" onclick="comenzar()"
+                    style="justify-content:center;width:100%;max-width:280px;">
+                Comenzar →
+            </button>
+        </div>`;
+    document.getElementById('asigTimer').textContent = formatTimer(tiempoTotal);
+}
+
+// ── Comenzar ──────────────────────────────────────────────
+function comenzar() {
+    iniciarTimer();
+    renderPregunta(0);
+}
+
+// ── Timer global ─────────────────────────────────────────
+function iniciarTimer() {
+    timerInterval = setInterval(() => {
+        tiempoRestante--;
+        const el = document.getElementById('asigTimer');
+        if (el) {
+            el.textContent = formatTimer(tiempoRestante);
+            if (tiempoRestante <= 30) el.classList.add('urgente');
+        }
+        if (tiempoRestante <= 0) {
+            clearInterval(timerInterval);
+            if (!terminado) finalizarForzado();
+        }
+    }, 1000);
+}
+
+function formatTimer(seg) {
+    const m = Math.floor(seg / 60);
+    const s = seg % 60;
+    return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+// ── PANTALLA: Pregunta ────────────────────────────────────
+function renderPregunta(i) {
+    idx = i;
+    const p = preguntas[i];
+    if (!p) return;
+
+    const pct = (i / preguntas.length) * 100;
+    document.getElementById('globalProgress').style.width = pct + '%';
+
+    const yaResp = respuestas[p.id];
+    const opcionesHTML = renderOpcionesAsig(p, yaResp);
+
+    let feedbackHTML = '';
+    if (yaResp) {
+        feedbackHTML = `
+            <div class="feedback-inline ${yaResp.esCorrecta ? 'ok' : 'mal'}">
+                ${yaResp.esCorrecta ? '✅ Correcto' : '❌ Incorrecto'}
+                ${yaResp.puntosGanados > 0 ? `<span>+${yaResp.puntosGanados} pts</span>` : ''}
+            </div>`;
+    }
+
+    const esUltima = i === preguntas.length - 1;
+    const botonSig = yaResp
+        ? `<button class="btn btn-primary" onclick="${esUltima ? 'finalizar()' : `renderPregunta(${i+1})`}">
+               ${esUltima ? '🏁 Terminar' : 'Siguiente →'}
+           </button>`
+        : '';
+
+    document.getElementById('asigMain').innerHTML = `
+        <div class="pantalla-pregunta">
+            <div class="preg-header">
+                <span class="preg-badge">Pregunta ${i+1} de ${preguntas.length}</span>
+                <span class="preg-pts-badge">${p.puntos || 100} pts</span>
+            </div>
+            <div class="preg-enunciado">${sanitize(p.enunciado)}</div>
+            <div id="opcionesWrap">${opcionesHTML}</div>
+            ${feedbackHTML ? `<div id="feedbackWrap">${feedbackHTML}</div>` : '<div id="feedbackWrap"></div>'}
+            <div class="nav-preguntas">${botonSig}</div>
+        </div>`;
+}
+
+function renderOpcionesAsig(p, yaResp) {
+    const bloq = yaResp ? 'bloqueada' : '';
+
+    if (p.tipo === 'multiple_choice') {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        const correcta = p.respuesta_correcta;
+        return `<div class="opciones-asig">
+            ${opts.map((op, i) => {
+                let extra = '';
+                if (yaResp) {
+                    if (LETRAS[i] === correcta) extra = 'correcta-reveal';
+                    else if (LETRAS[i] === yaResp.valor) extra = 'incorrecta-reveal seleccionada';
+                } else if (yaResp?.valor === LETRAS[i]) {
+                    extra = 'seleccionada';
+                }
+                return `
+                <div class="opc-asig ${bloq} ${extra}" data-opt="${LETRAS[i]}"
+                     onclick="responderMC('${LETRAS[i]}', '${p.id}')">
+                    <div class="opc-letra">${LETRAS[i]}</div>
+                    <span>${sanitize(op)}</span>
+                </div>`;
+            }).join('')}
+        </div>`;
+    }
+
+    if (p.tipo === 'verdadero_falso') {
+        const sel = yaResp?.valor;
+        const cor = p.respuesta_correcta;
+        return `<div class="vf-asig">
+            <button class="vf-asig-btn verd ${sel === 'Verdadero' ? 'sel-v' : ''} ${bloq} ${yaResp && cor !== 'Verdadero' ? 'incorrecta-reveal' : ''} ${yaResp && cor === 'Verdadero' ? 'correcta-reveal' : ''}"
+                    onclick="responderVF('Verdadero', '${p.id}')">✓ Verdadero</button>
+            <button class="vf-asig-btn fals ${sel === 'Falso' ? 'sel-f' : ''} ${bloq} ${yaResp && cor !== 'Falso' ? 'incorrecta-reveal' : ''} ${yaResp && cor === 'Falso' ? 'correcta-reveal' : ''}"
+                    onclick="responderVF('Falso', '${p.id}')">✗ Falso</button>
+        </div>`;
+    }
+
+    // Numérica / corta
+    return `<div class="texto-wrap">
+        <input type="${p.tipo === 'numerica' ? 'number' : 'text'}"
+               class="texto-input"
+               id="textoInput"
+               placeholder="${p.tipo === 'numerica' ? 'Número...' : 'Tu respuesta...'}"
+               ${yaResp ? `value="${sanitize(yaResp.valor)}" disabled` : ''}
+               onkeydown="if(event.key==='Enter')responderTexto('${p.id}','${p.tipo}')">
+        ${!yaResp ? `<button class="btn-enviar-asig" onclick="responderTexto('${p.id}','${p.tipo}')">Enviar</button>` : ''}
+    </div>`;
+}
+
+// ── Responder ─────────────────────────────────────────────
+function responderMC(letra, pregId) {
+    if (respuestas[pregId]) return;
+    const p = preguntas.find(q => q.id === pregId);
+    if (!p) return;
+    const esCorrecta = letra === p.respuesta_correcta;
+    guardarRespuesta(pregId, letra, esCorrecta, p.puntos || 100);
+}
+
+function responderVF(valor, pregId) {
+    if (respuestas[pregId]) return;
+    const p = preguntas.find(q => q.id === pregId);
+    if (!p) return;
+    const esCorrecta = valor === p.respuesta_correcta;
+    guardarRespuesta(pregId, valor, esCorrecta, p.puntos || 100);
+}
+
+function responderTexto(pregId, tipo) {
+    if (respuestas[pregId]) return;
+    const input = document.getElementById('textoInput');
+    if (!input || !input.value.trim()) return;
+    const valor = input.value.trim();
+    const p = preguntas.find(q => q.id === pregId);
+    if (!p) return;
+
+    let esCorrecta = false;
+    const correcta = p.respuesta_correcta?.toString() || '';
+    if (tipo === 'numerica') esCorrecta = parseFloat(valor) === parseFloat(correcta);
+    else esCorrecta = valor.toLowerCase() === correcta.toLowerCase();
+
+    guardarRespuesta(pregId, valor, esCorrecta, p.puntos || 100);
+}
+
+function guardarRespuesta(pregId, valor, esCorrecta, pts) {
+    const puntosGanados = esCorrecta ? pts : 0;
+    respuestas[pregId] = { valor, esCorrecta, puntosGanados };
+    renderPregunta(idx); // re-render con feedback
+}
+
+// ── Finalizar ─────────────────────────────────────────────
+async function finalizar() {
+    clearInterval(timerInterval);
+    terminado = true;
+    await guardarEnSupabase();
+    renderResultados();
+}
+
+async function finalizarForzado() {
+    terminado = true;
+    await guardarEnSupabase();
+    renderResultados();
+}
+
+async function guardarEnSupabase() {
+    const puntajeTotal = Object.values(respuestas).reduce((a, r) => a + r.puntosGanados, 0);
+    await AlephAPI.Asignacion.responder({
+        asignacionId: asignacion.id,
+        respuestas,
+        puntaje: puntajeTotal
+    });
+}
+
+// ── PANTALLA: Resultados ──────────────────────────────────
+function renderResultados() {
+    const correctas  = Object.values(respuestas).filter(r => r.esCorrecta).length;
+    const incorrectas = Object.values(respuestas).filter(r => !r.esCorrecta).length;
+    const sinResp    = preguntas.length - Object.keys(respuestas).length;
+    const puntaje    = Object.values(respuestas).reduce((a, r) => a + r.puntosGanados, 0);
+    const pct        = Math.round((correctas / preguntas.length) * 100);
+
+    let emoji = pct >= 80 ? '🥇' : pct >= 60 ? '🎯' : pct >= 40 ? '📚' : '💪';
+
+    document.getElementById('globalProgress').style.width = '100%';
+    document.getElementById('asigTimer').textContent = '✓';
+
+    const detalleHTML = preguntas.map((p, i) => {
+        const r = respuestas[p.id];
+        if (!r) return `<div class="detalle-item skip">
+            <span class="detalle-icon">⏭</span>
+            <span class="detalle-text">${sanitize(p.enunciado)}</span>
+            <span class="detalle-pts">—</span>
+        </div>`;
+        return `<div class="detalle-item ${r.esCorrecta ? 'ok' : 'mal'}">
+            <span class="detalle-icon">${r.esCorrecta ? '✅' : '❌'}</span>
+            <span class="detalle-text">${sanitize(p.enunciado)}</span>
+            <span class="detalle-pts">${r.esCorrecta ? '+'+r.puntosGanados : '0'}</span>
+        </div>`;
+    }).join('');
+
+    document.getElementById('asigMain').innerHTML = `
+        <div class="pantalla-resultados">
+            <div class="res-header">
+                <span class="res-emoji">${emoji}</span>
+                <div class="res-titulo">Quiz completado</div>
+                <div class="res-pts">${puntaje} pts</div>
+            </div>
+
+            <div class="res-stats">
+                <div class="res-stat">
+                    <div class="res-stat-val verde">${correctas}</div>
+                    <div class="res-stat-label">Correctas</div>
+                </div>
+                <div class="res-stat">
+                    <div class="res-stat-val rojo">${incorrectas}</div>
+                    <div class="res-stat-label">Incorrectas</div>
+                </div>
+                <div class="res-stat">
+                    <div class="res-stat-val blanco">${pct}%</div>
+                    <div class="res-stat-label">Aciertos</div>
+                </div>
+            </div>
+
+            <div class="detalle-lista">${detalleHTML}</div>
+
+            <button class="btn btn-primary" style="justify-content:center;"
+                    onclick="window.location.href='quizzit.html'">
+                Volver a Quizzit
+            </button>
+        </div>`;
+}
+</script>
+</body>
+</html>
