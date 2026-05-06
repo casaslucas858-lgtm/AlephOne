@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz en vivo — AlephOne</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        :root {
+            --opt-a: #7C3AED;
+            --opt-b: #0EA5E9;
+            --opt-c: #1CE6C1;
+            --opt-d: #4BE61C;
+        }
+
+        body {
+            background: #13131A;
+            overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── TOPBAR ── */
+        .jugar-topbar {
+            height: var(--header-h);
+            background: rgba(19,19,26,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            flex-shrink: 0;
+        }
+
+        .jugar-logo {
+            font-family: var(--font-display);
+            font-size: 1.1em;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--teal), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .jugar-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82em;
+            color: rgba(255,255,255,0.45);
+        }
+
+        .jugar-pts {
+            font-family: var(--font-display);
+            font-weight: 800;
+            color: var(--teal);
+            font-size: 0.95em;
+        }
+
+        /* ── MAIN AREA ── */
+        .jugar-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            overflow: hidden;
+        }
+
+        /* ── ESTADO: WAITING ── */
+        .estado-waiting {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            text-align: center;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .waiting-emoji { font-size: 3.5em; }
+
+        .waiting-titulo {
+            font-family: var(--font-display);
+            font-size: 1.4em;
+            font-weight: 800;
+            color: white;
+        }
+
+        .waiting-sub {
+            font-size: 0.88em;
+            color: rgba(255,255,255,0.35);
+            line-height: 1.6;
+        }
+
+        .waiting-participantes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            max-width: 400px;
+        }
+
+        .waiting-pill {
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 999px;
+            font-size: 0.78em;
+            color: rgba(255,255,255,0.55);
+            font-family: var(--font-display);
+            font-weight: 600;
+        }
+
+        .waiting-pill.yo {
+            background: rgba(38,212,199,0.12);
+            border-color: rgba(38,212,199,0.25);
+            color: var(--teal);
+        }
+
+        /* Pulse dot */
+        .pulse-dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: var(--teal);
+            animation: pulseDot 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseDot {
+            0%,100% { transform: scale(1); opacity: 1; }
+            50%      { transform: scale(1.4); opacity: 0.5; }
+        }
+
+        /* ── ESTADO: PREGUNTA ── */
+        .estado-pregunta {
+            width: 100%;
+            max-width: 640px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeUp 0.35s ease both;
+        }
+
+        .pregunta-header-alumno {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .pregunta-badge {
+            font-family: var(--font-display);
+            font-size: 0.72em;
+            font-weight: 700;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Timer del alumno — barra horizontal */
+        .timer-bar-wrap {
+            flex: 1;
+            margin: 0 16px;
+        }
+
+        .timer-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .timer-bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: var(--teal);
+            transition: width 1s linear, background 0.3s ease;
+        }
+
+        .timer-bar-fill.urgente { background: #dc3545; }
+
+        .timer-num {
+            font-family: var(--font-display);
+            font-size: 0.9em;
+            font-weight: 800;
+            color: white;
+            min-width: 28px;
+            text-align: right;
+        }
+
+        .pregunta-texto {
+            font-family: var(--font-display);
+            font-size: 1.35em;
+            font-weight: 700;
+            color: white;
+            line-height: 1.45;
+            text-align: center;
+        }
+
+        /* Opciones del alumno — grandes y clickeables */
+        .opciones-alumno {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .opcion-alumno {
+            padding: 18px 16px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all var(--t);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .opcion-alumno[data-opt="A"] {
+            background: rgba(124,58,237,0.2);
+            border-color: rgba(124,58,237,0.35);
+        }
+        .opcion-alumno[data-opt="B"] {
+            background: rgba(14,165,233,0.2);
+            border-color: rgba(14,165,233,0.35);
+        }
+        .opcion-alumno[data-opt="C"] {
+            background: rgba(28,230,193,0.2);
+            border-color: rgba(28,230,193,0.35);
+        }
+        .opcion-alumno[data-opt="D"] {
+            background: rgba(75,230,28,0.2);
+            border-color: rgba(75,230,28,0.35);
+        }
+
+        .opcion-alumno:hover:not(.respondida) {
+            transform: translateY(-2px) scale(1.02);
+            filter: brightness(1.2);
+        }
+
+        .opcion-alumno.seleccionada {
+            transform: scale(0.97);
+            filter: brightness(1.3);
+            border-width: 3px;
+        }
+
+        .opcion-alumno.respondida { cursor: not-allowed; }
+
+        .opcion-alumno[data-opt="A"].seleccionada { border-color: var(--opt-a); background: rgba(124,58,237,0.35); }
+        .opcion-alumno[data-opt="B"].seleccionada { border-color: var(--opt-b); background: rgba(14,165,233,0.35); }
+        .opcion-alumno[data-opt="C"].seleccionada { border-color: var(--opt-c); background: rgba(28,230,193,0.35); }
+        .opcion-alumno[data-opt="D"].seleccionada { border-color: var(--opt-d); background: rgba(75,230,28,0.35); }
+
+        .opt-letra-alumno {
+            width: 32px; height: 32px;
+            border-radius: var(--radius);
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-display);
+            font-size: 0.85em;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .opcion-alumno[data-opt="A"] .opt-letra-alumno { background: var(--opt-a); }
+        .opcion-alumno[data-opt="B"] .opt-letra-alumno { background: var(--opt-b); }
+        .opcion-alumno[data-opt="C"] .opt-letra-alumno { background: var(--opt-c); color: #0a0a0a; }
+        .opcion-alumno[data-opt="D"] .opt-letra-alumno { background: var(--opt-d); color: #0a0a0a; }
+
+        /* Input texto/numérico */
+        .respuesta-input-wrap {
+            display: flex;
+            gap: 10px;
+        }
+
+        .respuesta-input {
+            flex: 1;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.06);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius-lg);
+            font-size: 1em;
+            color: white;
+            font-family: var(--font-body);
+            transition: all var(--t);
+        }
+        .respuesta-input:focus {
+            outline: none;
+            border-color: var(--teal);
+            background: rgba(38,212,199,0.06);
+        }
+        .respuesta-input::placeholder { color: rgba(255,255,255,0.25); }
+
+        .btn-enviar {
+            padding: 14px 24px;
+            background: var(--teal);
+            color: #0a0a0a;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-family: var(--font-display);
+            font-size: 0.88em;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all var(--t);
+            box-shadow: 0 2px 10px rgba(38,212,199,0.25);
+        }
+        .btn-enviar:hover { background: var(--teal-dim); transform: translateY(-1px); }
+        .btn-enviar:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        /* ── ESTADO: RESPONDIO ── */
+        .estado-respondio {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            text-align: center;
+            animation: fadeUp 0.3s ease both;
+        }
+
+        .respondio-icon { font-size: 3.5em; }
+
+        .respondio-titulo {
+            font-family: var(--font-display);
+            font-size: 1.3em;
+            font-weight: 800;
+            color: white;
+        }
+
+        .respondio-sub {
+            font-size: 0.88em;
+            color: rgba(255,255,255,0.35);
+        }
+
+        .pts-ganados {
+            font-family: var(--font-display);
+            font-size: 2em;
+            font-weight: 800;
+            color: var(--teal);
+            animation: ptsAnim 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+
+        @keyframes ptsAnim {
+            from { transform: scale(0.5); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+
+        /* ── ESTADO: RANKING ── */
+        .estado-ranking {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .ranking-titulo {
+            font-family: var(--font-display);
+            font-size: 1.3em;
+            font-weight: 800;
+            color: white;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .ranking-item-alumno {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .ranking-item-alumno.yo-ranking {
+            background: rgba(38,212,199,0.1);
+            border-color: rgba(38,212,199,0.25);
+        }
+
+        .ranking-item-alumno:nth-child(1) { background: rgba(255,215,0,0.08); border-color: rgba(255,215,0,0.2); }
+        .ranking-item-alumno:nth-child(2) { background: rgba(192,192,192,0.06); border-color: rgba(192,192,192,0.15); }
+        .ranking-item-alumno:nth-child(3) { background: rgba(205,127,50,0.06); border-color: rgba(205,127,50,0.15); }
+
+        .rank-pos {
+            font-family: var(--font-display);
+            font-size: 1em;
+            font-weight: 800;
+            width: 28px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .ranking-item-alumno:nth-child(1) .rank-pos { color: gold; }
+        .ranking-item-alumno:nth-child(2) .rank-pos { color: silver; }
+        .ranking-item-alumno:nth-child(3) .rank-pos { color: #cd7f32; }
+
+        .rank-name {
+            flex: 1;
+            color: rgba(255,255,255,0.8);
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .rank-pts {
+            font-family: var(--font-display);
+            font-weight: 800;
+            color: var(--teal);
+        }
+
+        /* ── ESTADO: FINAL ── */
+        .estado-final {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            text-align: center;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .final-emoji { font-size: 4em; }
+
+        .final-titulo {
+            font-family: var(--font-display);
+            font-size: 1.6em;
+            font-weight: 800;
+            color: white;
+        }
+
+        .final-pts {
+            font-family: var(--font-display);
+            font-size: 3.5em;
+            font-weight: 800;
+            color: var(--teal);
+            line-height: 1;
+        }
+
+        .final-sub {
+            font-size: 0.88em;
+            color: rgba(255,255,255,0.35);
+        }
+    </style>
+</head>
+<body>
+
+<div class="jugar-topbar">
+    <span class="jugar-logo">ℵ AlephOne</span>
+    <div class="jugar-user">
+        <span id="jugarUsername">—</span>
+        <span class="jugar-pts" id="jugarPts">0 pts</span>
+    </div>
+</div>
+
+<div class="jugar-main" id="jugarMain">
+    <div class="empty-state">
+        <div class="spinner"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script>
+// ── Estado ────────────────────────────────────────────────
+let sala        = null;
+let preguntas   = [];
+let participantes = [];
+let currentUser = null;
+let puntajeLocal = 0;
+let yaRespondio  = false;
+let timerInterval = null;
+let tiempoInicio  = null;
+let suscripciones = [];
+
+const LETRAS = ['A','B','C','D'];
+const MEDALLAS = ['🥇','🥈','🥉'];
+
+// ── Init ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+    await AlephAPI.Auth.init();
+    currentUser = requireAuth();
+    if (!currentUser) return;
+
+    document.getElementById('jugarUsername').textContent = currentUser.username;
+
+    const params = new URLSearchParams(window.location.search);
+    const salaId = params.get('sala');
+    if (!salaId) { window.location.href = 'quizzit.html'; return; }
+
+    // Cargar sala
+    const { data: salaData } = await _sb
+        .from('salas')
+        .select('*, quizzes(*, preguntas(*))')
+        .eq('id', salaId)
+        .single();
+
+    if (!salaData) { showToast('Sala no encontrada', 'error'); window.location.href = 'quizzit.html'; return; }
+
+    sala = salaData;
+    preguntas = (sala.quizzes?.preguntas || []).sort((a,b) => a.orden - b.orden);
+
+    // Unirse a la sala
+    await AlephAPI.Sala.unirse({ salaId: sala.id, username: currentUser.username });
+
+    // Suscribir Realtime
+    const sub = AlephAPI.Sala.suscribirSala(sala.id, payload => {
+        if (payload.new) {
+            sala = { ...sala, ...payload.new };
+            manejarCambioEstado();
+        }
+    });
+    suscripciones = [sub];
+
+    // Cargar participantes para la espera
+    await cargarParticipantes();
+
+    // Render estado inicial
+    manejarCambioEstado();
+});
+
+// ── Cargar participantes ──────────────────────────────────
+async function cargarParticipantes() {
+    participantes = await AlephAPI.Sala.getParticipantes(sala.id);
+    // Actualizar puntaje local
+    const yo = participantes.find(p => p.user_id === currentUser.id);
+    if (yo) {
+        puntajeLocal = yo.puntaje;
+        document.getElementById('jugarPts').textContent = puntajeLocal + ' pts';
+    }
+}
+
+// ── Manejar cambio de estado (Realtime) ───────────────────
+function manejarCambioEstado() {
+    if (!sala) return;
+
+    clearInterval(timerInterval);
+
+    switch (sala.estado) {
+        case 'waiting':
+            renderWaiting();
+            break;
+        case 'pregunta_activa':
+            yaRespondio = false;
+            renderPregunta(sala.pregunta_actual);
+            break;
+        case 'mostrando_ranking':
+            renderRanking();
+            break;
+        case 'finalizado':
+            renderFinal();
+            break;
+    }
+}
+
+// ── RENDER: Waiting ───────────────────────────────────────
+async function renderWaiting() {
+    await cargarParticipantes();
+    const pillsHTML = participantes.map(p => `
+        <div class="waiting-pill ${p.user_id === currentUser.id ? 'yo' : ''}">
+            ${sanitize(p.username)}${p.user_id === currentUser.id ? ' (vos)' : ''}
+        </div>`).join('');
+
+    document.getElementById('jugarMain').innerHTML = `
+        <div class="estado-waiting">
+            <div class="pulse-dot"></div>
+            <div class="waiting-titulo">Esperando que empiece...</div>
+            <div class="waiting-sub">
+                ${sanitize(sala.quizzes?.titulo || 'Quiz')}<br>
+                ${preguntas.length} pregunta${preguntas.length !== 1 ? 's' : ''}
+            </div>
+            <div class="waiting-participantes">${pillsHTML}</div>
+        </div>`;
+}
+
+// ── RENDER: Pregunta ──────────────────────────────────────
+function renderPregunta(idx) {
+    const p = preguntas[idx];
+    if (!p) return;
+
+    tiempoInicio = Date.now();
+    const tiempoTotal = p.tiempo_segundos || 30;
+    let tiempoRestante = tiempoTotal;
+
+    const opcionesHTML = renderOpcionesAlumno(p);
+
+    document.getElementById('jugarMain').innerHTML = `
+        <div class="estado-pregunta">
+            <div class="pregunta-header-alumno">
+                <span class="pregunta-badge">P${idx+1} / ${preguntas.length}</span>
+                <div class="timer-bar-wrap">
+                    <div class="timer-bar">
+                        <div class="timer-bar-fill" id="timerFill" style="width:100%"></div>
+                    </div>
+                </div>
+                <span class="timer-num" id="timerNum">${tiempoTotal}</span>
+            </div>
+            <div class="pregunta-texto">${sanitize(p.enunciado)}</div>
+            <div id="opcionesWrap">${opcionesHTML}</div>
+        </div>`;
+
+    // Timer
+    timerInterval = setInterval(() => {
+        tiempoRestante--;
+        const pct = (tiempoRestante / tiempoTotal) * 100;
+        const fill = document.getElementById('timerFill');
+        const num  = document.getElementById('timerNum');
+        if (!fill || !num) { clearInterval(timerInterval); return; }
+
+        fill.style.width = pct + '%';
+        num.textContent  = tiempoRestante;
+        if (tiempoRestante <= 5) fill.classList.add('urgente');
+
+        if (tiempoRestante <= 0) {
+            clearInterval(timerInterval);
+            if (!yaRespondio) renderEsperando(false, 0);
+        }
+    }, 1000);
+}
+
+function renderOpcionesAlumno(p) {
+    if (p.tipo === 'multiple_choice') {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        return `<div class="opciones-alumno">
+            ${opts.map((op, i) => `
+                <div class="opcion-alumno" data-opt="${LETRAS[i]}"
+                     onclick="responderOpcion('${LETRAS[i]}', this)">
+                    <div class="opt-letra-alumno">${LETRAS[i]}</div>
+                    <span>${sanitize(op)}</span>
+                </div>`).join('')}
+        </div>`;
+    }
+
+    if (p.tipo === 'verdadero_falso') {
+        return `<div class="opciones-alumno">
+            <div class="opcion-alumno" data-opt="C" onclick="responderOpcion('Verdadero', this)">
+                <div class="opt-letra-alumno">V</div>
+                <span>Verdadero</span>
+            </div>
+            <div class="opcion-alumno" data-opt="A" onclick="responderOpcion('Falso', this)">
+                <div class="opt-letra-alumno">F</div>
+                <span>Falso</span>
+            </div>
+        </div>`;
+    }
+
+    // Numérica o corta
+    return `<div class="respuesta-input-wrap">
+        <input type="${p.tipo === 'numerica' ? 'number' : 'text'}"
+               class="respuesta-input" id="respuestaInput"
+               placeholder="${p.tipo === 'numerica' ? 'Número...' : 'Tu respuesta...'}"
+               onkeydown="if(event.key==='Enter')enviarTexto()">
+        <button class="btn-enviar" onclick="enviarTexto()">Enviar →</button>
+    </div>`;
+}
+
+// ── Responder ─────────────────────────────────────────────
+async function responderOpcion(valor, el) {
+    if (yaRespondio) return;
+    yaRespondio = true;
+    clearInterval(timerInterval);
+
+    // Marcar visualmente
+    document.querySelectorAll('.opcion-alumno').forEach(o => o.classList.add('respondida'));
+    el.classList.add('seleccionada');
+
+    await _enviarRespuesta(valor);
+}
+
+async function enviarTexto() {
+    if (yaRespondio) return;
+    const input = document.getElementById('respuestaInput');
+    if (!input) return;
+    const valor = input.value.trim();
+    if (!valor) return;
+
+    yaRespondio = true;
+    clearInterval(timerInterval);
+    input.disabled = true;
+    document.querySelector('.btn-enviar').disabled = true;
+
+    await _enviarRespuesta(valor);
+}
+
+async function _enviarRespuesta(valorRaw) {
+    const p = preguntas[sala.pregunta_actual];
+    if (!p) return;
+
+    const tiempoMs = Date.now() - (tiempoInicio || Date.now());
+
+    // Verificar si es correcta
+    const correcto = verificarRespuesta(p, valorRaw);
+
+    // Calcular puntos (máx según tiempo)
+    const tiempoTotal = (p.tiempo_segundos || 30) * 1000;
+    const factor = Math.max(0.2, 1 - (tiempoMs / tiempoTotal) * 0.8);
+    const puntosGanados = correcto ? Math.round((p.puntos || 100) * factor) : 0;
+
+    // Guardar en Supabase
+    await AlephAPI.Sala.responder({
+        salaId: sala.id,
+        preguntaId: p.id,
+        respuesta: valorRaw,
+        esCorrecta: correcto,
+        tiempoMs,
+        puntosGanados
+    });
+
+    // Actualizar puntaje
+    if (puntosGanados > 0) {
+        await AlephAPI.Sala.actualizarPuntaje({
+            salaId: sala.id,
+            userId: currentUser.id,
+            puntosExtra: puntosGanados
+        });
+    }
+
+    renderEsperando(correcto, puntosGanados);
+}
+
+function verificarRespuesta(p, valor) {
+    const correcta = typeof p.respuesta_correcta === 'string'
+        ? p.respuesta_correcta
+        : JSON.stringify(p.respuesta_correcta);
+
+    if (p.tipo === 'multiple_choice') return valor === correcta;
+    if (p.tipo === 'verdadero_falso') return valor === correcta;
+    if (p.tipo === 'numerica') return parseFloat(valor) === parseFloat(correcta);
+    if (p.tipo === 'respuesta_corta')
+        return valor.trim().toLowerCase() === correcta.trim().toLowerCase();
+    return false;
+}
+
+// ── RENDER: Esperando resultado ───────────────────────────
+function renderEsperando(correcto, pts) {
+    puntajeLocal += pts;
+    document.getElementById('jugarPts').textContent = puntajeLocal + ' pts';
+
+    document.getElementById('jugarMain').innerHTML = `
+        <div class="estado-respondio">
+            <div class="respondio-icon">${correcto ? '✅' : '❌'}</div>
+            <div class="respondio-titulo">${correcto ? '¡Correcto!' : 'Incorrecto'}</div>
+            ${pts > 0 ? `<div class="pts-ganados">+${pts} pts</div>` : ''}
+            <div class="respondio-sub">Esperando al docente...</div>
+        </div>`;
+}
+
+// ── RENDER: Ranking ───────────────────────────────────────
+async function renderRanking() {
+    await cargarParticipantes();
+    const top10 = [...participantes].sort((a,b) => b.puntaje - a.puntaje).slice(0,10);
+
+    const itemsHTML = top10.map((p, i) => {
+        const esYo = p.user_id === currentUser.id;
+        return `
+            <div class="ranking-item-alumno ${esYo ? 'yo-ranking' : ''}"
+                 style="animation-delay:${i*0.06}s">
+                <span class="rank-pos">${MEDALLAS[i] || (i+1)}</span>
+                <span class="rank-name">${sanitize(p.username)}${esYo ? ' 👈' : ''}</span>
+                <span class="rank-pts">${p.puntaje} pts</span>
+            </div>`;
+    }).join('');
+
+    // Posición del jugador si no está en top 10
+    const miPosicion = [...participantes].sort((a,b) => b.puntaje - a.puntaje)
+        .findIndex(p => p.user_id === currentUser.id);
+
+    document.getElementById('jugarMain').innerHTML = `
+        <div class="estado-ranking">
+            <div class="ranking-titulo">🏆 Ranking</div>
+            ${itemsHTML}
+            ${miPosicion >= 10 ? `<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:0.82em;margin-top:8px;">
+                Tu posición: #${miPosicion + 1}
+            </div>` : ''}
+        </div>`;
+}
+
+// ── RENDER: Final ─────────────────────────────────────────
+async function renderFinal() {
+    clearInterval(timerInterval);
+    suscripciones.forEach(s => s?.unsubscribe?.());
+
+    await cargarParticipantes();
+    const sorted = [...participantes].sort((a,b) => b.puntaje - a.puntaje);
+    const miPos  = sorted.findIndex(p => p.user_id === currentUser.id);
+    const yo     = sorted[miPos];
+
+    let emoji = '🎮';
+    if (miPos === 0) emoji = '🥇';
+    else if (miPos === 1) emoji = '🥈';
+    else if (miPos === 2) emoji = '🥉';
+
+    document.getElementById('jugarMain').innerHTML = `
+        <div class="estado-final">
+            <div class="final-emoji">${emoji}</div>
+            <div class="final-titulo">¡Fin del quiz!</div>
+            <div class="final-pts">${yo?.puntaje || puntajeLocal} pts</div>
+            <div class="final-sub">Puesto #${miPos + 1} de ${participantes.length}</div>
+            <button class="btn btn-primary" onclick="window.location.href='quizzit.html'"
+                    style="margin-top:8px;">
+                Volver a Quizzit
+            </button>
+        </div>`;
+}
+</script>
+</body>
+</html>
