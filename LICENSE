@@ -1,21 +1,80 @@
-MIT License
+Aleph Reference License (ARL)
 
-Copyright (c) 2026 casaslucas858-lgtm
+Version 1.1
+Copyright (c) 2026 Lucas Casas. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+0. ACCEPTANCE OF TERMS
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+By accessing, viewing, or using the Software, you agree to be bound by the terms of this License.
+If you do not agree to these terms, you must not access or use the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+1. DEFINITIONS
+
+“Software” refers to AlephOne, including all source code, object code, assets, graphics, documentation, and associated files provided under this License.
+
+“Author” refers to Lucas Casas, the sole creator and copyright holder of the Software.
+
+“Use” means accessing, reading, or compiling the Software solely for private, non-production evaluation and for the purposes defined in Section 2.
+
+“Commercial Use” refers to any use intended for commercial advantage or monetary compensation, including but not limited to: business operations, Software-as-a-Service (SaaS), advertising-supported platforms, or any context where the Software generates revenue or provides value within a commercial activity.
+
+“Permission” refers strictly to prior, explicit written approval granted by the Author via email.
+
+2. GRANT OF LICENSE
+
+The Author grants you a non-exclusive, non-transferable, and revocable license to access the Software under the following conditions:
+
+Reference and Education
+You may view and study the source code solely for personal learning, academic research, and conceptual understanding.
+
+Private Evaluation
+You may compile and execute the Software in a private, non-production environment exclusively to understand its functionality, behavior, and architecture.
+
+3. RESTRICTIONS
+
+Any use not expressly permitted in Section 2 is strictly prohibited. Without limitation, you may not:
+
+Commercialize: Engage in any Commercial Use of the Software or any of its components.
+Redistribute: Copy, publish, sublicense, lease, sell, or otherwise distribute the Software (modified or unmodified) to any third party or public repository.
+Deploy: Use the Software in any production environment, public-facing service, or shared system.
+Derive or Compete: Create derivative works or competing products based on substantial portions of the Software, including but not limited to replication of its core architecture, algorithms, or distinctive implementation patterns.
+Circumvent: Attempt to bypass or undermine the restrictions defined in this License.
+Unlawful or Harmful Use: Use the Software in any manner that is illegal, malicious, or in violation of applicable laws or regulations.
+4. PERMISSION FOR EXTENDED USE
+
+Any use of the Software beyond the scope of Section 2—including but not limited to commercial use, redistribution, or deployment—requires prior written Permission from the Author via email.
+
+Failure to obtain such Permission before engaging in such use constitutes a material breach of this License.
+
+5. INTELLECTUAL PROPERTY
+
+The Software is licensed, not sold. All title, ownership rights, and intellectual property rights in and to the Software remain exclusively with the Author.
+
+This License does not grant any rights to use the Author’s name, trademarks, or branding.
+
+6. FEEDBACK AND INSPIRATION
+
+Feedback
+Any feedback, suggestions, or ideas provided by you may be used by the Author without restriction or compensation.
+
+Inspiration
+This License permits learning and conceptual inspiration; however, it does not authorize copying substantial portions of the Software or reproducing its architecture, structure, or unique implementations in other projects.
+
+7. NO WARRANTY
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+8. LIMITATION OF LIABILITY
+
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR ITS USE OR MISUSE.
+
+9. TERMINATION
+
+This License is effective until terminated. Your rights under this License will terminate automatically and without notice if you fail to comply with any of its terms.
+
+Upon termination, you must immediately cease all use of the Software and destroy all copies, full or partial, in your possession or control.
+
+10. GOVERNING LAW
+
+This License shall be governed by and construed in accordance with the laws of Argentina.
+Any disputes arising under this License shall be subject to the exclusive jurisdiction of the courts of Argentina.
