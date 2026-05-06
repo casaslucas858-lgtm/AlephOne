@@ -2,7 +2,7 @@
 
 **Plataforma educativa integral para escuelas, docentes y estudiantes.**
 
-> *"No es cuánto sabés, es qué tan profundo"*
+> *"what homework?"*
 
 ---
 
@@ -127,5 +127,6 @@ MIT License — Proyecto educativo abierto.
 Competidor ATACALAR, Canguro Matemático.
 
 ---
+made by luks with medium effort
 
 *AlephOne nació del caos escolar real. Construido para resolverlo.*
