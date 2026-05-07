@@ -350,5 +350,55 @@
 <script src="js/api.js"></script>
 <script src="js/app.js"></script>
 <script src="js/ai-chat.js"></script>
+
+<!-- BOTTOM NAV (mobile only) -->
+<nav class="bottom-nav" id="bottomNav">
+    <a href="dashboard.html" class="bn-item">
+        <span class="bn-icon">🏠</span>
+        <span class="bn-label">Inicio</span>
+    </a>
+    <a href="comunicacion.html" class="bn-item">
+        <span class="bn-icon">📢</span>
+        <span class="bn-label">Mensajes</span>
+    </a>
+    <a href="tareas.html" class="bn-item">
+        <span class="bn-icon">📋</span>
+        <span class="bn-label">Tareas</span>
+    </a>
+    <button type="button" class="bn-item active" onclick="toggleMasSheet()">
+        <span class="bn-icon">⋯</span>
+        <span class="bn-label">Más</span>
+    </button>
+</nav>
+
+<!-- SHEET MÁS -->
+<div class="mas-overlay" id="masOverlay" onclick="toggleMasSheet()"></div>
+<div class="mas-sheet" id="masSheet">
+    <div class="mas-handle"></div>
+    <a href="horario.html" class="mas-item" onclick="toggleMasSheet()">
+        <span class="mas-icon">🗓️</span>
+        <span>Horario</span>
+    </a>
+    <a href="promedios.html" class="mas-item" onclick="toggleMasSheet()">
+        <span class="mas-icon">📊</span>
+        <span>Promedios</span>
+    </a>
+    <a href="quizzit.html" class="mas-item" onclick="toggleMasSheet()">
+        <span class="mas-icon">🧪</span>
+        <span>Quizzit</span>
+    </a>
+    <a href="ai-chat.html" class="mas-item active" onclick="toggleMasSheet()">
+        <span class="mas-icon">🤖</span>
+        <span>Fractal AI</span>
+    </a>
+</div>
+
+<script>
+function toggleMasSheet() {
+    document.getElementById('masSheet').classList.toggle('open');
+    document.getElementById('masOverlay').classList.toggle('open');
+}
+</script>
+
 </body>
 </html>
