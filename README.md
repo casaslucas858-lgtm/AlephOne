@@ -117,7 +117,7 @@ cd AlephOne/frontend
 
 ## 📜 Licencia
 
-MIT License — Proyecto educativo abierto.
+ARL License.
 
 ---
 
