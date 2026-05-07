@@ -642,15 +642,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!salaId) { window.location.href = 'quizzit.html'; return; }
 
     // Cargar sala
-    const { data: salaData } = await _sb
-        .from('salas')
-        .select('*, quizzes(*, preguntas(*))')
-        .eq('id', salaId)
-        .single();
+    const res = await AlephAPI.Sala.getById(salaId);
+    if (!res.ok || !res.sala) {
+        showToast('Sala no encontrada', 'error');
+        window.location.href = 'quizzit.html';
+        return;
+    }
 
-    if (!salaData) { showToast('Sala no encontrada', 'error'); window.location.href = 'quizzit.html'; return; }
-
-    sala = salaData;
+    sala = res.sala;
     preguntas = (sala.quizzes?.preguntas || []).sort((a,b) => a.orden - b.orden);
 
     // UI inicial
