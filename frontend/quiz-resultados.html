@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados del quiz — AlephOne</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background: #13131A;
+            min-height: 100vh;
+            color: white;
+        }
+
+        .resultados-shell {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .resultados-topbar {
+            height: var(--header-h);
+            background: rgba(19,19,26,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .resultados-logo {
+            font-family: var(--font-display);
+            font-size: 1.1em;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--teal), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .resultados-topbar-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255,255,255,0.45);
+            font-size: 0.82em;
+        }
+
+        .resultados-main {
+            width: 100%;
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 28px 24px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, rgba(38,212,199,0.12), rgba(115,194,251,0.08));
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: var(--radius-xl);
+            padding: 26px 28px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 20px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+        }
+
+        .hero-label {
+            font-family: var(--font-display);
+            font-size: 0.72em;
+            font-weight: 700;
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.34);
+            margin-bottom: 8px;
+        }
+
+        .hero h1 {
+            font-size: 2em;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .hero-sub {
+            color: rgba(255,255,255,0.55);
+            font-size: 0.92em;
+        }
+
+        .hero-code {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
