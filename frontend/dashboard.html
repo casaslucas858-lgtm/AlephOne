@@ -6,6 +6,360 @@
     <title>Dashboard — AlephOne</title>
     <meta name="description" content="AlephOne Dashboard — Tu resumen diario de clases, tareas y comunicación escolar.">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* ─── SETTINGS PANEL ──────────────────────────────────── */
+        .greeting-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .greeting-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .settings-trigger {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1.5px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.06);
+            color: var(--text-secondary, #94a3b8);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, color 0.2s, transform 0.2s;
+            margin-top: 4px;
+        }
+
+        .settings-trigger:hover {
+            background: rgba(255,255,255,0.12);
+            color: var(--text-primary, #f1f5f9);
+        }
+
+        .settings-trigger.active {
+            background: var(--accent, #26D4C7);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .settings-trigger svg {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .settings-trigger.active svg {
+            transform: rotate(60deg);
+        }
+
+        /* Panel */
+        .settings-panel {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 0.25s ease,
+                        margin-top 0.3s ease;
+            margin-top: 0;
+        }
+
+        .settings-panel.open {
+            max-height: 520px;
+            opacity: 1;
+            margin-top: 16px;
+        }
+
+        .settings-inner {
+            background: rgba(255,255,255,0.04);
+            border: 1.5px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .settings-inner {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .settings-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .settings-section-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary, #64748b);
+        }
+
+        /* Nombre display */
+        .settings-name-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings-avatar-big {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--accent, #26D4C7);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .settings-name-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .settings-name-info strong {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary, #f1f5f9);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .settings-name-info span {
+            font-size: 0.75rem;
+            color: var(--text-secondary, #64748b);
+        }
+
+        /* Separador full width */
+        .settings-divider {
+            grid-column: 1 / -1;
+            height: 1px;
+            background: rgba(255,255,255,0.07);
+            margin: -4px 0;
+        }
+
+        /* Opciones de tema */
+        .theme-options {
+            display: flex;
+            gap: 8px;
+        }
+
+        .theme-btn {
+            flex: 1;
+            padding: 8px 6px;
+            border-radius: 10px;
+            border: 1.5px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            color: var(--text-secondary, #94a3b8);
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.18s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .theme-btn:hover {
+            background: rgba(255,255,255,0.09);
+            color: var(--text-primary, #f1f5f9);
+        }
+
+        .theme-btn.active {
+            border-color: var(--accent, #26D4C7);
+            background: rgba(38,212,199,0.12);
+            color: var(--accent, #26D4C7);
+        }
+
+        .theme-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Opciones de accesibilidad */
+        .access-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .access-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1.5px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.03);
+            cursor: pointer;
+            transition: background 0.18s;
+        }
+
+        .access-toggle:hover {
+            background: rgba(255,255,255,0.07);
+        }
+
+        .access-toggle-label {
+            font-size: 0.8rem;
+            color: var(--text-primary, #e2e8f0);
+            font-weight: 500;
+        }
+
+        /* Toggle switch */
+        .toggle-switch {
+            width: 36px;
+            height: 20px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            position: relative;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch.on {
+            background: var(--accent, #26D4C7);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #fff;
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .toggle-switch.on::after {
+            transform: translateX(16px);
+        }
+
+        /* Fuente size */
+        .font-size-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1.5px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .font-size-label {
+            font-size: 0.8rem;
+            color: var(--text-primary, #e2e8f0);
+            font-weight: 500;
+        }
+
+        .font-size-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .font-size-controls button {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 1.5px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.06);
+            color: var(--text-primary, #f1f5f9);
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+            line-height: 1;
+        }
+
+        .font-size-controls button:hover {
+            background: rgba(255,255,255,0.14);
+        }
+
+        .font-size-val {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--accent, #26D4C7);
+            min-width: 28px;
+            text-align: center;
+        }
+
+        /* Acciones de perfil */
+        .profile-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .profile-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 10px;
+            border: 1.5px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.03);
+            color: var(--text-primary, #e2e8f0);
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 500;
+            text-align: left;
+            text-decoration: none;
+            transition: background 0.18s;
+            width: 100%;
+        }
+
+        .profile-action-btn:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .profile-action-btn.danger {
+            color: #f87171;
+            border-color: rgba(248,113,113,0.15);
+        }
+
+        .profile-action-btn.danger:hover {
+            background: rgba(248,113,113,0.08);
+        }
+
+        .profile-action-btn svg {
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+            opacity: 0.7;
+        }
+
+        /* Modo reducido de animaciones */
+        body.reduce-motion * {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+        }
+
+        /* Tamaño fuente aplicado */
+        body.font-large { font-size: 105%; }
+        body.font-xlarge { font-size: 112%; }
+    </style>
 </head>
 <body>
 <div class="app-shell">
@@ -65,12 +419,105 @@
     <!-- MAIN -->
     <main class="main-content">
 
-        <!-- Greeting -->
+        <!-- Greeting + Settings -->
         <div class="day-greeting fade-up" id="dayGreeting">
-            <div class="greeting-label">HOY ES <span id="greetingDia"></span></div>
-            <h2 id="greetingMsg">Hola 👋</h2>
-            <div class="greeting-date" id="greetingDate"></div>
-            <div class="greeting-badges" id="greetingBadges"></div>
+            <div class="greeting-row">
+                <div class="greeting-content">
+                    <div class="greeting-label">HOY ES <span id="greetingDia"></span></div>
+                    <h2 id="greetingMsg">Hola 👋</h2>
+                    <div class="greeting-date" id="greetingDate"></div>
+                    <div class="greeting-badges" id="greetingBadges"></div>
+                </div>
+                <button
+                    class="settings-trigger"
+                    id="settingsToggle"
+                    title="Ajustes y perfil"
+                    onclick="toggleSettingsPanel()"
+                    aria-expanded="false"
+                    aria-controls="settingsPanel"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Settings Panel -->
+            <div class="settings-panel" id="settingsPanel" role="region" aria-label="Ajustes">
+                <div class="settings-inner">
+
+                    <!-- Perfil -->
+                    <div class="settings-section">
+                        <div class="settings-section-label">Perfil</div>
+                        <div class="settings-name-display">
+                            <div class="settings-avatar-big" id="settingsAvatar">?</div>
+                            <div class="settings-name-info">
+                                <strong id="settingsUsername">—</strong>
+                                <span id="settingsRole">—</span>
+                            </div>
+                        </div>
+                        <div class="profile-actions">
+                            <button class="profile-action-btn" onclick="copyUsername()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Copiar usuario
+                            </button>
+                            <button class="profile-action-btn danger" onclick="logout()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                Cerrar sesión
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tema -->
+                    <div class="settings-section">
+                        <div class="settings-section-label">Apariencia</div>
+                        <div class="theme-options">
+                            <button class="theme-btn" id="themeBtnLight" onclick="setTheme('light')" title="Claro">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                                Claro
+                            </button>
+                            <button class="theme-btn active" id="themeBtnDark" onclick="setTheme('dark')" title="Oscuro">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                                Oscuro
+                            </button>
+                            <button class="theme-btn" id="themeBtnAuto" onclick="setTheme('auto')" title="Sistema">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                                Auto
+                            </button>
+                        </div>
+
+                        <!-- Tamaño fuente -->
+                        <div class="settings-section-label" style="margin-top:4px;">Texto</div>
+                        <div class="font-size-row">
+                            <span class="font-size-label">Tamaño de letra</span>
+                            <div class="font-size-controls">
+                                <button onclick="changeFontSize(-1)" aria-label="Reducir">−</button>
+                                <span class="font-size-val" id="fontSizeVal">100%</span>
+                                <button onclick="changeFontSize(1)" aria-label="Aumentar">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-divider"></div>
+
+                    <!-- Accesibilidad -->
+                    <div class="settings-section" style="grid-column: 1 / -1;">
+                        <div class="settings-section-label">Accesibilidad</div>
+                        <div class="access-options">
+                            <div class="access-toggle" onclick="toggleReduceMotion()" role="switch" id="motionToggleRow" aria-checked="false">
+                                <span class="access-toggle-label">Reducir movimiento</span>
+                                <div class="toggle-switch" id="motionToggle"></div>
+                            </div>
+                            <div class="access-toggle" onclick="toggleHighContrast()" role="switch" id="contrastToggleRow" aria-checked="false">
+                                <span class="access-toggle-label">Alto contraste</span>
+                                <div class="toggle-switch" id="contrastToggle"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
 
         <!-- Stats -->
@@ -215,10 +662,158 @@
 </div>
 
 <script>
+// ─── MAS SHEET ───────────────────────────────────────────────
 function toggleMasSheet() {
     document.getElementById('masSheet').classList.toggle('open');
     document.getElementById('masOverlay').classList.toggle('open');
 }
+
+// ─── SETTINGS PANEL ─────────────────────────────────────────
+function toggleSettingsPanel() {
+    const panel = document.getElementById('settingsPanel');
+    const btn   = document.getElementById('settingsToggle');
+    const isOpen = panel.classList.contains('open');
+
+    panel.classList.toggle('open');
+    btn.classList.toggle('active');
+    btn.setAttribute('aria-expanded', String(!isOpen));
+
+    // Sync perfil desde window._alephUser si ya cargó
+    if (!isOpen) syncSettingsProfile();
+}
+
+function syncSettingsProfile() {
+    const user = window._alephUser;
+    if (!user) return;
+
+    const initial = (user.username || '?')[0].toUpperCase();
+    const el = document.getElementById('settingsAvatar');
+    if (el) el.textContent = initial;
+
+    const uEl = document.getElementById('settingsUsername');
+    if (uEl) uEl.textContent = user.username || '—';
+
+    const roles = { student: 'Estudiante', teacher: 'Docente', director: 'Director' };
+    const rEl = document.getElementById('settingsRole');
+    if (rEl) rEl.textContent = roles[user.role] || user.role || '—';
+}
+
+// Cerrar al click fuera
+document.addEventListener('click', (e) => {
+    const panel  = document.getElementById('settingsPanel');
+    const btn    = document.getElementById('settingsToggle');
+    const greeting = document.getElementById('dayGreeting');
+    if (!greeting) return;
+    if (!greeting.contains(e.target)) {
+        panel.classList.remove('open');
+        btn.classList.remove('active');
+        btn.setAttribute('aria-expanded', 'false');
+    }
+});
+
+// ─── TEMA ────────────────────────────────────────────────────
+const FONT_SIZES = [85, 92, 100, 107, 115];
+let fontSizeIdx = 2; // 100% default
+
+function setTheme(theme) {
+    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+
+    if (theme === 'light') {
+        document.body.classList.remove('dark-mode');
+        document.getElementById('themeBtnLight').classList.add('active');
+        localStorage.setItem('aleph_dark_mode', 'false');
+        localStorage.setItem('aleph_theme', 'light');
+        const btn = document.getElementById('darkModeBtn');
+        if (btn) btn.textContent = '🌙';
+    } else if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.getElementById('themeBtnDark').classList.add('active');
+        localStorage.setItem('aleph_dark_mode', 'true');
+        localStorage.setItem('aleph_theme', 'dark');
+        const btn = document.getElementById('darkModeBtn');
+        if (btn) btn.textContent = '☀️';
+    } else {
+        // auto — sigue preferencia del sistema
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.body.classList.toggle('dark-mode', prefersDark);
+        document.getElementById('themeBtnAuto').classList.add('active');
+        localStorage.setItem('aleph_theme', 'auto');
+        const btn = document.getElementById('darkModeBtn');
+        if (btn) btn.textContent = prefersDark ? '☀️' : '🌙';
+    }
+}
+
+function syncThemeButtons() {
+    const saved = localStorage.getItem('aleph_theme') || 'dark';
+    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+    if (saved === 'light')      document.getElementById('themeBtnLight')?.classList.add('active');
+    else if (saved === 'auto')  document.getElementById('themeBtnAuto')?.classList.add('active');
+    else                        document.getElementById('themeBtnDark')?.classList.add('active');
+}
+
+// ─── FUENTE ──────────────────────────────────────────────────
+function changeFontSize(dir) {
+    fontSizeIdx = Math.max(0, Math.min(FONT_SIZES.length - 1, fontSizeIdx + dir));
+    const size = FONT_SIZES[fontSizeIdx];
+    document.documentElement.style.fontSize = size + '%';
+    document.getElementById('fontSizeVal').textContent = size + '%';
+    localStorage.setItem('aleph_font_size_idx', fontSizeIdx);
+}
+
+function loadFontSize() {
+    const saved = localStorage.getItem('aleph_font_size_idx');
+    if (saved !== null) {
+        fontSizeIdx = parseInt(saved);
+        const size = FONT_SIZES[fontSizeIdx] || 100;
+        document.documentElement.style.fontSize = size + '%';
+        const el = document.getElementById('fontSizeVal');
+        if (el) el.textContent = size + '%';
+    }
+}
+
+// ─── ACCESIBILIDAD ───────────────────────────────────────────
+function toggleReduceMotion() {
+    const isOn = document.body.classList.toggle('reduce-motion');
+    document.getElementById('motionToggle').classList.toggle('on', isOn);
+    document.getElementById('motionToggleRow').setAttribute('aria-checked', String(isOn));
+    localStorage.setItem('aleph_reduce_motion', isOn);
+}
+
+function toggleHighContrast() {
+    const isOn = document.body.classList.toggle('high-contrast');
+    document.getElementById('contrastToggle').classList.toggle('on', isOn);
+    document.getElementById('contrastToggleRow').setAttribute('aria-checked', String(isOn));
+    localStorage.setItem('aleph_high_contrast', isOn);
+}
+
+function loadAccessibility() {
+    if (localStorage.getItem('aleph_reduce_motion') === 'true') {
+        document.body.classList.add('reduce-motion');
+        document.getElementById('motionToggle')?.classList.add('on');
+        document.getElementById('motionToggleRow')?.setAttribute('aria-checked', 'true');
+    }
+    if (localStorage.getItem('aleph_high_contrast') === 'true') {
+        document.body.classList.add('high-contrast');
+        document.getElementById('contrastToggle')?.classList.add('on');
+        document.getElementById('contrastToggleRow')?.setAttribute('aria-checked', 'true');
+    }
+}
+
+// ─── COPIAR USUARIO ──────────────────────────────────────────
+function copyUsername() {
+    const user = window._alephUser;
+    if (!user?.username) return;
+    navigator.clipboard.writeText(user.username).then(() => {
+        if (typeof showToast === 'function') showToast('Usuario copiado', 'success');
+    });
+}
+
+// ─── INIT ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    syncThemeButtons();
+    loadFontSize();
+    loadAccessibility();
+});
 </script>
 
 </body>
