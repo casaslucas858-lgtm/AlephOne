@@ -213,6 +213,108 @@ async function logout() {
     window.location.href = './index.html';
 }
 
+// ============================================================
+// ACCESSIBILITY — Global system (runs on every page)
+// ============================================================
+
+// ─── SVG FILTERS (inyectados vía JS para que funcionen en todas las páginas) ──
+function injectVisionSVGFilters() {
+    if (document.getElementById('aleph-vision-filters')) return;
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.id = 'aleph-vision-filters';
+    svg.setAttribute('aria-hidden', 'true');
+    svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;';
+    svg.innerHTML = `
+        <defs>
+            <filter id="filter-deuteranopia" color-interpolation-filters="linearRGB">
+                <feColorMatrix type="matrix" values="0.367 0.861 -0.228 0 0  0.280 0.673 0.047 0 0  -0.012 0.043 0.969 0 0  0 0 0 1 0"/>
+            </filter>
+            <filter id="filter-protanopia" color-interpolation-filters="linearRGB">
+                <feColorMatrix type="matrix" values="0.152 1.053 -0.205 0 0  0.115 0.786 0.099 0 0  -0.004 -0.048 1.052 0 0  0 0 0 1 0"/>
+            </filter>
+            <filter id="filter-tritanopia" color-interpolation-filters="linearRGB">
+                <feColorMatrix type="matrix" values="1.256 -0.077 -0.179 0 0  -0.078 0.931 0.148 0 0  0.005 0.691 0.304 0 0  0 0 0 1 0"/>
+            </filter>
+        </defs>
+    `;
+    document.body.insertBefore(svg, document.body.firstChild);
+}
+
+// ─── FONT SIZE ───────────────────────────────────────────────
+const _ALEPH_FONT_SIZES = [85, 92, 100, 107, 115];
+let _alephFontSizeIdx = 2;
+
+function initFontSize() {
+    const saved = localStorage.getItem('aleph_font_size_idx');
+    if (saved !== null) {
+        _alephFontSizeIdx = parseInt(saved, 10);
+        const size = _ALEPH_FONT_SIZES[_alephFontSizeIdx] || 100;
+        document.documentElement.style.fontSize = size + '%';
+        // Sync dashboard UI if present
+        const el = document.getElementById('fontSizeVal');
+        if (el) el.textContent = size + '%';
+    }
+}
+
+function changeFontSize(dir) {
+    _alephFontSizeIdx = Math.max(0, Math.min(_ALEPH_FONT_SIZES.length - 1, _alephFontSizeIdx + dir));
+    const size = _ALEPH_FONT_SIZES[_alephFontSizeIdx];
+    document.documentElement.style.fontSize = size + '%';
+    const el = document.getElementById('fontSizeVal');
+    if (el) el.textContent = size + '%';
+    localStorage.setItem('aleph_font_size_idx', _alephFontSizeIdx);
+}
+
+// ─── VISION MODES ────────────────────────────────────────────
+const _ALEPH_VISION_MODES = ['deuteranopia', 'protanopia', 'tritanopia', 'grayscale'];
+
+function setVision(mode) {
+    _ALEPH_VISION_MODES.forEach(m => document.body.classList.remove('vision-' + m));
+    document.querySelectorAll('.vision-btn').forEach(b => b.classList.remove('active'));
+    if (mode !== 'normal') document.body.classList.add('vision-' + mode);
+    const id = 'vision' + mode.charAt(0).toUpperCase() + mode.slice(1);
+    document.getElementById(id)?.classList.add('active');
+    localStorage.setItem('aleph_vision', mode);
+}
+
+function initVision() {
+    const saved = localStorage.getItem('aleph_vision') || 'normal';
+    setVision(saved);
+}
+
+// ─── A11Y TOGGLES ────────────────────────────────────────────
+const _ALEPH_A11Y_KEYS = [
+    'reduce-motion', 'reduce-transparency', 'high-contrast',
+    'font-dyslexic', 'letter-spacing-wide', 'line-height-wide',
+    'underline-links', 'enhanced-focus', 'large-targets'
+];
+
+function toggleA11y(key) {
+    const isOn = document.body.classList.toggle(key);
+    document.getElementById('sw-' + key)?.classList.toggle('on', isOn);
+    document.getElementById('row-' + key)?.setAttribute('aria-checked', String(isOn));
+    localStorage.setItem('aleph_a11y_' + key, isOn);
+}
+
+function initA11yToggles() {
+    _ALEPH_A11Y_KEYS.forEach(key => {
+        if (localStorage.getItem('aleph_a11y_' + key) === 'true') {
+            document.body.classList.add(key);
+            // Sync dashboard settings panel UI if present
+            document.getElementById('sw-' + key)?.classList.add('on');
+            document.getElementById('row-' + key)?.setAttribute('aria-checked', 'true');
+        }
+    });
+}
+
+// ─── INIT ALL ACCESSIBILITY ──────────────────────────────────
+function initAccessibility() {
+    injectVisionSVGFilters();
+    initFontSize();
+    initVision();
+    initA11yToggles();
+}
+
 // ─── INIT GLOBAL ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
     // Init Supabase auth PRIMERO
@@ -220,6 +322,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Dark mode siempre
     initDarkMode();
+
+    // Accesibilidad global (font size, visión, toggles)
+    initAccessibility();
 
     // Nav activa
     setActiveNav();
@@ -240,7 +345,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Páginas protegidas
-    const protectedPages = ['dashboard', 'tareas', 'horario', 'promedios', 'comunicacion', 'ai-chat'];
+    const protectedPages = ['dashboard', 'tareas', 'horario', 'promedios', 'comunicacion', 'ai-chat', 'quizzit'];
     const isProtected = protectedPages.some(p => window.location.pathname.includes(p));
     
     if (isProtected) {
