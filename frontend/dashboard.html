@@ -459,7 +459,7 @@ function toggleMasSheet() {
     document.getElementById('masOverlay').classList.toggle('open');
 }
 
-// ─── SETTINGS ────────────────────────────────────────────────
+// ─── SETTINGS PANEL (dashboard-only UI) ──────────────────────
 function toggleSettingsPanel() {
     const panel = document.getElementById('settingsPanel');
     const btn   = document.getElementById('settingsToggle');
@@ -473,10 +473,12 @@ function toggleSettingsPanel() {
 document.addEventListener('click', e => {
     const greeting = document.getElementById('dayGreeting');
     if (!greeting?.contains(e.target)) {
-        document.getElementById('settingsPanel').classList.remove('open');
+        document.getElementById('settingsPanel')?.classList.remove('open');
         const btn = document.getElementById('settingsToggle');
-        btn.classList.remove('active');
-        btn.setAttribute('aria-expanded', 'false');
+        if (btn) {
+            btn.classList.remove('active');
+            btn.setAttribute('aria-expanded', 'false');
+        }
     }
 });
 
@@ -498,10 +500,7 @@ function syncSettingsProfile() {
     if (rEl) rEl.textContent = roles[user.role] || user.role || '—';
 }
 
-// ─── TEMA ────────────────────────────────────────────────────
-const FONT_SIZES = [85, 92, 100, 107, 115];
-let fontSizeIdx = 2;
-
+// ─── THEME (syncs with app.js dark mode) ─────────────────────
 function setTheme(theme) {
     document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
     const darkBtn = document.getElementById('darkModeBtn');
@@ -531,40 +530,6 @@ function syncThemeButtons() {
     else                       document.getElementById('themeBtnDark')?.classList.add('active');
 }
 
-function changeFontSize(dir) {
-    fontSizeIdx = Math.max(0, Math.min(FONT_SIZES.length - 1, fontSizeIdx + dir));
-    const size = FONT_SIZES[fontSizeIdx];
-    document.documentElement.style.fontSize = size + '%';
-    document.getElementById('fontSizeVal').textContent = size + '%';
-    localStorage.setItem('aleph_font_size_idx', fontSizeIdx);
-}
-
-// ─── VISIÓN ──────────────────────────────────────────────────
-const VISION_MODES = ['deuteranopia','protanopia','tritanopia','grayscale'];
-
-function setVision(mode) {
-    VISION_MODES.forEach(m => document.body.classList.remove('vision-' + m));
-    document.querySelectorAll('.vision-btn').forEach(b => b.classList.remove('active'));
-    if (mode !== 'normal') document.body.classList.add('vision-' + mode);
-    const id = 'vision' + mode.charAt(0).toUpperCase() + mode.slice(1);
-    document.getElementById(id)?.classList.add('active');
-    localStorage.setItem('aleph_vision', mode);
-}
-
-// ─── ACCESIBILIDAD ───────────────────────────────────────────
-const A11Y_KEYS = [
-    'reduce-motion','reduce-transparency','high-contrast',
-    'font-dyslexic','letter-spacing-wide','line-height-wide',
-    'underline-links','enhanced-focus','large-targets'
-];
-
-function toggleA11y(key) {
-    const isOn = document.body.classList.toggle(key);
-    document.getElementById('sw-' + key)?.classList.toggle('on', isOn);
-    document.getElementById('row-' + key)?.setAttribute('aria-checked', String(isOn));
-    localStorage.setItem('aleph_a11y_' + key, isOn);
-}
-
 // ─── COPIAR USUARIO ──────────────────────────────────────────
 function copyUsername() {
     const user = window._alephUser;
@@ -574,32 +539,9 @@ function copyUsername() {
     });
 }
 
-// ─── INIT ────────────────────────────────────────────────────
+// ─── DASHBOARD SETTINGS INIT ─────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     syncThemeButtons();
-
-    // Font size
-    const savedFS = localStorage.getItem('aleph_font_size_idx');
-    if (savedFS !== null) {
-        fontSizeIdx = parseInt(savedFS);
-        const size = FONT_SIZES[fontSizeIdx] || 100;
-        document.documentElement.style.fontSize = size + '%';
-        const el = document.getElementById('fontSizeVal');
-        if (el) el.textContent = size + '%';
-    }
-
-    // Vision
-    const savedV = localStorage.getItem('aleph_vision') || 'normal';
-    setVision(savedV);
-
-    // A11y toggles
-    A11Y_KEYS.forEach(key => {
-        if (localStorage.getItem('aleph_a11y_' + key) === 'true') {
-            document.body.classList.add(key);
-            document.getElementById('sw-' + key)?.classList.add('on');
-            document.getElementById('row-' + key)?.setAttribute('aria-checked', 'true');
-        }
-    });
 });
 </script>
 
