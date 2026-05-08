@@ -601,6 +601,7 @@
 let preguntas = [];
 let activaIdx  = -1;
 let currentUser = null;
+let guardandoQuiz = false;
 
 const TIPO_LABELS = {
     multiple_choice: 'Múltiple',
@@ -838,34 +839,64 @@ async function publicarQuiz() {
 }
 
 async function _guardar(redirigir) {
+    if (guardandoQuiz) return;
+
     const titulo = document.getElementById('quizTitulo').value.trim();
     if (!titulo) { showToast('Poné un título al quiz', 'warning'); return; }
     if (preguntas.length === 0) { showToast('Agregá al menos una pregunta', 'warning'); return; }
 
     const curso = document.getElementById('quizCurso').value;
-    const modo  = document.getElementById('quizModo').value;
+    const guardarBtn = document.querySelector('.editor-footer .btn-secondary');
+    const publicarBtn = document.querySelector('.editor-footer .btn-primary');
 
-    const resQuiz = await AlephAPI.Quiz.crear({ titulo, descripcion: '', curso });
-    if (!resQuiz.ok) { showToast('Error guardando quiz: ' + resQuiz.error, 'error'); return; }
+    guardandoQuiz = true;
+    if (guardarBtn) guardarBtn.disabled = true;
+    if (publicarBtn) publicarBtn.disabled = true;
+    if (guardarBtn) guardarBtn.textContent = 'Guardando...';
+    if (publicarBtn) publicarBtn.textContent = 'Guardando...';
 
-    const quizId = resQuiz.quiz.id;
+    try {
+        const resQuiz = await AlephAPI.Quiz.crear({ titulo, descripcion: '', curso });
+        if (!resQuiz.ok) {
+            showToast('Error guardando quiz: ' + resQuiz.error, 'error');
+            return;
+        }
 
-    for (let i = 0; i < preguntas.length; i++) {
-        const p = preguntas[i];
-        await AlephAPI.Preguntas.crear({
-            quizId,
-            orden: i,
-            tipo: p.tipo,
-            enunciado: p.enunciado,
-            opciones: p.tipo === 'multiple_choice' ? p.opciones : null,
-            respuestaCorrecta: p.respuesta_correcta,
-            tiempoSegundos: p.tiempo_segundos,
-            puntos: p.puntos
-        });
+        const quizId = resQuiz.quiz.id;
+
+        for (let i = 0; i < preguntas.length; i++) {
+            const p = preguntas[i];
+            const resPregunta = await AlephAPI.Preguntas.crear({
+                quizId,
+                orden: i,
+                tipo: p.tipo,
+                enunciado: p.enunciado,
+                opciones: p.tipo === 'multiple_choice' ? p.opciones : null,
+                respuestaCorrecta: p.respuesta_correcta,
+                tiempoSegundos: p.tiempo_segundos,
+                puntos: p.puntos
+            });
+
+            if (!resPregunta.ok) {
+                await AlephAPI.Quiz.eliminar(quizId);
+                showToast(`Error guardando la pregunta ${i + 1}: ${resPregunta.error}`, 'error');
+                return;
+            }
+        }
+
+        showToast('Quiz guardado ✓', 'success');
+        if (redirigir) setTimeout(() => window.location.href = 'quizzit.html', 1000);
+    } finally {
+        guardandoQuiz = false;
+        if (guardarBtn) {
+            guardarBtn.disabled = false;
+            guardarBtn.textContent = 'Guardar borrador';
+        }
+        if (publicarBtn) {
+            publicarBtn.disabled = false;
+            publicarBtn.textContent = 'Publicar quiz →';
+        }
     }
-
-    showToast('Quiz guardado ✓', 'success');
-    if (redirigir) setTimeout(() => window.location.href = 'quizzit.html', 1000);
 }
 
 // ── Mobile nav ────────────────────────────────────────────
