@@ -744,23 +744,53 @@ function mostrarPregunta(idx) {
 
     // Opciones decorativas
     const opcDisplay = document.getElementById('opcionesDisplay');
-    if (p.tipo === 'multiple_choice' && p.opciones) {
+    if ((p.tipo === 'multiple_choice' || p.tipo === 'seleccion_multiple') && p.opciones) {
         const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : p.opciones;
         opcDisplay.innerHTML = `<div class="opciones-grid">
-            ${opts.map((op, i) => `
+            ${opts.map((op, i) => op.trim() ? `
                 <div class="opcion-sala" data-opt="${LETRAS[i]}">
-                    <div class="opt-letra">${LETRAS[i]}</div>
+                    <div class="opt-letra" style="${p.tipo === 'seleccion_multiple' ? 'border-radius:4px;' : ''}">${LETRAS[i]}</div>
                     <span>${sanitize(op)}</span>
-                </div>`).join('')}
+                </div>` : '').join('')}
         </div>`;
     } else if (p.tipo === 'verdadero_falso') {
         opcDisplay.innerHTML = `<div class="opciones-grid">
             <div class="opcion-sala" data-opt="C"><div class="opt-letra">V</div><span>Verdadero</span></div>
             <div class="opcion-sala" data-opt="A"><div class="opt-letra">F</div><span>Falso</span></div>
         </div>`;
+    } else if (p.tipo === 'ordenar') {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        opcDisplay.innerHTML = `<div class="opciones-grid">
+            ${opts.map((op, i) => `
+                <div class="opcion-sala" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
+                    <div class="opt-letra" style="border-radius:4px; background:var(--teal); color:#0a0a0a;">${i+1}</div>
+                    <span>${sanitize(op)}</span>
+                </div>`).join('')}
+        </div>`;
+    } else if (p.tipo === 'relacionar_columnas') {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        opcDisplay.innerHTML = `<div style="display:flex; flex-direction:column; gap:8px;">
+            ${opts.map(op => `
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <div class="opcion-sala" style="flex:1; background:rgba(255,255,255,0.05);">${sanitize(op.izq)}</div>
+                    <span style="color:var(--text-faint);">→</span>
+                    <div class="opcion-sala" style="flex:1; background:rgba(255,255,255,0.05);">${sanitize(op.der)}</div>
+                </div>`).join('')}
+        </div>`;
+    } else if (p.tipo === 'imagen_click') {
+        const url = p.imagen_url || '';
+        const corr = typeof p.respuesta_correcta === 'string' ? JSON.parse(p.respuesta_correcta) : p.respuesta_correcta;
+        opcDisplay.innerHTML = `
+            <div style="position:relative; display:inline-block; max-width:100%; border-radius:8px; overflow:hidden;">
+                <img src="${sanitize(url)}" style="display:block; max-width:100%; height:auto;">
+                ${corr ? `
+                    <div style="position:absolute; top:${corr.y}%; left:${corr.x}%; width:${corr.r*2}%; height:${corr.r*2}%; background:rgba(38,212,199,0.4); border:2px solid var(--teal); border-radius:50%; transform:translate(-50%, -50%); pointer-events:none;"></div>
+                ` : ''}
+            </div>
+        `;
     } else {
         opcDisplay.innerHTML = `<p style="color:rgba(255,255,255,0.4);font-size:0.88em;">
-            Respuesta ${p.tipo === 'numerica' ? 'numérica' : 'de texto libre'}
+            Respuesta ${p.tipo === 'numerica' ? 'numérica' : 'de texto / interactiva'}
         </p>`;
     }
 
