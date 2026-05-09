@@ -17,13 +17,13 @@ AlephOne organiza la vida escolar en un solo lugar. Sin WhatsApp fragmentado, si
 
 ---
 
-## 🔗 Demo
+## Demo
 
 **MVP (próximamente):** `https://casaslucas858-lgtm.github.io/AlephOne/frontend/index.html`
 
 ---
 
-## 👥 Usuarios
+## Usuarios
 
 | Rol | Descripción |
 |-----|-------------|
@@ -33,7 +33,7 @@ AlephOne organiza la vida escolar en un solo lugar. Sin WhatsApp fragmentado, si
 
 ---
 
-## 🎯 MVP — Funciones actuales
+## MVP — Funciones actuales
 
 - ✅ Autenticación por rol (docente / estudiante)
 - ✅ Dashboard "Qué hago hoy"
@@ -58,7 +58,7 @@ Competencias entre grados, inner chats, banco de preguntas.
 
 ---
 
-## 🛠️ Stack técnico
+## Stack técnico
 
 | Capa | Tecnología |
 |------|-----------|
@@ -70,7 +70,7 @@ Competencias entre grados, inner chats, banco de preguntas.
 
 ---
 
-## 📂 Estructura
+## Estructura
 
 ```
 AlephOne/
@@ -104,7 +104,7 @@ AlephOne/
 
 ---
 
-## 🚀 Correr localmente
+## Correr localmente
 
 ```bash
 git clone https://github.com/casaslucas858-lgtm/AlephOne.git
@@ -115,18 +115,12 @@ cd AlephOne/frontend
 
 ---
 
-## 📜 Licencia
+## Licencia
 
 ARL License.
 
 ---
 
-## 👤 Autor
-
-**Lucas (ishemluks)** — Estudiante de secundaria, La Rioja, Argentina.
-Competidor ATACALAR, Canguro Matemático.
-
----
 made by luks with medium effort
 
 *AlephOne nació del caos escolar real. Construido para resolverlo.*
