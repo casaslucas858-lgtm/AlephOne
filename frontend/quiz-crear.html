@@ -545,13 +545,23 @@
                         <span class="pregunta-counter" id="preguntaCounter">P1</span>
                         <div class="tipo-selector" id="tipoSelector">
                             <button class="tipo-chip active" data-tipo="multiple_choice"
-                                    onclick="cambiarTipo('multiple_choice',this)">Multiple</button>
+                                    onclick="cambiarTipo('multiple_choice',this)">Múltiple (ABCD)</button>
+                            <button class="tipo-chip" data-tipo="seleccion_multiple"
+                                    onclick="cambiarTipo('seleccion_multiple',this)">Sel. Múltiple</button>
                             <button class="tipo-chip" data-tipo="verdadero_falso"
                                     onclick="cambiarTipo('verdadero_falso',this)">V/F</button>
                             <button class="tipo-chip" data-tipo="numerica"
                                     onclick="cambiarTipo('numerica',this)">Numérica</button>
                             <button class="tipo-chip" data-tipo="respuesta_corta"
                                     onclick="cambiarTipo('respuesta_corta',this)">Corta</button>
+                            <button class="tipo-chip" data-tipo="completar_espacio"
+                                    onclick="cambiarTipo('completar_espacio',this)">Completar</button>
+                            <button class="tipo-chip" data-tipo="ordenar"
+                                    onclick="cambiarTipo('ordenar',this)">Ordenar</button>
+                            <button class="tipo-chip" data-tipo="relacionar_columnas"
+                                    onclick="cambiarTipo('relacionar_columnas',this)">Relacionar</button>
+                            <button class="tipo-chip" data-tipo="imagen_click"
+                                    onclick="cambiarTipo('imagen_click',this)">Mapa</button>
                         </div>
                     </div>
                     <div class="editor-settings">
@@ -604,10 +614,15 @@ let currentUser = null;
 let guardandoQuiz = false;
 
 const TIPO_LABELS = {
-    multiple_choice: 'Múltiple',
+    multiple_choice: 'Múltiple (ABCD)',
+    seleccion_multiple: 'Selección múltiple',
     verdadero_falso: 'V/F',
     numerica: 'Numérica',
-    respuesta_corta: 'Corta'
+    respuesta_corta: 'Corta',
+    completar_espacio: 'Completar espacio',
+    ordenar: 'Ordenar',
+    relacionar_columnas: 'Relacionar',
+    imagen_click: 'Mapa (Click)'
 };
 
 function _defaultPregunta(orden) {
@@ -711,6 +726,27 @@ function renderOpciones(p) {
             </div>`;
     }
 
+    if (p.tipo === 'seleccion_multiple') {
+        const correctas = Array.isArray(p.respuesta_correcta) ? p.respuesta_correcta : [];
+        return `
+            <div class="section-label">Opciones — clic para marcar correctas (pueden ser varias)</div>
+            <div class="opciones-section">
+                ${(p.opciones || ['','','','']).map((op, i) => `
+                    <div class="opcion-item ${correctas.includes(letras[i]) ? 'correcta' : ''}"
+                         data-opt="${letras[i]}"
+                         onclick="toggleCorrecta('${letras[i]}')">
+                        <div class="opcion-letra" style="border-radius:4px;">${letras[i]}</div>
+                        <input class="opcion-input"
+                               type="text"
+                               placeholder="Opción ${letras[i]}"
+                               value="${sanitize(op)}"
+                               oninput="syncOpcion(${i}, this.value)"
+                               onclick="event.stopPropagation()">
+                        <div class="opcion-check" style="border-radius:4px;">${correctas.includes(letras[i]) ? '✓' : ''}</div>
+                    </div>`).join('')}
+            </div>`;
+    }
+
     if (p.tipo === 'verdadero_falso') {
         return `
             <div class="section-label">Respuesta correcta</div>
@@ -743,7 +779,110 @@ function renderOpciones(p) {
             </p>`;
     }
 
+    if (p.tipo === 'completar_espacio') {
+        return `
+            <div class="section-label">Palabra para completar el espacio</div>
+            <input type="text" class="respuesta-directa"
+                   placeholder="Ej: mitocondria"
+                   value="${sanitize(p.respuesta_correcta || '')}"
+                   oninput="syncRespuestaDirecta(this.value)">
+            <p style="font-size:0.76em;color:var(--text-faint);margin-top:4px;">
+                Usá <strong style="color:var(--teal)">[___]</strong> en el enunciado donde quieras que vaya el espacio en blanco.
+            </p>`;
+    }
+
+    if (p.tipo === 'ordenar') {
+        const opciones = p.opciones || ['','',''];
+        return `
+            <div class="section-label">Elementos a ordenar (en el orden correcto)</div>
+            <div class="opciones-section" id="ordenarSection">
+                ${opciones.map((op, i) => `
+                    <div class="opcion-item" style="cursor:default;">
+                        <div class="opcion-letra" style="border-radius:4px; font-size:0.8em;">${i + 1}</div>
+                        <input class="opcion-input"
+                               type="text"
+                               placeholder="Elemento ${i + 1}"
+                               value="${sanitize(typeof op === 'string' ? op : '')}"
+                               oninput="syncOpcion(${i}, this.value)">
+                        <button class="btn btn-ghost" style="padding:4px 8px; color:#f87171;" onclick="eliminarOpcion(${i})">✕</button>
+                    </div>`).join('')}
+            </div>
+            <button class="btn btn-secondary btn-sm" style="margin-top:10px;" onclick="agregarOpcion()">+ Agregar elemento</button>
+            <p style="font-size:0.76em;color:var(--text-faint);margin-top:10px;">
+                Los alumnos verán estos elementos mezclados aleatoriamente y deberán ordenarlos en la secuencia que definiste acá.
+            </p>`;
+    }
+
+    if (p.tipo === 'relacionar_columnas') {
+        const opciones = p.opciones || [{izq:'', der:''}, {izq:'', der:''}];
+        return `
+            <div class="section-label">Pares correctos para relacionar</div>
+            <div class="opciones-section" id="relacionarSection">
+                ${opciones.map((op, i) => `
+                    <div class="opcion-item" style="cursor:default; gap:8px;">
+                        <input class="opcion-input" style="flex:1;" type="text" placeholder="Columna Izquierda" value="${sanitize(op.izq || '')}" oninput="syncOpcionRel(${i}, 'izq', this.value)">
+                        <span style="color:var(--text-faint);">→</span>
+                        <input class="opcion-input" style="flex:1;" type="text" placeholder="Columna Derecha" value="${sanitize(op.der || '')}" oninput="syncOpcionRel(${i}, 'der', this.value)">
+                        <button class="btn btn-ghost" style="padding:4px 8px; color:#f87171;" onclick="eliminarOpcionRel(${i})">✕</button>
+                    </div>`).join('')}
+            </div>
+            <button class="btn btn-secondary btn-sm" style="margin-top:10px;" onclick="agregarOpcionRel()">+ Agregar par</button>
+            <p style="font-size:0.76em;color:var(--text-faint);margin-top:10px;">
+                Los alumnos deberán conectar los ítems de la izquierda con los de la derecha.
+            </p>`;
+    }
+
+    if (p.tipo === 'imagen_click') {
+        const url = p.imagen_url || '';
+        const corr = p.respuesta_correcta || null; // {x, y, r}
+        return `
+            <div class="section-label">URL de la Imagen</div>
+            <input type="text" class="respuesta-directa"
+                   placeholder="https://ejemplo.com/imagen.jpg"
+                   value="${sanitize(url)}"
+                   oninput="syncImagenUrl(this.value)">
+            ${url ? `
+                <div class="section-label" style="margin-top:16px;">Hacé clic en la imagen para marcar la zona correcta</div>
+                <div style="position:relative; display:inline-block; max-width:100%; border-radius:8px; overflow:hidden;" onclick="marcarZonaImagen(event)">
+                    <img src="${sanitize(url)}" style="display:block; max-width:100%; height:auto;" id="imagenClickMap">
+                    ${corr ? `
+                        <div style="position:absolute; top:${corr.y}%; left:${corr.x}%; width:${corr.r*2}%; height:${corr.r*2}%; background:rgba(38,212,199,0.4); border:2px solid var(--teal); border-radius:50%; transform:translate(-50%, -50%); pointer-events:none;"></div>
+                    ` : ''}
+                </div>
+                <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:0.82em; color:var(--text-faint);">Radio de tolerancia (%):</span>
+                    <input type="range" min="1" max="30" value="${corr ? corr.r : 5}" oninput="syncImagenRadio(this.value)" style="flex:1;">
+                    <span style="font-size:0.82em;">${corr ? corr.r : 5}%</span>
+                </div>
+            ` : ''}`;
+    }
+
     return '';
+}
+
+// ── Sync handlers ─────────────────────────────────────────
+function syncImagenUrl(val) {
+    if (activaIdx < 0) return;
+    preguntas[activaIdx].imagen_url = val;
+    document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
+}
+
+function marcarZonaImagen(e) {
+    if (activaIdx < 0) return;
+    const img = document.getElementById('imagenClickMap');
+    const rect = img.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    const currentR = preguntas[activaIdx].respuesta_correcta?.r || 5;
+    
+    preguntas[activaIdx].respuesta_correcta = { x, y, r: currentR };
+    document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
+}
+
+function syncImagenRadio(val) {
+    if (activaIdx < 0 || !preguntas[activaIdx].respuesta_correcta) return;
+    preguntas[activaIdx].respuesta_correcta.r = parseInt(val);
+    document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
 }
 
 // ── Sync handlers ─────────────────────────────────────────
@@ -758,6 +897,25 @@ function syncOpcion(i, val) {
     preguntas[activaIdx].opciones[i] = val;
 }
 
+function syncOpcionRel(i, col, val) {
+    if (activaIdx < 0) return;
+    if (!preguntas[activaIdx].opciones[i]) preguntas[activaIdx].opciones[i] = {izq:'', der:''};
+    preguntas[activaIdx].opciones[i][col] = val;
+}
+
+function agregarOpcionRel() {
+    if (activaIdx < 0) return;
+    preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || [];
+    preguntas[activaIdx].opciones.push({izq:'', der:''});
+    document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
+}
+
+function eliminarOpcionRel(i) {
+    if (activaIdx < 0) return;
+    preguntas[activaIdx].opciones.splice(i, 1);
+    document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
+}
+
 function syncRespuestaDirecta(val) {
     if (activaIdx < 0) return;
     preguntas[activaIdx].respuesta_correcta = val;
@@ -766,6 +924,21 @@ function syncRespuestaDirecta(val) {
 function marcarCorrecta(letra) {
     if (activaIdx < 0) return;
     preguntas[activaIdx].respuesta_correcta = letra;
+    document.getElementById('opcionesContainer').innerHTML =
+        renderOpciones(preguntas[activaIdx]);
+}
+
+function toggleCorrecta(letra) {
+    if (activaIdx < 0) return;
+    let correctas = Array.isArray(preguntas[activaIdx].respuesta_correcta) 
+        ? preguntas[activaIdx].respuesta_correcta 
+        : [];
+    if (correctas.includes(letra)) {
+        correctas = correctas.filter(l => l !== letra);
+    } else {
+        correctas.push(letra);
+    }
+    preguntas[activaIdx].respuesta_correcta = correctas;
     document.getElementById('opcionesContainer').innerHTML =
         renderOpciones(preguntas[activaIdx]);
 }
@@ -780,11 +953,41 @@ function setVF(valor) {
 function cambiarTipo(tipo, el) {
     if (activaIdx < 0) return;
     preguntas[activaIdx].tipo = tipo;
-    preguntas[activaIdx].respuesta_correcta = null;
-    if (tipo === 'multiple_choice')
+    
+    if (tipo === 'seleccion_multiple') {
+        preguntas[activaIdx].respuesta_correcta = [];
         preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || ['','','',''];
+    } else if (tipo === 'multiple_choice') {
+        preguntas[activaIdx].respuesta_correcta = null;
+        preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || ['','','',''];
+    } else if (tipo === 'ordenar') {
+        preguntas[activaIdx].respuesta_correcta = null;
+        preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || ['','',''];
+    } else if (tipo === 'relacionar_columnas') {
+        preguntas[activaIdx].respuesta_correcta = null;
+        preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || [{izq:'', der:''}, {izq:'', der:''}];
+    } else if (tipo === 'imagen_click') {
+        preguntas[activaIdx].respuesta_correcta = null;
+        preguntas[activaIdx].imagen_url = preguntas[activaIdx].imagen_url || '';
+    } else {
+        preguntas[activaIdx].respuesta_correcta = null;
+    }
+    
     renderEditor();
     renderLista();
+}
+
+function agregarOpcion() {
+    if (activaIdx < 0) return;
+    preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || [];
+    preguntas[activaIdx].opciones.push('');
+    document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
+}
+
+function eliminarOpcion(i) {
+    if (activaIdx < 0) return;
+    preguntas[activaIdx].opciones.splice(i, 1);
+    document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
 }
 
 // Settings sync
