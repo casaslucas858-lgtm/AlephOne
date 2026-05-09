@@ -761,6 +761,60 @@
             };
         }
 
+        function _tieneTexto(val) {
+            return String(val || '').trim().length > 0;
+        }
+
+        function _esPuntoMapaValido(punto) {
+            return punto
+                && typeof punto === 'object'
+                && Number.isFinite(Number(punto.x))
+                && Number.isFinite(Number(punto.y));
+        }
+
+        function _validarPregunta(p, idx) {
+            const pref = `Pregunta ${idx + 1}`;
+
+            if (!_tieneTexto(p.enunciado)) return `${pref}: falta el enunciado.`;
+
+            switch (p.tipo) {
+                case 'multiple_choice':
+                    if (!(p.opciones || []).every(_tieneTexto)) return `${pref}: completá todas las opciones.`;
+                    if (!_tieneTexto(p.respuesta_correcta)) return `${pref}: marcá la opción correcta.`;
+                    break;
+                case 'seleccion_multiple':
+                    if (!(p.opciones || []).every(_tieneTexto)) return `${pref}: completá todas las opciones.`;
+                    if (!Array.isArray(p.respuesta_correcta) || p.respuesta_correcta.length === 0) {
+                        return `${pref}: elegí al menos una respuesta correcta.`;
+                    }
+                    break;
+                case 'verdadero_falso':
+                case 'respuesta_corta':
+                case 'completar_espacio':
+                    if (!_tieneTexto(p.respuesta_correcta)) return `${pref}: completá la respuesta correcta.`;
+                    break;
+                case 'numerica':
+                    if (!_tieneTexto(p.respuesta_correcta)) return `${pref}: completá la respuesta numérica.`;
+                    break;
+                case 'ordenar':
+                    if ((p.opciones || []).length < 2 || !(p.opciones || []).every(_tieneTexto)) {
+                        return `${pref}: cargá al menos dos elementos válidos para ordenar.`;
+                    }
+                    break;
+                case 'relacionar_columnas':
+                    if ((p.opciones || []).length < 2 || !(p.opciones || []).every(op => _tieneTexto(op?.izq) && _tieneTexto(op?.der))) {
+                        return `${pref}: completá al menos dos pares para relacionar.`;
+                    }
+                    break;
+                case 'imagen_click':
+                    if (!_tieneTexto(p.imagen_url)) return `${pref}: falta la URL de la imagen.`;
+                    if (!_esPuntoMapaValido(p.respuesta_correcta)) return `${pref}: marcá el punto correcto sobre la imagen.`;
+                    break;
+            }
+
+            return null;
+        }
+
         // ── Render lista izquierda ────────────────────────────────
         function renderLista() {
             const list = document.getElementById('preguntaList');
@@ -1163,8 +1217,8 @@
             if (preguntas.length === 0) { showToast('Agregá al menos una pregunta', 'warning'); return; }
 
             const curso = document.getElementById('quizCurso').value;
-            const guardarBtn = document.querySelector('.editor-footer .btn-secondary');
-            const publicarBtn = document.querySelector('.editor-footer .btn-primary');
+            const guardarBtn = document.querySelector('.editor-footer button[onclick="guardarBorrador()"]');
+            const publicarBtn = document.querySelector('.editor-footer button[onclick="publicarQuiz()"]');
 
             guardandoQuiz = true;
             if (guardarBtn) guardarBtn.disabled = true;
@@ -1173,6 +1227,14 @@
             if (publicarBtn) publicarBtn.textContent = 'Guardando...';
 
             try {
+                for (let i = 0; i < preguntas.length; i++) {
+                    const validationError = _validarPregunta(preguntas[i], i);
+                    if (validationError) {
+                        showToast(validationError, 'warning');
+                        return;
+                    }
+                }
+
                 const resQuiz = await AlephAPI.Quiz.crear({ titulo, descripcion: '', curso });
                 if (!resQuiz.ok) {
                     showToast('Error guardando quiz: ' + resQuiz.error, 'error');
@@ -1215,7 +1277,7 @@
                             resp = JSON.stringify((p.opciones || []).map((_, idx) => ({ izqId: idx, derId: idx })));
                             break;
                         case 'imagen_click':
-                            opc = p.imagen_url ? { imagen_url: p.imagen_url } : null;
+                            opc = p.imagen_url ? JSON.stringify({ imagen_url: p.imagen_url.trim() }) : null;
                             resp = p.respuesta_correcta
                                 ? (typeof p.respuesta_correcta === 'object' ? JSON.stringify(p.respuesta_correcta) : String(p.respuesta_correcta))
                                 : '';
