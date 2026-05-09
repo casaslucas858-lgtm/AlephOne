@@ -474,7 +474,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             } catch(e) { /* string normal */ }
         }
-        if (p.tipo === 'imagen_click' && p.opciones) {
+        if ((p.tipo === 'imagen_click' || p.tipo === 'slide' || p.tipo === 'libre_imagen' || p.tipo === 'escala') && p.opciones) {
             const imageOptions = typeof p.opciones === 'string'
                 ? (() => { try { return JSON.parse(p.opciones); } catch { return null; } })()
                 : p.opciones;
@@ -483,6 +483,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 p.imagen_path = imageOptions.imagen_path || '';
                 p.imagen_bucket = imageOptions.imagen_bucket || '';
                 p.imagen_nombre = imageOptions.imagen_nombre || '';
+                p.slide_titulo = imageOptions.slide_titulo || '';
+                p.escala_min = imageOptions.min ?? p.escala_min;
+                p.escala_max = imageOptions.max ?? p.escala_max;
+                p.escala_label_izq = imageOptions.left_label || '';
+                p.escala_label_der = imageOptions.right_label || '';
             }
         }
     });
@@ -561,17 +566,19 @@ function renderPregunta(i) {
     const yaResp = respuestas[p.id];
     const opcionesHTML = renderOpcionesAsig(p, yaResp);
 
+    const esOpinion = p.tipo === 'encuesta' || p.tipo === 'escala';
+    const esSlide = p.tipo === 'slide';
     let feedbackHTML = '';
     if (yaResp) {
         feedbackHTML = `
-            <div class="feedback-inline ${yaResp.esCorrecta ? 'ok' : 'mal'}">
-                ${yaResp.esCorrecta ? '✅ Correcto' : '❌ Incorrecto'}
+            <div class="feedback-inline ${esOpinion ? 'ok' : (yaResp.esCorrecta ? 'ok' : 'mal')}">
+                ${esOpinion ? '🗳️ Respuesta registrada' : (yaResp.esCorrecta ? '✅ Correcto' : '❌ Incorrecto')}
                 ${yaResp.puntosGanados > 0 ? `<span>+${yaResp.puntosGanados} pts</span>` : ''}
             </div>`;
     }
 
     const esUltima = i === preguntas.length - 1;
-    const botonSig = yaResp
+    const botonSig = (yaResp || esSlide)
         ? `<button class="btn btn-primary" onclick="${esUltima ? 'finalizar()' : `renderPregunta(${i+1})`}">
                ${esUltima ? '🏁 Terminar' : 'Siguiente →'}
            </button>`
@@ -592,6 +599,52 @@ function renderPregunta(i) {
 
 function renderOpcionesAsig(p, yaResp) {
     const bloq = yaResp ? 'bloqueada' : '';
+
+    if (p.tipo === 'slide') {
+        return `<div style="display:flex; flex-direction:column; gap:16px;">
+            <div style="padding:18px; border-radius:var(--radius-lg); background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); text-align:center;">
+                <div style="font-family:var(--font-display); font-size:1.05em; font-weight:700; color:white;">${sanitize(p.slide_titulo || 'Diapositiva')}</div>
+                <p style="margin-top:8px; color:rgba(255,255,255,0.45); font-size:0.84em;">Bloque informativo.</p>
+            </div>
+            ${p.imagen_url ? `<img src="${sanitize(p.imagen_url)}" style="display:block; max-width:100%; max-height:320px; margin:0 auto; border-radius:12px;">` : ''}
+        </div>`;
+    }
+
+    if (p.tipo === 'encuesta') {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        return `<div class="opciones-asig">
+            ${opts.map((op, i) => {
+                if (!op.trim()) return '';
+                const extra = yaResp?.valor === LETRAS[i] ? 'seleccionada correcta-reveal' : '';
+                return `
+                <div class="opc-asig ${bloq} ${extra}" data-opt="${LETRAS[i]}"
+                     onclick="responderOpinionAsig('${LETRAS[i]}', '${p.id}')">
+                    <div class="opc-letra">${LETRAS[i]}</div>
+                    <span>${sanitize(op)}</span>
+                </div>`;
+            }).join('')}
+        </div>`;
+    }
+
+    if (p.tipo === 'escala') {
+        const min = Number(p.escala_min ?? 1);
+        const max = Number(p.escala_max ?? 5);
+        const vals = [];
+        for (let v = min; v <= max; v++) vals.push(v);
+        return `<div style="display:flex; flex-direction:column; gap:14px;">
+            <div style="display:flex; justify-content:space-between; color:rgba(255,255,255,0.42); font-size:0.78em;">
+                <span>${sanitize(p.escala_label_izq || '')}</span>
+                <span>${sanitize(p.escala_label_der || '')}</span>
+            </div>
+            <div class="opciones-asig">
+                ${vals.map(v => `
+                    <div class="opc-asig ${bloq} ${yaResp?.valor === String(v) ? 'seleccionada correcta-reveal' : ''}"
+                         onclick="responderOpinionAsig('${v}', '${p.id}')" style="justify-content:center;">
+                        <span style="font-family:var(--font-display); font-size:1.1em;">${v}</span>
+                    </div>`).join('')}
+            </div>
+        </div>`;
+    }
 
     if (p.tipo === 'multiple_choice') {
         const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
@@ -762,6 +815,21 @@ function renderOpcionesAsig(p, yaResp) {
             </div>
         </div>
         ${!yaResp ? `<button class="btn-enviar-asig" style="margin-top:20px; width:100%;" onclick="enviarImagenClickAsig('${p.id}')">Enviar Marca →</button>` : ''}`;
+    }
+
+    if (p.tipo === 'libre_imagen') {
+        return `<div style="display:flex; flex-direction:column; gap:14px;">
+        ${p.imagen_url ? `<img src="${sanitize(p.imagen_url)}" style="display:block; max-width:100%; max-height:320px; margin:0 auto; border-radius:12px;">` : ''}
+        <div class="texto-wrap">
+            <input type="text"
+                   class="texto-input"
+                   id="textoInput"
+                   placeholder="Escribí qué es..."
+                   ${yaResp ? `value="${sanitize(yaResp.valor)}" disabled` : ''}
+                   onkeydown="if(event.key==='Enter')responderTexto('${p.id}','${p.tipo}')">
+            ${!yaResp ? `<button class="btn-enviar-asig" onclick="responderTexto('${p.id}','${p.tipo}')">Enviar</button>` : ''}
+        </div>
+    </div>`;
     }
 
     // Numérica / corta / completar
@@ -1008,9 +1076,15 @@ function responderTexto(pregId, tipo) {
     let esCorrecta = false;
     const correcta = p.respuesta_correcta?.toString() || '';
     if (tipo === 'numerica') esCorrecta = parseFloat(valor) === parseFloat(correcta);
+    else if (tipo === 'encuesta' || tipo === 'escala') esCorrecta = true;
     else esCorrecta = valor.toLowerCase() === correcta.toLowerCase();
 
     guardarRespuesta(pregId, valor, esCorrecta, p.puntos || 100);
+}
+
+function responderOpinionAsig(valor, pregId) {
+    if (respuestas[pregId]) return;
+    guardarRespuesta(pregId, valor, true, 0, 0);
 }
 
 function guardarRespuesta(pregId, valor, esCorrecta, ptsMaximos, ptsGanadosDirectos = null) {
