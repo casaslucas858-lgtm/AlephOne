@@ -1,4 +1,4 @@
-# AlephOne
+# Alephproject
 
 **Plataforma educativa integral para escuelas, docentes y estudiantes.**
 
@@ -6,9 +6,9 @@
 
 ---
 
-## ¿Qué es AlephOne?
+## ¿Qué es AlephProject?
 
-AlephOne organiza la vida escolar en un solo lugar. Sin WhatsApp fragmentado, sin papeles perdidos, sin grupos paralelos. Un sistema claro para docentes, directores y estudiantes.
+AlephProject organiza la vida escolar en un solo lugar. Sin WhatsApp fragmentado, sin papeles perdidos, sin grupos paralelos. Un sistema claro para docentes, directores y estudiantes.
 
 **Problema que resuelve:**
 - Fragmentación de información entre WhatsApp, mails, papeles y grupos
