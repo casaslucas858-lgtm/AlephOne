@@ -728,17 +728,12 @@ function renderOpcionesAsig(p, yaResp) {
         const esCorrectoGlobal = yaResp && yaResp.esCorrecta;
         const extraCls = yaResp ? (esCorrectoGlobal ? 'correcta-reveal' : 'incorrecta-reveal') : '';
         
-        return `<div class="opciones-asig" id="ordenarContainerAsig" style="display:flex; flex-direction:column;">
+        return `<div style="margin-bottom:10px; color:rgba(255,255,255,0.45); font-size:0.82em;">Arrastrá las casillas para definir el orden correcto.</div><div class="opciones-asig" id="ordenarContainerAsig" style="display:flex; flex-direction:column;">
             ${displayOpts.map((op, i) => `
                 <div class="opc-asig opcion-ordenar-asig ${bloq} ${extraCls}" style="cursor:${yaResp ? 'default' : 'grab'}; display:flex; justify-content:space-between;"
                      draggable="${!yaResp}" data-valor="${sanitize(op)}"
                      ondragstart="dragStartAsig(event)" ondragover="dragOverAsig(event)" ondrop="dropAsig(event)">
                     <span>${sanitize(op)}</span>
-                    ${!yaResp ? `
-                    <div style="display:flex; flex-direction:column; gap:4px;">
-                        <button class="btn btn-ghost btn-sm" style="padding:2px 6px;" onclick="moveItemUpAsig(this.parentElement.parentElement)">▲</button>
-                        <button class="btn btn-ghost btn-sm" style="padding:2px 6px;" onclick="moveItemDownAsig(this.parentElement.parentElement)">▼</button>
-                    </div>` : ''}
                 </div>`).join('')}
         </div>
         ${!yaResp ? `<button class="btn-enviar-asig" style="margin-top:20px; width:100%;" onclick="enviarOrdenAsig('${p.id}')">Enviar Orden →</button>` : ''}`;
