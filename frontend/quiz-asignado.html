@@ -463,6 +463,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     preguntas = (asignacion.quizzes?.preguntas || []).sort((a,b) => a.orden - b.orden);
+
+    // Normalizar datos de preguntas que vienen del backend
+    preguntas.forEach(p => {
+        if (typeof p.respuesta_correcta === 'string') {
+            try {
+                const parsed = JSON.parse(p.respuesta_correcta);
+                if (typeof parsed === 'object' && parsed !== null) {
+                    p.respuesta_correcta = parsed;
+                }
+            } catch(e) { /* string normal */ }
+        }
+        if (p.tipo === 'imagen_click' && p.opciones && typeof p.opciones === 'object' && !Array.isArray(p.opciones)) {
+            p.imagen_url = p.opciones.imagen_url || '';
+        }
+    });
+
     tiempoTotal = preguntas.reduce((a, p) => a + (p.tiempo_segundos || 30), 0);
     tiempoRestante = tiempoTotal;
 
