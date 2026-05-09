@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sala en vivo — AlephOne</title>
+    <title>Sala en vivo — AlephProject</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         :root {
@@ -518,7 +518,7 @@
 
     <!-- TOPBAR -->
     <div class="sala-topbar">
-        <span class="sala-topbar-logo">ℵ AlephOne — Sala en vivo</span>
+        <span class="sala-topbar-logo">ℵ AlephProject — Sala en vivo</span>
         <span class="sala-code" id="salaCode">——————</span>
         <div class="sala-info">
             <span id="quizNombre">Cargando...</span>
@@ -668,6 +668,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 : p.opciones;
             if (imageOptions && typeof imageOptions === 'object' && !Array.isArray(imageOptions)) {
                 p.imagen_url = imageOptions.imagen_url || '';
+                p.imagen_path = imageOptions.imagen_path || '';
+                p.imagen_bucket = imageOptions.imagen_bucket || '';
+                p.imagen_nombre = imageOptions.imagen_nombre || '';
             }
         }
     });
