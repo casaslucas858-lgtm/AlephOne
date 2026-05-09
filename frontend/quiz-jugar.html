@@ -783,8 +783,12 @@
 
             if (p.tipo === 'ordenar') {
                 const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
-                // Shuffle the options
-                const shuffled = [...opts].sort(() => Math.random() - 0.5);
+                // Shuffle the options properly (Fisher-Yates)
+                const shuffled = [...opts];
+                for (let k = shuffled.length - 1; k > 0; k--) {
+                    const j = Math.floor(Math.random() * (k + 1));
+                    [shuffled[k], shuffled[j]] = [shuffled[j], shuffled[k]];
+                }
 
                 return `<div class="opciones-alumno" id="ordenarContainer">
             ${shuffled.map((op, i) => `
@@ -804,9 +808,13 @@
             if (p.tipo === 'relacionar_columnas') {
                 const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
 
-                // Shuffle the right side
+                // Shuffle the right side properly (Fisher-Yates)
                 const leftSide = opts.map((o, i) => ({ id: i, text: o.izq }));
-                const rightSide = opts.map((o, i) => ({ id: i, text: o.der })).sort(() => Math.random() - 0.5);
+                const rightSide = opts.map((o, i) => ({ id: i, text: o.der }));
+                for (let k = rightSide.length - 1; k > 0; k--) {
+                    const j = Math.floor(Math.random() * (k + 1));
+                    [rightSide[k], rightSide[j]] = [rightSide[j], rightSide[k]];
+                }
 
                 return `<div class="opciones-alumno" style="display:flex; gap:20px; justify-content:space-between;" id="relacionarContainer">
             <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
