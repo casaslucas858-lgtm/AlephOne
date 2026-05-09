@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,9 +25,9 @@
         /* ── TOPBAR ── */
         .jugar-topbar {
             height: var(--header-h);
-            background: rgba(19,19,26,0.92);
+            background: rgba(19, 19, 26, 0.92);
             backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -49,7 +50,7 @@
             align-items: center;
             gap: 8px;
             font-size: 0.82em;
-            color: rgba(255,255,255,0.45);
+            color: rgba(255, 255, 255, 0.45);
         }
 
         .jugar-pts {
@@ -80,7 +81,9 @@
             animation: fadeUp 0.4s ease both;
         }
 
-        .waiting-emoji { font-size: 3.5em; }
+        .waiting-emoji {
+            font-size: 3.5em;
+        }
 
         .waiting-titulo {
             font-family: var(--font-display);
@@ -91,7 +94,7 @@
 
         .waiting-sub {
             font-size: 0.88em;
-            color: rgba(255,255,255,0.35);
+            color: rgba(255, 255, 255, 0.35);
             line-height: 1.6;
         }
 
@@ -105,32 +108,42 @@
 
         .waiting-pill {
             padding: 4px 12px;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 999px;
             font-size: 0.78em;
-            color: rgba(255,255,255,0.55);
+            color: rgba(255, 255, 255, 0.55);
             font-family: var(--font-display);
             font-weight: 600;
         }
 
         .waiting-pill.yo {
-            background: rgba(38,212,199,0.12);
-            border-color: rgba(38,212,199,0.25);
+            background: rgba(38, 212, 199, 0.12);
+            border-color: rgba(38, 212, 199, 0.25);
             color: var(--teal);
         }
 
         /* Pulse dot */
         .pulse-dot {
-            width: 12px; height: 12px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             background: var(--teal);
             animation: pulseDot 1.5s ease-in-out infinite;
         }
 
         @keyframes pulseDot {
-            0%,100% { transform: scale(1); opacity: 1; }
-            50%      { transform: scale(1.4); opacity: 0.5; }
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.4);
+                opacity: 0.5;
+            }
         }
 
         /* ── ESTADO: PREGUNTA ── */
@@ -153,7 +166,7 @@
             font-family: var(--font-display);
             font-size: 0.72em;
             font-weight: 700;
-            color: rgba(255,255,255,0.3);
+            color: rgba(255, 255, 255, 0.3);
             letter-spacing: 1px;
             text-transform: uppercase;
         }
@@ -166,7 +179,7 @@
 
         .timer-bar {
             height: 6px;
-            background: rgba(255,255,255,0.08);
+            background: rgba(255, 255, 255, 0.08);
             border-radius: 999px;
             overflow: hidden;
         }
@@ -178,7 +191,9 @@
             transition: width 1s linear, background 0.3s ease;
         }
 
-        .timer-bar-fill.urgente { background: #dc3545; }
+        .timer-bar-fill.urgente {
+            background: #dc3545;
+        }
 
         .timer-num {
             font-family: var(--font-display);
@@ -222,20 +237,23 @@
         }
 
         .opcion-alumno[data-opt="A"] {
-            background: rgba(124,58,237,0.2);
-            border-color: rgba(124,58,237,0.35);
+            background: rgba(124, 58, 237, 0.2);
+            border-color: rgba(124, 58, 237, 0.35);
         }
+
         .opcion-alumno[data-opt="B"] {
-            background: rgba(14,165,233,0.2);
-            border-color: rgba(14,165,233,0.35);
+            background: rgba(14, 165, 233, 0.2);
+            border-color: rgba(14, 165, 233, 0.35);
         }
+
         .opcion-alumno[data-opt="C"] {
-            background: rgba(28,230,193,0.2);
-            border-color: rgba(28,230,193,0.35);
+            background: rgba(28, 230, 193, 0.2);
+            border-color: rgba(28, 230, 193, 0.35);
         }
+
         .opcion-alumno[data-opt="D"] {
-            background: rgba(75,230,28,0.2);
-            border-color: rgba(75,230,28,0.35);
+            background: rgba(75, 230, 28, 0.2);
+            border-color: rgba(75, 230, 28, 0.35);
         }
 
         .opcion-alumno:hover:not(.respondida) {
@@ -249,27 +267,60 @@
             border-width: 3px;
         }
 
-        .opcion-alumno.respondida { cursor: not-allowed; }
+        .opcion-alumno.respondida {
+            cursor: not-allowed;
+        }
 
-        .opcion-alumno[data-opt="A"].seleccionada { border-color: var(--opt-a); background: rgba(124,58,237,0.35); }
-        .opcion-alumno[data-opt="B"].seleccionada { border-color: var(--opt-b); background: rgba(14,165,233,0.35); }
-        .opcion-alumno[data-opt="C"].seleccionada { border-color: var(--opt-c); background: rgba(28,230,193,0.35); }
-        .opcion-alumno[data-opt="D"].seleccionada { border-color: var(--opt-d); background: rgba(75,230,28,0.35); }
+        .opcion-alumno[data-opt="A"].seleccionada {
+            border-color: var(--opt-a);
+            background: rgba(124, 58, 237, 0.35);
+        }
+
+        .opcion-alumno[data-opt="B"].seleccionada {
+            border-color: var(--opt-b);
+            background: rgba(14, 165, 233, 0.35);
+        }
+
+        .opcion-alumno[data-opt="C"].seleccionada {
+            border-color: var(--opt-c);
+            background: rgba(28, 230, 193, 0.35);
+        }
+
+        .opcion-alumno[data-opt="D"].seleccionada {
+            border-color: var(--opt-d);
+            background: rgba(75, 230, 28, 0.35);
+        }
 
         .opt-letra-alumno {
-            width: 32px; height: 32px;
+            width: 32px;
+            height: 32px;
             border-radius: var(--radius);
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-family: var(--font-display);
             font-size: 0.85em;
             font-weight: 800;
             flex-shrink: 0;
         }
 
-        .opcion-alumno[data-opt="A"] .opt-letra-alumno { background: var(--opt-a); }
-        .opcion-alumno[data-opt="B"] .opt-letra-alumno { background: var(--opt-b); }
-        .opcion-alumno[data-opt="C"] .opt-letra-alumno { background: var(--opt-c); color: #0a0a0a; }
-        .opcion-alumno[data-opt="D"] .opt-letra-alumno { background: var(--opt-d); color: #0a0a0a; }
+        .opcion-alumno[data-opt="A"] .opt-letra-alumno {
+            background: var(--opt-a);
+        }
+
+        .opcion-alumno[data-opt="B"] .opt-letra-alumno {
+            background: var(--opt-b);
+        }
+
+        .opcion-alumno[data-opt="C"] .opt-letra-alumno {
+            background: var(--opt-c);
+            color: #0a0a0a;
+        }
+
+        .opcion-alumno[data-opt="D"] .opt-letra-alumno {
+            background: var(--opt-d);
+            color: #0a0a0a;
+        }
 
         /* Input texto/numérico */
         .respuesta-input-wrap {
@@ -280,20 +331,24 @@
         .respuesta-input {
             flex: 1;
             padding: 14px 18px;
-            background: rgba(255,255,255,0.06);
-            border: 2px solid rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.06);
+            border: 2px solid rgba(255, 255, 255, 0.1);
             border-radius: var(--radius-lg);
             font-size: 1em;
             color: white;
             font-family: var(--font-body);
             transition: all var(--t);
         }
+
         .respuesta-input:focus {
             outline: none;
             border-color: var(--teal);
-            background: rgba(38,212,199,0.06);
+            background: rgba(38, 212, 199, 0.06);
         }
-        .respuesta-input::placeholder { color: rgba(255,255,255,0.25); }
+
+        .respuesta-input::placeholder {
+            color: rgba(255, 255, 255, 0.25);
+        }
 
         .btn-enviar {
             padding: 14px 24px;
@@ -306,10 +361,19 @@
             font-weight: 800;
             cursor: pointer;
             transition: all var(--t);
-            box-shadow: 0 2px 10px rgba(38,212,199,0.25);
+            box-shadow: 0 2px 10px rgba(38, 212, 199, 0.25);
         }
-        .btn-enviar:hover { background: var(--teal-dim); transform: translateY(-1px); }
-        .btn-enviar:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        .btn-enviar:hover {
+            background: var(--teal-dim);
+            transform: translateY(-1px);
+        }
+
+        .btn-enviar:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
 
         /* ── ESTADO: RESPONDIO ── */
         .estado-respondio {
@@ -321,7 +385,9 @@
             animation: fadeUp 0.3s ease both;
         }
 
-        .respondio-icon { font-size: 3.5em; }
+        .respondio-icon {
+            font-size: 3.5em;
+        }
 
         .respondio-titulo {
             font-family: var(--font-display);
@@ -332,7 +398,7 @@
 
         .respondio-sub {
             font-size: 0.88em;
-            color: rgba(255,255,255,0.35);
+            color: rgba(255, 255, 255, 0.35);
         }
 
         .pts-ganados {
@@ -344,8 +410,15 @@
         }
 
         @keyframes ptsAnim {
-            from { transform: scale(0.5); opacity: 0; }
-            to   { transform: scale(1);   opacity: 1; }
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         /* ── ESTADO: RANKING ── */
@@ -373,19 +446,30 @@
             gap: 12px;
             padding: 12px 16px;
             border-radius: var(--radius);
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
             animation: fadeUp 0.4s ease both;
         }
 
         .ranking-item-alumno.yo-ranking {
-            background: rgba(38,212,199,0.1);
-            border-color: rgba(38,212,199,0.25);
+            background: rgba(38, 212, 199, 0.1);
+            border-color: rgba(38, 212, 199, 0.25);
         }
 
-        .ranking-item-alumno:nth-child(1) { background: rgba(255,215,0,0.08); border-color: rgba(255,215,0,0.2); }
-        .ranking-item-alumno:nth-child(2) { background: rgba(192,192,192,0.06); border-color: rgba(192,192,192,0.15); }
-        .ranking-item-alumno:nth-child(3) { background: rgba(205,127,50,0.06); border-color: rgba(205,127,50,0.15); }
+        .ranking-item-alumno:nth-child(1) {
+            background: rgba(255, 215, 0, 0.08);
+            border-color: rgba(255, 215, 0, 0.2);
+        }
+
+        .ranking-item-alumno:nth-child(2) {
+            background: rgba(192, 192, 192, 0.06);
+            border-color: rgba(192, 192, 192, 0.15);
+        }
+
+        .ranking-item-alumno:nth-child(3) {
+            background: rgba(205, 127, 50, 0.06);
+            border-color: rgba(205, 127, 50, 0.15);
+        }
 
         .rank-pos {
             font-family: var(--font-display);
@@ -395,13 +479,22 @@
             text-align: center;
             flex-shrink: 0;
         }
-        .ranking-item-alumno:nth-child(1) .rank-pos { color: gold; }
-        .ranking-item-alumno:nth-child(2) .rank-pos { color: silver; }
-        .ranking-item-alumno:nth-child(3) .rank-pos { color: #cd7f32; }
+
+        .ranking-item-alumno:nth-child(1) .rank-pos {
+            color: gold;
+        }
+
+        .ranking-item-alumno:nth-child(2) .rank-pos {
+            color: silver;
+        }
+
+        .ranking-item-alumno:nth-child(3) .rank-pos {
+            color: #cd7f32;
+        }
 
         .rank-name {
             flex: 1;
-            color: rgba(255,255,255,0.8);
+            color: rgba(255, 255, 255, 0.8);
             font-weight: 600;
             font-size: 0.9em;
         }
@@ -422,7 +515,9 @@
             animation: fadeUp 0.4s ease both;
         }
 
-        .final-emoji { font-size: 4em; }
+        .final-emoji {
+            font-size: 4em;
+        }
 
         .final-titulo {
             font-family: var(--font-display);
@@ -441,130 +536,148 @@
 
         .final-sub {
             font-size: 0.88em;
-            color: rgba(255,255,255,0.35);
+            color: rgba(255, 255, 255, 0.35);
         }
     </style>
 </head>
+
 <body>
 
-<div class="jugar-topbar">
-    <span class="jugar-logo">ℵ AlephOne</span>
-    <div class="jugar-user">
-        <span id="jugarUsername">—</span>
-        <span class="jugar-pts" id="jugarPts">0 pts</span>
+    <div class="jugar-topbar">
+        <span class="jugar-logo">ℵ AlephOne</span>
+        <div class="jugar-user">
+            <span id="jugarUsername">—</span>
+            <span class="jugar-pts" id="jugarPts">0 pts</span>
+        </div>
     </div>
-</div>
 
-<div class="jugar-main" id="jugarMain">
-    <div class="empty-state">
-        <div class="spinner"></div>
+    <div class="jugar-main" id="jugarMain">
+        <div class="empty-state">
+            <div class="spinner"></div>
+        </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/api.js"></script>
-<script src="js/app.js"></script>
-<script>
-// ── Estado ────────────────────────────────────────────────
-let sala        = null;
-let preguntas   = [];
-let participantes = [];
-let currentUser = null;
-let puntajeLocal = 0;
-let yaRespondio  = false;
-let timerInterval = null;
-let tiempoInicio  = null;
-let suscripciones = [];
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // ── Estado ────────────────────────────────────────────────
+        let sala = null;
+        let preguntas = [];
+        let participantes = [];
+        let currentUser = null;
+        let puntajeLocal = 0;
+        let yaRespondio = false;
+        let timerInterval = null;
+        let tiempoInicio = null;
+        let suscripciones = [];
 
-const LETRAS = ['A','B','C','D'];
-const MEDALLAS = ['🥇','🥈','🥉'];
+        const LETRAS = ['A', 'B', 'C', 'D'];
+        const MEDALLAS = ['🥇', '🥈', '🥉'];
 
-// ── Init ──────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', async () => {
-    await AlephAPI.Auth.init();
-    currentUser = requireAuth();
-    if (!currentUser) return;
+        // ── Init ──────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', async () => {
+            await AlephAPI.Auth.init();
+            currentUser = requireAuth();
+            if (!currentUser) return;
 
-    document.getElementById('jugarUsername').textContent = currentUser.username;
+            document.getElementById('jugarUsername').textContent = currentUser.username;
 
-    const params = new URLSearchParams(window.location.search);
-    const salaId = params.get('sala');
-    if (!salaId) { window.location.href = 'quizzit.html'; return; }
+            const params = new URLSearchParams(window.location.search);
+            const salaId = params.get('sala');
+            if (!salaId) { window.location.href = 'quizzit.html'; return; }
 
-    // Cargar sala
-    const { data: salaData } = await _sb
-        .from('salas')
-        .select('*, quizzes(*, preguntas(*))')
-        .eq('id', salaId)
-        .single();
+            // Cargar sala
+            const { data: salaData } = await _sb
+                .from('salas')
+                .select('*, quizzes(*, preguntas(*))')
+                .eq('id', salaId)
+                .single();
 
-    if (!salaData) { showToast('Sala no encontrada', 'error'); window.location.href = 'quizzit.html'; return; }
+            if (!salaData) { showToast('Sala no encontrada', 'error'); window.location.href = 'quizzit.html'; return; }
 
-    sala = salaData;
-    preguntas = (sala.quizzes?.preguntas || []).sort((a,b) => a.orden - b.orden);
+            sala = salaData;
+            preguntas = (sala.quizzes?.preguntas || []).sort((a, b) => a.orden - b.orden);
 
-    // Unirse a la sala
-    await AlephAPI.Sala.unirse({ salaId: sala.id, username: currentUser.username });
+            // Normalizar datos de preguntas que vienen del backend
+            preguntas.forEach(p => {
+                // Deserializar respuesta_correcta si viene como JSON string
+                if (typeof p.respuesta_correcta === 'string') {
+                    try {
+                        const parsed = JSON.parse(p.respuesta_correcta);
+                        if (typeof parsed === 'object' && parsed !== null) {
+                            p.respuesta_correcta = parsed;
+                        }
+                    } catch(e) { /* es un string normal, dejarlo */ }
+                }
+                // Extraer imagen_url de opciones para imagen_click
+                if (p.tipo === 'imagen_click' && p.opciones && typeof p.opciones === 'object' && !Array.isArray(p.opciones)) {
+                    p.imagen_url = p.opciones.imagen_url || '';
+                }
+            });
 
-    // Suscribir Realtime
-    const sub = AlephAPI.Sala.suscribirSala(sala.id, payload => {
-        if (payload.new) {
-            sala = { ...sala, ...payload.new };
+            // Unirse a la sala
+            await AlephAPI.Sala.unirse({ salaId: sala.id, username: currentUser.username });
+
+            // Suscribir Realtime
+            const sub = AlephAPI.Sala.suscribirSala(sala.id, payload => {
+                if (payload.new) {
+                    sala = { ...sala, ...payload.new };
+                    manejarCambioEstado();
+                }
+            });
+            suscripciones = [sub];
+
+            // Cargar participantes para la espera
+            await cargarParticipantes();
+
+            // Render estado inicial
             manejarCambioEstado();
+        });
+
+        // ── Cargar participantes ──────────────────────────────────
+        async function cargarParticipantes() {
+            participantes = await AlephAPI.Sala.getParticipantes(sala.id);
+            // Actualizar puntaje local
+            const yo = participantes.find(p => p.user_id === currentUser.id);
+            if (yo) {
+                puntajeLocal = yo.puntaje;
+                document.getElementById('jugarPts').textContent = puntajeLocal + ' pts';
+            }
         }
-    });
-    suscripciones = [sub];
 
-    // Cargar participantes para la espera
-    await cargarParticipantes();
+        // ── Manejar cambio de estado (Realtime) ───────────────────
+        function manejarCambioEstado() {
+            if (!sala) return;
 
-    // Render estado inicial
-    manejarCambioEstado();
-});
+            clearInterval(timerInterval);
 
-// ── Cargar participantes ──────────────────────────────────
-async function cargarParticipantes() {
-    participantes = await AlephAPI.Sala.getParticipantes(sala.id);
-    // Actualizar puntaje local
-    const yo = participantes.find(p => p.user_id === currentUser.id);
-    if (yo) {
-        puntajeLocal = yo.puntaje;
-        document.getElementById('jugarPts').textContent = puntajeLocal + ' pts';
-    }
-}
+            switch (sala.estado) {
+                case 'waiting':
+                    renderWaiting();
+                    break;
+                case 'pregunta_activa':
+                    yaRespondio = false;
+                    renderPregunta(sala.pregunta_actual);
+                    break;
+                case 'mostrando_ranking':
+                    renderRanking();
+                    break;
+                case 'finalizado':
+                    renderFinal();
+                    break;
+            }
+        }
 
-// ── Manejar cambio de estado (Realtime) ───────────────────
-function manejarCambioEstado() {
-    if (!sala) return;
-
-    clearInterval(timerInterval);
-
-    switch (sala.estado) {
-        case 'waiting':
-            renderWaiting();
-            break;
-        case 'pregunta_activa':
-            yaRespondio = false;
-            renderPregunta(sala.pregunta_actual);
-            break;
-        case 'mostrando_ranking':
-            renderRanking();
-            break;
-        case 'finalizado':
-            renderFinal();
-            break;
-    }
-}
-
-// ── RENDER: Waiting ───────────────────────────────────────
-async function renderWaiting() {
-    await cargarParticipantes();
-    const pillsHTML = participantes.map(p => `
+        // ── RENDER: Waiting ───────────────────────────────────────
+        async function renderWaiting() {
+            await cargarParticipantes();
+            const pillsHTML = participantes.map(p => `
         <div class="waiting-pill ${p.user_id === currentUser.id ? 'yo' : ''}">
             ${sanitize(p.username)}${p.user_id === currentUser.id ? ' (vos)' : ''}
         </div>`).join('');
 
-    document.getElementById('jugarMain').innerHTML = `
+            document.getElementById('jugarMain').innerHTML = `
         <div class="estado-waiting">
             <div class="pulse-dot"></div>
             <div class="waiting-titulo">Esperando que empiece...</div>
@@ -574,25 +687,25 @@ async function renderWaiting() {
             </div>
             <div class="waiting-participantes">${pillsHTML}</div>
         </div>`;
-}
+        }
 
-// ── RENDER: Pregunta ──────────────────────────────────────
-function renderPregunta(idx) {
-    const p = preguntas[idx];
-    if (!p) return;
+        // ── RENDER: Pregunta ──────────────────────────────────────
+        function renderPregunta(idx) {
+            const p = preguntas[idx];
+            if (!p) return;
 
-    tiempoInicio = Date.now();
-    seleccionadasMultiples = [];
-    paresConectados = [];
-    const tiempoTotal = p.tiempo_segundos || 30;
-    let tiempoRestante = tiempoTotal;
+            tiempoInicio = Date.now();
+            seleccionadasMultiples = [];
+            paresConectados = [];
+            const tiempoTotal = p.tiempo_segundos || 30;
+            let tiempoRestante = tiempoTotal;
 
-    const opcionesHTML = renderOpcionesAlumno(p);
+            const opcionesHTML = renderOpcionesAlumno(p);
 
-    document.getElementById('jugarMain').innerHTML = `
+            document.getElementById('jugarMain').innerHTML = `
         <div class="estado-pregunta">
             <div class="pregunta-header-alumno">
-                <span class="pregunta-badge">P${idx+1} / ${preguntas.length}</span>
+                <span class="pregunta-badge">P${idx + 1} / ${preguntas.length}</span>
                 <div class="timer-bar-wrap">
                     <div class="timer-bar">
                         <div class="timer-bar-fill" id="timerFill" style="width:100%"></div>
@@ -604,29 +717,29 @@ function renderPregunta(idx) {
             <div id="opcionesWrap">${opcionesHTML}</div>
         </div>`;
 
-    // Timer
-    timerInterval = setInterval(() => {
-        tiempoRestante--;
-        const pct = (tiempoRestante / tiempoTotal) * 100;
-        const fill = document.getElementById('timerFill');
-        const num  = document.getElementById('timerNum');
-        if (!fill || !num) { clearInterval(timerInterval); return; }
+            // Timer
+            timerInterval = setInterval(() => {
+                tiempoRestante--;
+                const pct = (tiempoRestante / tiempoTotal) * 100;
+                const fill = document.getElementById('timerFill');
+                const num = document.getElementById('timerNum');
+                if (!fill || !num) { clearInterval(timerInterval); return; }
 
-        fill.style.width = pct + '%';
-        num.textContent  = tiempoRestante;
-        if (tiempoRestante <= 5) fill.classList.add('urgente');
+                fill.style.width = pct + '%';
+                num.textContent = tiempoRestante;
+                if (tiempoRestante <= 5) fill.classList.add('urgente');
 
-        if (tiempoRestante <= 0) {
-            clearInterval(timerInterval);
-            if (!yaRespondio) renderEsperando(false, 0);
+                if (tiempoRestante <= 0) {
+                    clearInterval(timerInterval);
+                    if (!yaRespondio) renderEsperando(false, 0);
+                }
+            }, 1000);
         }
-    }, 1000);
-}
 
-function renderOpcionesAlumno(p) {
-    if (p.tipo === 'multiple_choice') {
-        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
-        return `<div class="opciones-alumno">
+        function renderOpcionesAlumno(p) {
+            if (p.tipo === 'multiple_choice') {
+                const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+                return `<div class="opciones-alumno">
             ${opts.map((op, i) => op.trim() ? `
                 <div class="opcion-alumno" data-opt="${LETRAS[i]}"
                      onclick="responderOpcion('${LETRAS[i]}', this)">
@@ -634,11 +747,11 @@ function renderOpcionesAlumno(p) {
                     <span>${sanitize(op)}</span>
                 </div>` : '').join('')}
         </div>`;
-    }
+            }
 
-    if (p.tipo === 'seleccion_multiple') {
-        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
-        return `<div class="opciones-alumno">
+            if (p.tipo === 'seleccion_multiple') {
+                const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+                return `<div class="opciones-alumno">
             ${opts.map((op, i) => op.trim() ? `
                 <div class="opcion-alumno seleccion-multiple" data-opt="${LETRAS[i]}"
                      onclick="toggleOpcionMultiple(this, '${LETRAS[i]}')">
@@ -647,10 +760,10 @@ function renderOpcionesAlumno(p) {
                 </div>` : '').join('')}
         </div>
         <button class="btn-enviar" onclick="enviarSeleccionMultiple()" style="margin-top:20px; width:100%;">Enviar Respuestas →</button>`;
-    }
+            }
 
-    if (p.tipo === 'verdadero_falso') {
-        return `<div class="opciones-alumno">
+            if (p.tipo === 'verdadero_falso') {
+                return `<div class="opciones-alumno">
             <div class="opcion-alumno" data-opt="C" onclick="responderOpcion('Verdadero', this)">
                 <div class="opt-letra-alumno">V</div>
                 <span>Verdadero</span>
@@ -660,20 +773,20 @@ function renderOpcionesAlumno(p) {
                 <span>Falso</span>
             </div>
         </div>`;
-    }
+            }
 
-    // Numérica o corta o completar
-    let ph = 'Tu respuesta...';
-    let type = 'text';
-    if (p.tipo === 'numerica') { type = 'number'; ph = 'Número...'; }
-    if (p.tipo === 'completar_espacio') ph = 'Completá la palabra...';
+            // Numérica o corta o completar
+            let ph = 'Tu respuesta...';
+            let type = 'text';
+            if (p.tipo === 'numerica') { type = 'number'; ph = 'Número...'; }
+            if (p.tipo === 'completar_espacio') ph = 'Completá la palabra...';
 
-    if (p.tipo === 'ordenar') {
-        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
-        // Shuffle the options
-        const shuffled = [...opts].sort(() => Math.random() - 0.5);
-        
-        return `<div class="opciones-alumno" id="ordenarContainer">
+            if (p.tipo === 'ordenar') {
+                const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+                // Shuffle the options
+                const shuffled = [...opts].sort(() => Math.random() - 0.5);
+
+                return `<div class="opciones-alumno" id="ordenarContainer">
             ${shuffled.map((op, i) => `
                 <div class="opcion-alumno opcion-ordenar" style="cursor:grab; display:flex; justify-content:space-between;"
                      draggable="true" data-valor="${sanitize(op)}"
@@ -686,16 +799,16 @@ function renderOpcionesAlumno(p) {
                 </div>`).join('')}
         </div>
         <button class="btn-enviar" onclick="enviarOrden()" style="margin-top:20px; width:100%;">Enviar Orden →</button>`;
-    }
+            }
 
-    if (p.tipo === 'relacionar_columnas') {
-        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
-        
-        // Shuffle the right side
-        const leftSide = opts.map((o, i) => ({ id: i, text: o.izq }));
-        const rightSide = opts.map((o, i) => ({ id: i, text: o.der })).sort(() => Math.random() - 0.5);
-        
-        return `<div class="opciones-alumno" style="display:flex; gap:20px; justify-content:space-between;" id="relacionarContainer">
+            if (p.tipo === 'relacionar_columnas') {
+                const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+
+                // Shuffle the right side
+                const leftSide = opts.map((o, i) => ({ id: i, text: o.izq }));
+                const rightSide = opts.map((o, i) => ({ id: i, text: o.der })).sort(() => Math.random() - 0.5);
+
+                return `<div class="opciones-alumno" style="display:flex; gap:20px; justify-content:space-between;" id="relacionarContainer">
             <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
                 ${leftSide.map(l => `
                     <div class="opcion-alumno rel-izq" data-id="${l.id}" onclick="selectRelIzq(this, ${l.id})">
@@ -710,11 +823,11 @@ function renderOpcionesAlumno(p) {
             </div>
         </div>
         <button class="btn-enviar" onclick="enviarRelacionar()" style="margin-top:20px; width:100%;">Enviar Relaciones →</button>`;
-    }
+            }
 
-    if (p.tipo === 'imagen_click') {
-        const url = p.imagen_url || '';
-        return `
+            if (p.tipo === 'imagen_click') {
+                const url = p.imagen_url || '';
+                return `
         <div class="opciones-alumno" style="display:flex; justify-content:center;">
             <div style="position:relative; display:inline-block; max-width:100%; border-radius:8px; overflow:hidden; cursor:crosshair;" onclick="marcarImagenClick(event)">
                 <img src="${sanitize(url)}" style="display:block; max-width:100%; height:auto;" id="imagenClickMapJugar">
@@ -722,322 +835,322 @@ function renderOpcionesAlumno(p) {
             </div>
         </div>
         <button class="btn-enviar" onclick="enviarImagenClick()" style="margin-top:20px; width:100%;">Enviar Marca →</button>`;
-    }
+            }
 
-    return `<div class="respuesta-input-wrap">
+            return `<div class="respuesta-input-wrap">
         <input type="${type}"
                class="respuesta-input" id="respuestaInput"
                placeholder="${ph}"
                onkeydown="if(event.key==='Enter')enviarTexto()">
         <button class="btn-enviar" onclick="enviarTexto()">Enviar →</button>
     </div>`;
-}
+        }
 
-// ── Imagen Click Logic ────────────────────────────────────
-let marcaImagenClick = null;
+        // ── Imagen Click Logic ────────────────────────────────────
+        let marcaImagenClick = null;
 
-function marcarImagenClick(e) {
-    if (yaRespondio) return;
-    const img = document.getElementById('imagenClickMapJugar');
-    const rect = img.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    
-    marcaImagenClick = { x, y };
-    const marcador = document.getElementById('marcadorImagenJugar');
-    marcador.style.left = `${x}%`;
-    marcador.style.top = `${y}%`;
-    marcador.style.display = 'block';
-}
+        function marcarImagenClick(e) {
+            if (yaRespondio) return;
+            const img = document.getElementById('imagenClickMapJugar');
+            const rect = img.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-async function enviarImagenClick() {
-    if (yaRespondio || !marcaImagenClick) return;
-    yaRespondio = true;
-    clearInterval(timerInterval);
+            marcaImagenClick = { x, y };
+            const marcador = document.getElementById('marcadorImagenJugar');
+            marcador.style.left = `${x}%`;
+            marcador.style.top = `${y}%`;
+            marcador.style.display = 'block';
+        }
 
-    await _enviarRespuesta(JSON.stringify(marcaImagenClick));
-}
+        async function enviarImagenClick() {
+            if (yaRespondio || !marcaImagenClick) return;
+            yaRespondio = true;
+            clearInterval(timerInterval);
 
-let seleccionadasMultiples = [];
+            await _enviarRespuesta(JSON.stringify(marcaImagenClick));
+        }
 
-function toggleOpcionMultiple(el, letra) {
-    if (yaRespondio) return;
-    if (seleccionadasMultiples.includes(letra)) {
-        seleccionadasMultiples = seleccionadasMultiples.filter(l => l !== letra);
-        el.classList.remove('seleccionada');
-    } else {
-        seleccionadasMultiples.push(letra);
-        el.classList.add('seleccionada');
-    }
-}
+        let seleccionadasMultiples = [];
 
-async function enviarSeleccionMultiple() {
-    if (yaRespondio || seleccionadasMultiples.length === 0) return;
-    yaRespondio = true;
-    clearInterval(timerInterval);
-
-    document.querySelectorAll('.opcion-alumno').forEach(o => o.classList.add('respondida'));
-    
-    // Convert array to string or keep as array based on your db schema, but here we just pass the array
-    await _enviarRespuesta(JSON.stringify(seleccionadasMultiples.sort()));
-}
-
-// ── Ordenar Logic ─────────────────────────────────────────
-let draggedItem = null;
-
-function dragStart(e) {
-    if (yaRespondio) return;
-    draggedItem = e.target;
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", "");
-}
-
-function dragOver(e) {
-    if (yaRespondio) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-}
-
-function drop(e) {
-    if (yaRespondio) return;
-    e.preventDefault();
-    if (e.target.closest('.opcion-ordenar')) {
-        const target = e.target.closest('.opcion-ordenar');
-        const container = document.getElementById('ordenarContainer');
-        const allItems = [...container.querySelectorAll('.opcion-ordenar')];
-        
-        if (draggedItem !== target) {
-            const draggedIdx = allItems.indexOf(draggedItem);
-            const targetIdx = allItems.indexOf(target);
-            if (draggedIdx < targetIdx) {
-                target.after(draggedItem);
+        function toggleOpcionMultiple(el, letra) {
+            if (yaRespondio) return;
+            if (seleccionadasMultiples.includes(letra)) {
+                seleccionadasMultiples = seleccionadasMultiples.filter(l => l !== letra);
+                el.classList.remove('seleccionada');
             } else {
-                target.before(draggedItem);
+                seleccionadasMultiples.push(letra);
+                el.classList.add('seleccionada');
             }
         }
-    }
-}
 
-function moveItemUp(el) {
-    if (yaRespondio) return;
-    const prev = el.previousElementSibling;
-    if (prev) prev.before(el);
-}
+        async function enviarSeleccionMultiple() {
+            if (yaRespondio || seleccionadasMultiples.length === 0) return;
+            yaRespondio = true;
+            clearInterval(timerInterval);
 
-function moveItemDown(el) {
-    if (yaRespondio) return;
-    const next = el.nextElementSibling;
-    if (next) next.after(el);
-}
+            document.querySelectorAll('.opcion-alumno').forEach(o => o.classList.add('respondida'));
 
-async function enviarOrden() {
-    if (yaRespondio) return;
-    yaRespondio = true;
-    clearInterval(timerInterval);
+            // Convert array to string or keep as array based on your db schema, but here we just pass the array
+            await _enviarRespuesta(JSON.stringify(seleccionadasMultiples.sort()));
+        }
 
-    const items = [...document.querySelectorAll('.opcion-ordenar')];
-    items.forEach(i => {
-        i.style.pointerEvents = 'none';
-        i.querySelector('button')?.parentElement?.remove(); // remove arrows
-    });
+        // ── Ordenar Logic ─────────────────────────────────────────
+        let draggedItem = null;
 
-    const orden = items.map(i => i.dataset.valor);
-    await _enviarRespuesta(JSON.stringify(orden));
-}
+        function dragStart(e) {
+            if (yaRespondio) return;
+            draggedItem = e.target;
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", "");
+        }
 
-// ── Relacionar Logic ────────────────────────────────────────
-let selectedIzq = null;
-let selectedDer = null;
-let paresConectados = []; // {izqId, derId}
+        function dragOver(e) {
+            if (yaRespondio) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+        }
 
-function selectRelIzq(el, id) {
-    if (yaRespondio || el.classList.contains('conectado')) return;
-    document.querySelectorAll('.rel-izq').forEach(e => e.classList.remove('seleccionada'));
-    el.classList.add('seleccionada');
-    selectedIzq = { el, id };
-    checkRelacion();
-}
+        function drop(e) {
+            if (yaRespondio) return;
+            e.preventDefault();
+            if (e.target.closest('.opcion-ordenar')) {
+                const target = e.target.closest('.opcion-ordenar');
+                const container = document.getElementById('ordenarContainer');
+                const allItems = [...container.querySelectorAll('.opcion-ordenar')];
 
-function selectRelDer(el, id) {
-    if (yaRespondio || el.classList.contains('conectado')) return;
-    document.querySelectorAll('.rel-der').forEach(e => e.classList.remove('seleccionada'));
-    el.classList.add('seleccionada');
-    selectedDer = { el, id };
-    checkRelacion();
-}
+                if (draggedItem !== target) {
+                    const draggedIdx = allItems.indexOf(draggedItem);
+                    const targetIdx = allItems.indexOf(target);
+                    if (draggedIdx < targetIdx) {
+                        target.after(draggedItem);
+                    } else {
+                        target.before(draggedItem);
+                    }
+                }
+            }
+        }
 
-function checkRelacion() {
-    if (selectedIzq && selectedDer) {
-        // Form pair
-        paresConectados.push({ izqId: selectedIzq.id, derId: selectedDer.id });
-        
-        // Mark visually
-        selectedIzq.el.classList.add('conectado');
-        selectedDer.el.classList.add('conectado');
-        selectedIzq.el.classList.remove('seleccionada');
-        selectedDer.el.classList.remove('seleccionada');
-        
-        // Color them the same
-        const color = `hsl(${Math.random() * 360}, 70%, 40%)`;
-        selectedIzq.el.style.borderLeft = `4px solid ${color}`;
-        selectedDer.el.style.borderLeft = `4px solid ${color}`;
-        
-        // Reset
-        selectedIzq = null;
-        selectedDer = null;
-    }
-}
+        function moveItemUp(el) {
+            if (yaRespondio) return;
+            const prev = el.previousElementSibling;
+            if (prev) prev.before(el);
+        }
 
-async function enviarRelacionar() {
-    if (yaRespondio) return;
-    yaRespondio = true;
-    clearInterval(timerInterval);
+        function moveItemDown(el) {
+            if (yaRespondio) return;
+            const next = el.nextElementSibling;
+            if (next) next.after(el);
+        }
 
-    // Save as array of pairs
-    await _enviarRespuesta(JSON.stringify(paresConectados));
-}
+        async function enviarOrden() {
+            if (yaRespondio) return;
+            yaRespondio = true;
+            clearInterval(timerInterval);
 
-// ── Responder ─────────────────────────────────────────────
-async function responderOpcion(valor, el) {
-    if (yaRespondio) return;
-    yaRespondio = true;
-    clearInterval(timerInterval);
+            const items = [...document.querySelectorAll('.opcion-ordenar')];
+            items.forEach(i => {
+                i.style.pointerEvents = 'none';
+                i.querySelector('button')?.parentElement?.remove(); // remove arrows
+            });
 
-    // Marcar visualmente
-    document.querySelectorAll('.opcion-alumno').forEach(o => o.classList.add('respondida'));
-    el.classList.add('seleccionada');
+            const orden = items.map(i => i.dataset.valor);
+            await _enviarRespuesta(JSON.stringify(orden));
+        }
 
-    await _enviarRespuesta(valor);
-}
+        // ── Relacionar Logic ────────────────────────────────────────
+        let selectedIzq = null;
+        let selectedDer = null;
+        let paresConectados = []; // {izqId, derId}
 
-async function enviarTexto() {
-    if (yaRespondio) return;
-    const input = document.getElementById('respuestaInput');
-    if (!input) return;
-    const valor = input.value.trim();
-    if (!valor) return;
+        function selectRelIzq(el, id) {
+            if (yaRespondio || el.classList.contains('conectado')) return;
+            document.querySelectorAll('.rel-izq').forEach(e => e.classList.remove('seleccionada'));
+            el.classList.add('seleccionada');
+            selectedIzq = { el, id };
+            checkRelacion();
+        }
 
-    yaRespondio = true;
-    clearInterval(timerInterval);
-    input.disabled = true;
-    document.querySelector('.btn-enviar').disabled = true;
+        function selectRelDer(el, id) {
+            if (yaRespondio || el.classList.contains('conectado')) return;
+            document.querySelectorAll('.rel-der').forEach(e => e.classList.remove('seleccionada'));
+            el.classList.add('seleccionada');
+            selectedDer = { el, id };
+            checkRelacion();
+        }
 
-    await _enviarRespuesta(valor);
-}
+        function checkRelacion() {
+            if (selectedIzq && selectedDer) {
+                // Form pair
+                paresConectados.push({ izqId: selectedIzq.id, derId: selectedDer.id });
 
-async function _enviarRespuesta(valorRaw) {
-    const p = preguntas[sala.pregunta_actual];
-    if (!p) return;
+                // Mark visually
+                selectedIzq.el.classList.add('conectado');
+                selectedDer.el.classList.add('conectado');
+                selectedIzq.el.classList.remove('seleccionada');
+                selectedDer.el.classList.remove('seleccionada');
 
-    const tiempoMs = Date.now() - (tiempoInicio || Date.now());
+                // Color them the same
+                const color = `hsl(${Math.random() * 360}, 70%, 40%)`;
+                selectedIzq.el.style.borderLeft = `4px solid ${color}`;
+                selectedDer.el.style.borderLeft = `4px solid ${color}`;
 
-    // Verificar si es correcta
-    const correcto = verificarRespuesta(p, valorRaw);
+                // Reset
+                selectedIzq = null;
+                selectedDer = null;
+            }
+        }
 
-    // Calcular puntos (máx según tiempo)
-    const tiempoTotal = (p.tiempo_segundos || 30) * 1000;
-    const factor = Math.max(0.2, 1 - (tiempoMs / tiempoTotal) * 0.8);
-    const puntosGanados = correcto ? Math.round((p.puntos || 100) * factor) : 0;
+        async function enviarRelacionar() {
+            if (yaRespondio) return;
+            yaRespondio = true;
+            clearInterval(timerInterval);
 
-    // Guardar en Supabase
-    await AlephAPI.Sala.responder({
-        salaId: sala.id,
-        preguntaId: p.id,
-        respuesta: valorRaw,
-        esCorrecta: correcto,
-        tiempoMs,
-        puntosGanados
-    });
+            // Save as array of pairs
+            await _enviarRespuesta(JSON.stringify(paresConectados));
+        }
 
-    // Actualizar puntaje
-    if (puntosGanados > 0) {
-        await AlephAPI.Sala.actualizarPuntaje({
-            salaId: sala.id,
-            userId: currentUser.id,
-            puntosExtra: puntosGanados
-        });
-    }
+        // ── Responder ─────────────────────────────────────────────
+        async function responderOpcion(valor, el) {
+            if (yaRespondio) return;
+            yaRespondio = true;
+            clearInterval(timerInterval);
 
-    renderEsperando(correcto, puntosGanados);
-}
+            // Marcar visualmente
+            document.querySelectorAll('.opcion-alumno').forEach(o => o.classList.add('respondida'));
+            el.classList.add('seleccionada');
 
-function verificarRespuesta(p, valor) {
-    const correcta = typeof p.respuesta_correcta === 'string'
-        ? p.respuesta_correcta
-        : JSON.stringify(p.respuesta_correcta);
+            await _enviarRespuesta(valor);
+        }
 
-    if (p.tipo === 'multiple_choice') return valor === correcta;
-    if (p.tipo === 'seleccion_multiple') {
-        const corrArr = Array.isArray(p.respuesta_correcta) ? p.respuesta_correcta : [];
-        return valor === JSON.stringify(corrArr.sort());
-    }
-    if (p.tipo === 'ordenar') {
-        const correctaArr = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : p.opciones;
-        return valor === JSON.stringify(correctaArr);
-    }
-    if (p.tipo === 'relacionar_columnas') {
-        try {
-            const pares = JSON.parse(valor);
-            const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : p.opciones;
-            if (pares.length !== opts.length) return false;
-            return pares.every(par => par.izqId === par.derId);
-        } catch(e) { return false; }
-    }
-    if (p.tipo === 'imagen_click') {
-        try {
-            const marca = JSON.parse(valor); // {x, y}
-            const corr = typeof p.respuesta_correcta === 'string' ? JSON.parse(p.respuesta_correcta) : p.respuesta_correcta; // {x, y, r}
-            if (!marca || !corr) return false;
-            
-            // Calculate distance in percentage space
-            const dx = marca.x - corr.x;
-            const dy = marca.y - corr.y;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            return dist <= corr.r;
-        } catch(e) { return false; }
-    }
-    if (p.tipo === 'verdadero_falso') return valor === correcta;
-    if (p.tipo === 'numerica') return parseFloat(valor) === parseFloat(correcta);
-    if (p.tipo === 'respuesta_corta' || p.tipo === 'completar_espacio')
-        return valor.trim().toLowerCase() === correcta.trim().toLowerCase();
-    return false;
-}
+        async function enviarTexto() {
+            if (yaRespondio) return;
+            const input = document.getElementById('respuestaInput');
+            if (!input) return;
+            const valor = input.value.trim();
+            if (!valor) return;
 
-// ── RENDER: Esperando resultado ───────────────────────────
-function renderEsperando(correcto, pts) {
-    puntajeLocal += pts;
-    document.getElementById('jugarPts').textContent = puntajeLocal + ' pts';
+            yaRespondio = true;
+            clearInterval(timerInterval);
+            input.disabled = true;
+            document.querySelector('.btn-enviar').disabled = true;
 
-    document.getElementById('jugarMain').innerHTML = `
+            await _enviarRespuesta(valor);
+        }
+
+        async function _enviarRespuesta(valorRaw) {
+            const p = preguntas[sala.pregunta_actual];
+            if (!p) return;
+
+            const tiempoMs = Date.now() - (tiempoInicio || Date.now());
+
+            // Verificar si es correcta
+            const correcto = verificarRespuesta(p, valorRaw);
+
+            // Calcular puntos (máx según tiempo)
+            const tiempoTotal = (p.tiempo_segundos || 30) * 1000;
+            const factor = Math.max(0.2, 1 - (tiempoMs / tiempoTotal) * 0.8);
+            const puntosGanados = correcto ? Math.round((p.puntos || 100) * factor) : 0;
+
+            // Guardar en Supabase
+            await AlephAPI.Sala.responder({
+                salaId: sala.id,
+                preguntaId: p.id,
+                respuesta: valorRaw,
+                esCorrecta: correcto,
+                tiempoMs,
+                puntosGanados
+            });
+
+            // Actualizar puntaje
+            if (puntosGanados > 0) {
+                await AlephAPI.Sala.actualizarPuntaje({
+                    salaId: sala.id,
+                    userId: currentUser.id,
+                    puntosExtra: puntosGanados
+                });
+            }
+
+            renderEsperando(correcto, puntosGanados);
+        }
+
+        function verificarRespuesta(p, valor) {
+            const correcta = typeof p.respuesta_correcta === 'string'
+                ? p.respuesta_correcta
+                : JSON.stringify(p.respuesta_correcta);
+
+            if (p.tipo === 'multiple_choice') return valor === correcta;
+            if (p.tipo === 'seleccion_multiple') {
+                const corrArr = Array.isArray(p.respuesta_correcta) ? p.respuesta_correcta : [];
+                return valor === JSON.stringify(corrArr.sort());
+            }
+            if (p.tipo === 'ordenar') {
+                const correctaArr = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : p.opciones;
+                return valor === JSON.stringify(correctaArr);
+            }
+            if (p.tipo === 'relacionar_columnas') {
+                try {
+                    const pares = JSON.parse(valor);
+                    const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : p.opciones;
+                    if (pares.length !== opts.length) return false;
+                    return pares.every(par => par.izqId === par.derId);
+                } catch (e) { return false; }
+            }
+            if (p.tipo === 'imagen_click') {
+                try {
+                    const marca = JSON.parse(valor); // {x, y}
+                    const corr = typeof p.respuesta_correcta === 'string' ? JSON.parse(p.respuesta_correcta) : p.respuesta_correcta; // {x, y, r}
+                    if (!marca || !corr) return false;
+
+                    // Calculate distance in percentage space
+                    const dx = marca.x - corr.x;
+                    const dy = marca.y - corr.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    return dist <= corr.r;
+                } catch (e) { return false; }
+            }
+            if (p.tipo === 'verdadero_falso') return valor === correcta;
+            if (p.tipo === 'numerica') return parseFloat(valor) === parseFloat(correcta);
+            if (p.tipo === 'respuesta_corta' || p.tipo === 'completar_espacio')
+                return valor.trim().toLowerCase() === correcta.trim().toLowerCase();
+            return false;
+        }
+
+        // ── RENDER: Esperando resultado ───────────────────────────
+        function renderEsperando(correcto, pts) {
+            puntajeLocal += pts;
+            document.getElementById('jugarPts').textContent = puntajeLocal + ' pts';
+
+            document.getElementById('jugarMain').innerHTML = `
         <div class="estado-respondio">
             <div class="respondio-icon">${correcto ? '✅' : '❌'}</div>
             <div class="respondio-titulo">${correcto ? '¡Correcto!' : 'Incorrecto'}</div>
             ${pts > 0 ? `<div class="pts-ganados">+${pts} pts</div>` : ''}
             <div class="respondio-sub">Esperando al docente...</div>
         </div>`;
-}
+        }
 
-// ── RENDER: Ranking ───────────────────────────────────────
-async function renderRanking() {
-    await cargarParticipantes();
-    const top10 = [...participantes].sort((a,b) => b.puntaje - a.puntaje).slice(0,10);
+        // ── RENDER: Ranking ───────────────────────────────────────
+        async function renderRanking() {
+            await cargarParticipantes();
+            const top10 = [...participantes].sort((a, b) => b.puntaje - a.puntaje).slice(0, 10);
 
-    const itemsHTML = top10.map((p, i) => {
-        const esYo = p.user_id === currentUser.id;
-        return `
+            const itemsHTML = top10.map((p, i) => {
+                const esYo = p.user_id === currentUser.id;
+                return `
             <div class="ranking-item-alumno ${esYo ? 'yo-ranking' : ''}"
-                 style="animation-delay:${i*0.06}s">
-                <span class="rank-pos">${MEDALLAS[i] || (i+1)}</span>
+                 style="animation-delay:${i * 0.06}s">
+                <span class="rank-pos">${MEDALLAS[i] || (i + 1)}</span>
                 <span class="rank-name">${sanitize(p.username)}${esYo ? ' 👈' : ''}</span>
                 <span class="rank-pts">${p.puntaje} pts</span>
             </div>`;
-    }).join('');
+            }).join('');
 
-    // Posición del jugador si no está en top 10
-    const miPosicion = [...participantes].sort((a,b) => b.puntaje - a.puntaje)
-        .findIndex(p => p.user_id === currentUser.id);
+            // Posición del jugador si no está en top 10
+            const miPosicion = [...participantes].sort((a, b) => b.puntaje - a.puntaje)
+                .findIndex(p => p.user_id === currentUser.id);
 
-    document.getElementById('jugarMain').innerHTML = `
+            document.getElementById('jugarMain').innerHTML = `
         <div class="estado-ranking">
             <div class="ranking-titulo">🏆 Ranking</div>
             ${itemsHTML}
@@ -1045,24 +1158,24 @@ async function renderRanking() {
                 Tu posición: #${miPosicion + 1}
             </div>` : ''}
         </div>`;
-}
+        }
 
-// ── RENDER: Final ─────────────────────────────────────────
-async function renderFinal() {
-    clearInterval(timerInterval);
-    suscripciones.forEach(s => s?.unsubscribe?.());
+        // ── RENDER: Final ─────────────────────────────────────────
+        async function renderFinal() {
+            clearInterval(timerInterval);
+            suscripciones.forEach(s => s?.unsubscribe?.());
 
-    await cargarParticipantes();
-    const sorted = [...participantes].sort((a,b) => b.puntaje - a.puntaje);
-    const miPos  = sorted.findIndex(p => p.user_id === currentUser.id);
-    const yo     = sorted[miPos];
+            await cargarParticipantes();
+            const sorted = [...participantes].sort((a, b) => b.puntaje - a.puntaje);
+            const miPos = sorted.findIndex(p => p.user_id === currentUser.id);
+            const yo = sorted[miPos];
 
-    let emoji = '🎮';
-    if (miPos === 0) emoji = '🥇';
-    else if (miPos === 1) emoji = '🥈';
-    else if (miPos === 2) emoji = '🥉';
+            let emoji = '🎮';
+            if (miPos === 0) emoji = '🥇';
+            else if (miPos === 1) emoji = '🥈';
+            else if (miPos === 2) emoji = '🥉';
 
-    document.getElementById('jugarMain').innerHTML = `
+            document.getElementById('jugarMain').innerHTML = `
         <div class="estado-final">
             <div class="final-emoji">${emoji}</div>
             <div class="final-titulo">¡Fin del quiz!</div>
@@ -1073,7 +1186,8 @@ async function renderFinal() {
                 Volver a Quizzit
             </button>
         </div>`;
-}
-</script>
+        }
+    </script>
 </body>
+
 </html>
