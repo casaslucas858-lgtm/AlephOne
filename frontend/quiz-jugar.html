@@ -1052,13 +1052,38 @@
 
             const tiempoMs = Date.now() - (tiempoInicio || Date.now());
 
-            // Verificar si es correcta
-            const correcto = verificarRespuesta(p, valorRaw);
+            // Verificar si es correcta de base
+            let correcto = verificarRespuesta(p, valorRaw);
 
-            // Calcular puntos (máx según tiempo)
+            // Calcular puntos base máximos según tiempo
             const tiempoTotal = (p.tiempo_segundos || 30) * 1000;
             const factor = Math.max(0.2, 1 - (tiempoMs / tiempoTotal) * 0.8);
-            const puntosGanados = correcto ? Math.round((p.puntos || 100) * factor) : 0;
+            const ptsBaseMaximos = Math.round((p.puntos || 100) * factor);
+            let puntosGanados = correcto ? ptsBaseMaximos : 0;
+
+            // Para imagen_click, el puntaje decae con la distancia
+            if (p.tipo === 'imagen_click') {
+                try {
+                    const marca = JSON.parse(valorRaw);
+                    const corr = typeof p.respuesta_correcta === 'string' ? JSON.parse(p.respuesta_correcta) : p.respuesta_correcta;
+                    if (marca && corr) {
+                        const dx = marca.x - corr.x;
+                        const dy = marca.y - corr.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        
+                        if (dist <= 3) {
+                            puntosGanados = ptsBaseMaximos;
+                            correcto = true;
+                        } else if (dist <= 20) {
+                            puntosGanados = Math.round(ptsBaseMaximos * ((20 - dist) / 17));
+                            correcto = puntosGanados > 0;
+                        } else {
+                            puntosGanados = 0;
+                            correcto = false;
+                        }
+                    }
+                } catch(e) {}
+            }
 
             // Guardar en Supabase
             await AlephAPI.Sala.responder({
