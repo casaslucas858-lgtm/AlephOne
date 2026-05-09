@@ -1079,8 +1079,24 @@ async function _guardar(redirigir) {
                 opcionesParaGuardar = p.opciones;
             }
 
+            // Derivar respuesta_correcta para tipos que la tienen implícita
             let respuestaParaGuardar = p.respuesta_correcta;
-            if (respuestaParaGuardar !== null && typeof respuestaParaGuardar === 'object') {
+            if (p.tipo === 'ordenar' && (respuestaParaGuardar === null || respuestaParaGuardar === undefined)) {
+                // El orden correcto es el mismo array de opciones
+                respuestaParaGuardar = JSON.stringify(p.opciones);
+            }
+            if (p.tipo === 'relacionar_columnas' && (respuestaParaGuardar === null || respuestaParaGuardar === undefined)) {
+                // Pares correctos: cada índice se conecta consigo mismo
+                respuestaParaGuardar = JSON.stringify(p.opciones.map((_, i) => ({ izqId: i, derId: i })));
+            }
+            if ((respuestaParaGuardar === null || respuestaParaGuardar === undefined) && p.tipo === 'completar_espacio') {
+                respuestaParaGuardar = '';
+            }
+            // Fallback: nunca mandar null
+            if (respuestaParaGuardar === null || respuestaParaGuardar === undefined) {
+                respuestaParaGuardar = '';
+            }
+            if (typeof respuestaParaGuardar === 'object') {
                 respuestaParaGuardar = JSON.stringify(respuestaParaGuardar);
             }
 
