@@ -657,7 +657,11 @@ function renderOpcionesAsig(p, yaResp) {
             displayOpts = typeof yaResp.valor === 'string' ? JSON.parse(yaResp.valor) : yaResp.valor;
         } else {
             // Mezclamos
-            displayOpts = [...opts].sort(() => Math.random() - 0.5);
+            displayOpts = [...opts];
+            for (let k = displayOpts.length - 1; k > 0; k--) {
+                const j = Math.floor(Math.random() * (k + 1));
+                [displayOpts[k], displayOpts[j]] = [displayOpts[j], displayOpts[k]];
+            }
         }
 
         const esCorrectoGlobal = yaResp && yaResp.esCorrecta;
@@ -688,7 +692,11 @@ function renderOpcionesAsig(p, yaResp) {
         }
 
         const leftSide = opts.map((o, i) => ({ id: i, text: o.izq }));
-        const rightSide = opts.map((o, i) => ({ id: i, text: o.der })).sort(() => Math.random() - 0.5);
+        const rightSide = opts.map((o, i) => ({ id: i, text: o.der }));
+        for (let k = rightSide.length - 1; k > 0; k--) {
+            const j = Math.floor(Math.random() * (k + 1));
+            [rightSide[k], rightSide[j]] = [rightSide[j], rightSide[k]];
+        }
 
         return `<div class="opciones-asig" style="display:flex; gap:20px; justify-content:space-between;" id="relacionarContainerAsig">
             <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
