@@ -587,16 +587,10 @@
             const salaId = params.get('sala');
             if (!salaId) { window.location.href = 'quizzit.html'; return; }
 
-            // Cargar sala
-            const { data: salaData } = await _sb
-                .from('salas')
-                .select('*, quizzes(*, preguntas(*))')
-                .eq('id', salaId)
-                .single();
+            const salaRes = await AlephAPI.Sala.getById(salaId);
+            if (!salaRes.ok || !salaRes.sala) { showToast('Sala no encontrada', 'error'); window.location.href = 'quizzit.html'; return; }
 
-            if (!salaData) { showToast('Sala no encontrada', 'error'); window.location.href = 'quizzit.html'; return; }
-
-            sala = salaData;
+            sala = salaRes.sala;
             preguntas = (sala.quizzes?.preguntas || []).sort((a, b) => a.orden - b.orden);
 
             // Normalizar datos de preguntas que vienen del backend
@@ -610,8 +604,8 @@
                         }
                     } catch(e) { /* es un string normal, dejarlo */ }
                 }
-                // Extraer imagen_url de opciones para imagen_click
-                if (p.tipo === 'imagen_click' && p.opciones) {
+                // Extraer metadata de opciones para tipos con imagen o config
+                if ((p.tipo === 'imagen_click' || p.tipo === 'slide' || p.tipo === 'libre_imagen' || p.tipo === 'escala') && p.opciones) {
                     const imageOptions = typeof p.opciones === 'string'
                         ? (() => { try { return JSON.parse(p.opciones); } catch { return null; } })()
                         : p.opciones;
@@ -620,6 +614,11 @@
                         p.imagen_path = imageOptions.imagen_path || '';
                         p.imagen_bucket = imageOptions.imagen_bucket || '';
                         p.imagen_nombre = imageOptions.imagen_nombre || '';
+                        p.slide_titulo = imageOptions.slide_titulo || '';
+                        p.escala_min = imageOptions.min ?? p.escala_min;
+                        p.escala_max = imageOptions.max ?? p.escala_max;
+                        p.escala_label_izq = imageOptions.left_label || '';
+                        p.escala_label_der = imageOptions.right_label || '';
                     }
                 }
             });
@@ -739,12 +738,60 @@
 
                 if (tiempoRestante <= 0) {
                     clearInterval(timerInterval);
-                    if (!yaRespondio) renderEsperando(false, 0);
+                    const p = preguntas[sala?.pregunta_actual];
+                    if (p?.tipo === 'slide' && !yaRespondio) {
+                        yaRespondio = true;
+                        renderEsperando(true, 0);
+                    } else if (!yaRespondio) {
+                        renderEsperando(false, 0);
+                    }
                 }
             }, 1000);
         }
 
         function renderOpcionesAlumno(p) {
+            if (p.tipo === 'slide') {
+                const title = p.slide_titulo || 'Diapositiva';
+                return `<div style="display:flex; flex-direction:column; gap:16px;">
+            <div style="padding:18px; border-radius:var(--radius-lg); background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); text-align:center;">
+                <div style="font-family:var(--font-display); font-size:1.1em; font-weight:700; color:white;">${sanitize(title)}</div>
+                <p style="margin-top:8px; color:rgba(255,255,255,0.45); font-size:0.84em;">Esperá a que el docente continúe.</p>
+            </div>
+            ${p.imagen_url ? `<img src="${sanitize(p.imagen_url)}" style="display:block; max-width:100%; max-height:320px; margin:0 auto; border-radius:12px;">` : ''}
+        </div>`;
+            }
+
+            if (p.tipo === 'encuesta') {
+                const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+                return `<div class="opciones-alumno">
+            ${opts.map((op, i) => op.trim() ? `
+                <div class="opcion-alumno" data-opt="${LETRAS[i]}"
+                     onclick="responderOpinion('${LETRAS[i]}', this)">
+                    <div class="opt-letra-alumno">${LETRAS[i]}</div>
+                    <span>${sanitize(op)}</span>
+                </div>` : '').join('')}
+        </div>`;
+            }
+
+            if (p.tipo === 'escala') {
+                const min = Number(p.escala_min ?? 1);
+                const max = Number(p.escala_max ?? 5);
+                const values = [];
+                for (let v = min; v <= max; v++) values.push(v);
+                return `<div style="display:flex; flex-direction:column; gap:14px;">
+            <div style="display:flex; justify-content:space-between; gap:12px; color:rgba(255,255,255,0.42); font-size:0.78em;">
+                <span>${sanitize(p.escala_label_izq || '')}</span>
+                <span>${sanitize(p.escala_label_der || '')}</span>
+            </div>
+            <div class="opciones-alumno">
+                ${values.map(v => `
+                    <div class="opcion-alumno" onclick="responderOpinion('${v}', this)" style="justify-content:center;">
+                        <span style="font-family:var(--font-display); font-size:1.15em;">${v}</span>
+                    </div>`).join('')}
+            </div>
+        </div>`;
+            }
+
             if (p.tipo === 'multiple_choice') {
                 const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
                 return `<div class="opciones-alumno">
@@ -858,6 +905,19 @@
         <button class="btn-enviar" onclick="enviarImagenClick()" style="margin-top:20px; width:100%;">Enviar Marca →</button>`;
             }
 
+            if (p.tipo === 'libre_imagen') {
+                return `<div style="display:flex; flex-direction:column; gap:14px;">
+        ${p.imagen_url ? `<img src="${sanitize(p.imagen_url)}" style="display:block; max-width:100%; max-height:320px; margin:0 auto; border-radius:12px;">` : ''}
+        <div class="respuesta-input-wrap">
+            <input type="text"
+                   class="respuesta-input" id="respuestaInput"
+                   placeholder="Escribí qué es..."
+                   onkeydown="if(event.key==='Enter')enviarTexto()">
+            <button class="btn-enviar" onclick="enviarTexto()">Enviar →</button>
+        </div>
+    </div>`;
+            }
+
             return `<div class="respuesta-input-wrap">
         <input type="${type}"
                class="respuesta-input" id="respuestaInput"
@@ -890,6 +950,15 @@
             clearInterval(timerInterval);
 
             await _enviarRespuesta(JSON.stringify(marcaImagenClick));
+        }
+
+        async function responderOpinion(valor, el) {
+            if (yaRespondio) return;
+            yaRespondio = true;
+            clearInterval(timerInterval);
+            document.querySelectorAll('.opcion-alumno').forEach(o => o.classList.add('respondida'));
+            el.classList.add('seleccionada');
+            await _enviarRespuesta(valor);
         }
 
         let seleccionadasMultiples = [];
@@ -1074,6 +1143,11 @@
             const ptsBaseMaximos = Math.round((p.puntos || 100) * factor);
             let puntosGanados = correcto ? ptsBaseMaximos : 0;
 
+            if (p.tipo === 'encuesta' || p.tipo === 'escala' || p.tipo === 'slide') {
+                correcto = true;
+                puntosGanados = 0;
+            }
+
             // Para imagen_click, el puntaje decae con la distancia
             if (p.tipo === 'imagen_click') {
                 try {
@@ -1121,6 +1195,8 @@
         }
 
         function verificarRespuesta(p, valor) {
+            if (p.tipo === 'slide') return true;
+            if (p.tipo === 'encuesta' || p.tipo === 'escala') return true;
             const correcta = typeof p.respuesta_correcta === 'string'
                 ? p.respuesta_correcta
                 : JSON.stringify(p.respuesta_correcta);
@@ -1157,7 +1233,7 @@
             }
             if (p.tipo === 'verdadero_falso') return valor === correcta;
             if (p.tipo === 'numerica') return parseFloat(valor) === parseFloat(correcta);
-            if (p.tipo === 'respuesta_corta' || p.tipo === 'completar_espacio')
+            if (p.tipo === 'respuesta_corta' || p.tipo === 'completar_espacio' || p.tipo === 'libre_imagen')
                 return valor.trim().toLowerCase() === correcta.trim().toLowerCase();
             return false;
         }
@@ -1166,11 +1242,13 @@
         function renderEsperando(correcto, pts) {
             puntajeLocal += pts;
             document.getElementById('jugarPts').textContent = puntajeLocal + ' pts';
+            const p = preguntas[sala.pregunta_actual];
+            const esOpinion = p && (p.tipo === 'encuesta' || p.tipo === 'escala' || p.tipo === 'slide');
 
             document.getElementById('jugarMain').innerHTML = `
         <div class="estado-respondio">
-            <div class="respondio-icon">${correcto ? '✅' : '❌'}</div>
-            <div class="respondio-titulo">${correcto ? '¡Correcto!' : 'Incorrecto'}</div>
+            <div class="respondio-icon">${esOpinion ? '🗳️' : (correcto ? '✅' : '❌')}</div>
+            <div class="respondio-titulo">${esOpinion ? 'Listo' : (correcto ? '¡Correcto!' : 'Incorrecto')}</div>
             ${pts > 0 ? `<div class="pts-ganados">+${pts} pts</div>` : ''}
             <div class="respondio-sub">Esperando al docente...</div>
         </div>`;
