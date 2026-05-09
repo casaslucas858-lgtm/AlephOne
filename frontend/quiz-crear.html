@@ -1060,7 +1060,21 @@ async function _guardar(redirigir) {
 
     try {
         console.log('%c[GUARDAR] Inicio', 'color:yellow;font-weight:bold', { titulo, curso });
-        const resQuiz = await AlephAPI.Quiz.crear({ titulo, descripcion: '', curso });
+        
+        // Check auth
+        const authUser = AlephAPI.Auth.getCurrentUser();
+        console.log('%c[GUARDAR] Usuario:', 'color:yellow', authUser);
+        if (!authUser) {
+            showToast('No hay sesión activa. Recargá la página.', 'error');
+            return;
+        }
+
+        console.log('%c[GUARDAR] Llamando Quiz.crear...', 'color:yellow');
+        const quizPromise = AlephAPI.Quiz.crear({ titulo, descripcion: '', curso });
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Quiz.crear tardó más de 15s — ¿conexión a Supabase?')), 15000)
+        );
+        const resQuiz = await Promise.race([quizPromise, timeoutPromise]);
         console.log('%c[GUARDAR] Quiz.crear resultado:', 'color:yellow', resQuiz);
         if (!resQuiz.ok) {
             showToast('Error guardando quiz: ' + resQuiz.error, 'error');
