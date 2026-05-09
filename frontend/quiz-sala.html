@@ -652,6 +652,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     sala = res.sala;
     preguntas = (sala.quizzes?.preguntas || []).sort((a,b) => a.orden - b.orden);
 
+    // Normalizar datos de preguntas que vienen del backend
+    preguntas.forEach(p => {
+        if (typeof p.respuesta_correcta === 'string') {
+            try {
+                const parsed = JSON.parse(p.respuesta_correcta);
+                if (typeof parsed === 'object' && parsed !== null) {
+                    p.respuesta_correcta = parsed;
+                }
+            } catch(e) { /* string normal */ }
+        }
+        if (p.tipo === 'imagen_click' && p.opciones && typeof p.opciones === 'object' && !Array.isArray(p.opciones)) {
+            p.imagen_url = p.opciones.imagen_url || '';
+        }
+    });
+
     // UI inicial
     document.getElementById('salaCode').textContent = sala.codigo;
     document.getElementById('waitingCode').textContent = sala.codigo;
