@@ -940,14 +940,31 @@ function enviarImagenClickAsig(pregId) {
     const corr = typeof p.respuesta_correcta === 'string' ? JSON.parse(p.respuesta_correcta) : p.respuesta_correcta;
     
     let esCorrecta = false;
+    let ptsGanados = 0;
+    const ptsMaximos = p.puntos || 100;
+
     if (corr) {
         const dx = marca.x - corr.x;
         const dy = marca.y - corr.y;
         const dist = Math.sqrt(dx*dx + dy*dy);
-        esCorrecta = dist <= corr.r;
+        
+        // Puntaje por cercanía:
+        // dist <= 3%: 100% puntos
+        // dist entre 3% y 20%: decae linealmente
+        // dist > 20%: 0 puntos
+        if (dist <= 3) {
+            ptsGanados = ptsMaximos;
+            esCorrecta = true;
+        } else if (dist <= 20) {
+            ptsGanados = Math.round(ptsMaximos * ((20 - dist) / 17));
+            esCorrecta = ptsGanados > 0;
+        } else {
+            ptsGanados = 0;
+            esCorrecta = false;
+        }
     }
     
-    guardarRespuesta(pregId, JSON.stringify(marca), esCorrecta, p.puntos || 100);
+    guardarRespuesta(pregId, JSON.stringify(marca), esCorrecta, ptsMaximos, ptsGanados);
 }
 
 // ── Responder ─────────────────────────────────────────────
@@ -983,8 +1000,8 @@ function responderTexto(pregId, tipo) {
     guardarRespuesta(pregId, valor, esCorrecta, p.puntos || 100);
 }
 
-function guardarRespuesta(pregId, valor, esCorrecta, pts) {
-    const puntosGanados = esCorrecta ? pts : 0;
+function guardarRespuesta(pregId, valor, esCorrecta, ptsMaximos, ptsGanadosDirectos = null) {
+    const puntosGanados = ptsGanadosDirectos !== null ? ptsGanadosDirectos : (esCorrecta ? ptsMaximos : 0);
     respuestas[pregId] = { valor, esCorrecta, puntosGanados };
     renderPregunta(idx); // re-render con feedback
 }
