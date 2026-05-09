@@ -582,6 +582,8 @@ function renderPregunta(idx) {
     if (!p) return;
 
     tiempoInicio = Date.now();
+    seleccionadasMultiples = [];
+    paresConectados = [];
     const tiempoTotal = p.tiempo_segundos || 30;
     let tiempoRestante = tiempoTotal;
 
@@ -625,13 +627,26 @@ function renderOpcionesAlumno(p) {
     if (p.tipo === 'multiple_choice') {
         const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
         return `<div class="opciones-alumno">
-            ${opts.map((op, i) => `
+            ${opts.map((op, i) => op.trim() ? `
                 <div class="opcion-alumno" data-opt="${LETRAS[i]}"
                      onclick="responderOpcion('${LETRAS[i]}', this)">
                     <div class="opt-letra-alumno">${LETRAS[i]}</div>
                     <span>${sanitize(op)}</span>
-                </div>`).join('')}
+                </div>` : '').join('')}
         </div>`;
+    }
+
+    if (p.tipo === 'seleccion_multiple') {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        return `<div class="opciones-alumno">
+            ${opts.map((op, i) => op.trim() ? `
+                <div class="opcion-alumno seleccion-multiple" data-opt="${LETRAS[i]}"
+                     onclick="toggleOpcionMultiple(this, '${LETRAS[i]}')">
+                    <div class="opt-letra-alumno" style="border-radius:4px;">${LETRAS[i]}</div>
+                    <span>${sanitize(op)}</span>
+                </div>` : '').join('')}
+        </div>
+        <button class="btn-enviar" onclick="enviarSeleccionMultiple()" style="margin-top:20px; width:100%;">Enviar Respuestas →</button>`;
     }
 
     if (p.tipo === 'verdadero_falso') {
@@ -647,14 +662,239 @@ function renderOpcionesAlumno(p) {
         </div>`;
     }
 
-    // Numérica o corta
+    // Numérica o corta o completar
+    let ph = 'Tu respuesta...';
+    let type = 'text';
+    if (p.tipo === 'numerica') { type = 'number'; ph = 'Número...'; }
+    if (p.tipo === 'completar_espacio') ph = 'Completá la palabra...';
+
+    if (p.tipo === 'ordenar') {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        // Shuffle the options
+        const shuffled = [...opts].sort(() => Math.random() - 0.5);
+        
+        return `<div class="opciones-alumno" id="ordenarContainer">
+            ${shuffled.map((op, i) => `
+                <div class="opcion-alumno opcion-ordenar" style="cursor:grab; display:flex; justify-content:space-between;"
+                     draggable="true" data-valor="${sanitize(op)}"
+                     ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event)">
+                    <span>${sanitize(op)}</span>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <button class="btn btn-ghost btn-sm" style="padding:2px 6px;" onclick="moveItemUp(this.parentElement.parentElement)">▲</button>
+                        <button class="btn btn-ghost btn-sm" style="padding:2px 6px;" onclick="moveItemDown(this.parentElement.parentElement)">▼</button>
+                    </div>
+                </div>`).join('')}
+        </div>
+        <button class="btn-enviar" onclick="enviarOrden()" style="margin-top:20px; width:100%;">Enviar Orden →</button>`;
+    }
+
+    if (p.tipo === 'relacionar_columnas') {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        
+        // Shuffle the right side
+        const leftSide = opts.map((o, i) => ({ id: i, text: o.izq }));
+        const rightSide = opts.map((o, i) => ({ id: i, text: o.der })).sort(() => Math.random() - 0.5);
+        
+        return `<div class="opciones-alumno" style="display:flex; gap:20px; justify-content:space-between;" id="relacionarContainer">
+            <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
+                ${leftSide.map(l => `
+                    <div class="opcion-alumno rel-izq" data-id="${l.id}" onclick="selectRelIzq(this, ${l.id})">
+                        <span>${sanitize(l.text)}</span>
+                    </div>`).join('')}
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
+                ${rightSide.map(r => `
+                    <div class="opcion-alumno rel-der" data-id="${r.id}" onclick="selectRelDer(this, ${r.id})">
+                        <span>${sanitize(r.text)}</span>
+                    </div>`).join('')}
+            </div>
+        </div>
+        <button class="btn-enviar" onclick="enviarRelacionar()" style="margin-top:20px; width:100%;">Enviar Relaciones →</button>`;
+    }
+
+    if (p.tipo === 'imagen_click') {
+        const url = p.imagen_url || '';
+        return `
+        <div class="opciones-alumno" style="display:flex; justify-content:center;">
+            <div style="position:relative; display:inline-block; max-width:100%; border-radius:8px; overflow:hidden; cursor:crosshair;" onclick="marcarImagenClick(event)">
+                <img src="${sanitize(url)}" style="display:block; max-width:100%; height:auto;" id="imagenClickMapJugar">
+                <div id="marcadorImagenJugar" style="position:absolute; width:16px; height:16px; background:var(--teal); border:2px solid white; border-radius:50%; transform:translate(-50%, -50%); display:none; pointer-events:none; box-shadow:0 0 10px rgba(0,0,0,0.5);"></div>
+            </div>
+        </div>
+        <button class="btn-enviar" onclick="enviarImagenClick()" style="margin-top:20px; width:100%;">Enviar Marca →</button>`;
+    }
+
     return `<div class="respuesta-input-wrap">
-        <input type="${p.tipo === 'numerica' ? 'number' : 'text'}"
+        <input type="${type}"
                class="respuesta-input" id="respuestaInput"
-               placeholder="${p.tipo === 'numerica' ? 'Número...' : 'Tu respuesta...'}"
+               placeholder="${ph}"
                onkeydown="if(event.key==='Enter')enviarTexto()">
         <button class="btn-enviar" onclick="enviarTexto()">Enviar →</button>
     </div>`;
+}
+
+// ── Imagen Click Logic ────────────────────────────────────
+let marcaImagenClick = null;
+
+function marcarImagenClick(e) {
+    if (yaRespondio) return;
+    const img = document.getElementById('imagenClickMapJugar');
+    const rect = img.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    
+    marcaImagenClick = { x, y };
+    const marcador = document.getElementById('marcadorImagenJugar');
+    marcador.style.left = `${x}%`;
+    marcador.style.top = `${y}%`;
+    marcador.style.display = 'block';
+}
+
+async function enviarImagenClick() {
+    if (yaRespondio || !marcaImagenClick) return;
+    yaRespondio = true;
+    clearInterval(timerInterval);
+
+    await _enviarRespuesta(JSON.stringify(marcaImagenClick));
+}
+
+let seleccionadasMultiples = [];
+
+function toggleOpcionMultiple(el, letra) {
+    if (yaRespondio) return;
+    if (seleccionadasMultiples.includes(letra)) {
+        seleccionadasMultiples = seleccionadasMultiples.filter(l => l !== letra);
+        el.classList.remove('seleccionada');
+    } else {
+        seleccionadasMultiples.push(letra);
+        el.classList.add('seleccionada');
+    }
+}
+
+async function enviarSeleccionMultiple() {
+    if (yaRespondio || seleccionadasMultiples.length === 0) return;
+    yaRespondio = true;
+    clearInterval(timerInterval);
+
+    document.querySelectorAll('.opcion-alumno').forEach(o => o.classList.add('respondida'));
+    
+    // Convert array to string or keep as array based on your db schema, but here we just pass the array
+    await _enviarRespuesta(JSON.stringify(seleccionadasMultiples.sort()));
+}
+
+// ── Ordenar Logic ─────────────────────────────────────────
+let draggedItem = null;
+
+function dragStart(e) {
+    if (yaRespondio) return;
+    draggedItem = e.target;
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", "");
+}
+
+function dragOver(e) {
+    if (yaRespondio) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+}
+
+function drop(e) {
+    if (yaRespondio) return;
+    e.preventDefault();
+    if (e.target.closest('.opcion-ordenar')) {
+        const target = e.target.closest('.opcion-ordenar');
+        const container = document.getElementById('ordenarContainer');
+        const allItems = [...container.querySelectorAll('.opcion-ordenar')];
+        
+        if (draggedItem !== target) {
+            const draggedIdx = allItems.indexOf(draggedItem);
+            const targetIdx = allItems.indexOf(target);
+            if (draggedIdx < targetIdx) {
+                target.after(draggedItem);
+            } else {
+                target.before(draggedItem);
+            }
+        }
+    }
+}
+
+function moveItemUp(el) {
+    if (yaRespondio) return;
+    const prev = el.previousElementSibling;
+    if (prev) prev.before(el);
+}
+
+function moveItemDown(el) {
+    if (yaRespondio) return;
+    const next = el.nextElementSibling;
+    if (next) next.after(el);
+}
+
+async function enviarOrden() {
+    if (yaRespondio) return;
+    yaRespondio = true;
+    clearInterval(timerInterval);
+
+    const items = [...document.querySelectorAll('.opcion-ordenar')];
+    items.forEach(i => {
+        i.style.pointerEvents = 'none';
+        i.querySelector('button')?.parentElement?.remove(); // remove arrows
+    });
+
+    const orden = items.map(i => i.dataset.valor);
+    await _enviarRespuesta(JSON.stringify(orden));
+}
+
+// ── Relacionar Logic ────────────────────────────────────────
+let selectedIzq = null;
+let selectedDer = null;
+let paresConectados = []; // {izqId, derId}
+
+function selectRelIzq(el, id) {
+    if (yaRespondio || el.classList.contains('conectado')) return;
+    document.querySelectorAll('.rel-izq').forEach(e => e.classList.remove('seleccionada'));
+    el.classList.add('seleccionada');
+    selectedIzq = { el, id };
+    checkRelacion();
+}
+
+function selectRelDer(el, id) {
+    if (yaRespondio || el.classList.contains('conectado')) return;
+    document.querySelectorAll('.rel-der').forEach(e => e.classList.remove('seleccionada'));
+    el.classList.add('seleccionada');
+    selectedDer = { el, id };
+    checkRelacion();
+}
+
+function checkRelacion() {
+    if (selectedIzq && selectedDer) {
+        // Form pair
+        paresConectados.push({ izqId: selectedIzq.id, derId: selectedDer.id });
+        
+        // Mark visually
+        selectedIzq.el.classList.add('conectado');
+        selectedDer.el.classList.add('conectado');
+        selectedIzq.el.classList.remove('seleccionada');
+        selectedDer.el.classList.remove('seleccionada');
+        
+        // Color them the same
+        const color = `hsl(${Math.random() * 360}, 70%, 40%)`;
+        selectedIzq.el.style.borderLeft = `4px solid ${color}`;
+        selectedDer.el.style.borderLeft = `4px solid ${color}`;
+        
+        // Reset
+        selectedIzq = null;
+        selectedDer = null;
+    }
+}
+
+async function enviarRelacionar() {
+    if (yaRespondio) return;
+    yaRespondio = true;
+    clearInterval(timerInterval);
+
+    // Save as array of pairs
+    await _enviarRespuesta(JSON.stringify(paresConectados));
 }
 
 // ── Responder ─────────────────────────────────────────────
@@ -727,9 +967,38 @@ function verificarRespuesta(p, valor) {
         : JSON.stringify(p.respuesta_correcta);
 
     if (p.tipo === 'multiple_choice') return valor === correcta;
+    if (p.tipo === 'seleccion_multiple') {
+        const corrArr = Array.isArray(p.respuesta_correcta) ? p.respuesta_correcta : [];
+        return valor === JSON.stringify(corrArr.sort());
+    }
+    if (p.tipo === 'ordenar') {
+        const correctaArr = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : p.opciones;
+        return valor === JSON.stringify(correctaArr);
+    }
+    if (p.tipo === 'relacionar_columnas') {
+        try {
+            const pares = JSON.parse(valor);
+            const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : p.opciones;
+            if (pares.length !== opts.length) return false;
+            return pares.every(par => par.izqId === par.derId);
+        } catch(e) { return false; }
+    }
+    if (p.tipo === 'imagen_click') {
+        try {
+            const marca = JSON.parse(valor); // {x, y}
+            const corr = typeof p.respuesta_correcta === 'string' ? JSON.parse(p.respuesta_correcta) : p.respuesta_correcta; // {x, y, r}
+            if (!marca || !corr) return false;
+            
+            // Calculate distance in percentage space
+            const dx = marca.x - corr.x;
+            const dy = marca.y - corr.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            return dist <= corr.r;
+        } catch(e) { return false; }
+    }
     if (p.tipo === 'verdadero_falso') return valor === correcta;
     if (p.tipo === 'numerica') return parseFloat(valor) === parseFloat(correcta);
-    if (p.tipo === 'respuesta_corta')
+    if (p.tipo === 'respuesta_corta' || p.tipo === 'completar_espacio')
         return valor.trim().toLowerCase() === correcta.trim().toLowerCase();
     return false;
 }
