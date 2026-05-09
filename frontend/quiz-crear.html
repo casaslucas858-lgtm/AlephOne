@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Quiz — AlephOne</title>
+    <title>Crear Quiz — AlephProject</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         /* ── OPTION COLORS ── */
@@ -591,7 +591,7 @@
         <header class="topbar">
             <div style="display:flex;align-items:center;gap:10px;">
                 <button class="mobile-nav-btn" onclick="toggleMobileNav()">☰</button>
-                <span class="topbar-logo">ℵ AlephOne</span>
+                <span class="topbar-logo">ℵ AlephProject</span>
             </div>
             <div class="topbar-right">
                 <button class="dark-mode-toggle" id="darkModeBtn">🌙</button>
@@ -772,6 +772,13 @@
                 && Number.isFinite(Number(punto.y));
         }
 
+        function _imagenMapaMeta(p) {
+            const parts = [];
+            if (_tieneTexto(p.imagen_nombre)) parts.push(p.imagen_nombre);
+            if (_tieneTexto(p.imagen_url)) parts.push('lista para usar');
+            return parts.join(' · ');
+        }
+
         function _validarPregunta(p, idx) {
             const pref = `Pregunta ${idx + 1}`;
 
@@ -807,7 +814,7 @@
                     }
                     break;
                 case 'imagen_click':
-                    if (!_tieneTexto(p.imagen_url)) return `${pref}: falta la URL de la imagen.`;
+                    if (!_tieneTexto(p.imagen_url)) return `${pref}: falta subir la imagen.`;
                     if (!_esPuntoMapaValido(p.respuesta_correcta)) return `${pref}: marcá el punto correcto sobre la imagen.`;
                     break;
             }
@@ -1013,11 +1020,15 @@
                 const url = p.imagen_url || '';
                 const corr = p.respuesta_correcta || null; // {x, y}
                 return `
-            <div class="section-label">URL de la Imagen</div>
-            <input type="text" class="respuesta-directa"
-                   placeholder="https://ejemplo.com/imagen.jpg"
-                   value="${sanitize(url)}"
-                   oninput="syncImagenUrl(this.value)">
+            <div class="section-label">Imagen del mapa</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <label class="btn btn-secondary btn-sm" for="imagenMapaInput">${url ? 'Cambiar imagen' : 'Subir imagen'}</label>
+                <input type="file" id="imagenMapaInput" accept="image/*" style="display:none;" onchange="subirImagenMapa(this.files && this.files[0])">
+                <span style="font-size:0.78em; color:var(--text-faint);">${sanitize(_imagenMapaMeta(p) || 'PNG, JPG o WEBP')}</span>
+            </div>
+            ${p.imagen_subiendo ? `
+                <div class="timer-info" style="margin-top:12px;">⏳ Subiendo imagen...</div>
+            ` : ''}
             ${url ? `
                 <div class="section-label" style="margin-top:16px;">Hacé clic en la imagen para marcar el punto correcto</div>
                 <div style="position:relative; display:inline-block; max-width:100%; border-radius:8px; overflow:hidden; cursor:crosshair;" onclick="marcarZonaImagen(event)">
@@ -1036,10 +1047,28 @@
         }
 
         // ── Sync handlers ─────────────────────────────────────────
-        function syncImagenUrl(val) {
-            if (activaIdx < 0) return;
-            preguntas[activaIdx].imagen_url = val;
+        async function subirImagenMapa(file) {
+            if (activaIdx < 0 || !file) return;
+
+            preguntas[activaIdx].imagen_subiendo = true;
             document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
+
+            const res = await AlephAPI.Storage.subirImagenQuiz(file);
+            preguntas[activaIdx].imagen_subiendo = false;
+
+            if (!res.ok) {
+                document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
+                showToast(res.error || 'No se pudo subir la imagen.', 'error');
+                return;
+            }
+
+            preguntas[activaIdx].imagen_url = res.file.publicUrl;
+            preguntas[activaIdx].imagen_path = res.file.path;
+            preguntas[activaIdx].imagen_bucket = res.file.bucket;
+            preguntas[activaIdx].imagen_nombre = file.name;
+            preguntas[activaIdx].respuesta_correcta = null;
+            document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
+            showToast('Imagen subida ✓', 'success');
         }
 
         function marcarZonaImagen(e) {
@@ -1137,6 +1166,9 @@
             } else if (tipo === 'imagen_click') {
                 preguntas[activaIdx].respuesta_correcta = null;
                 preguntas[activaIdx].imagen_url = preguntas[activaIdx].imagen_url || '';
+                preguntas[activaIdx].imagen_path = preguntas[activaIdx].imagen_path || '';
+                preguntas[activaIdx].imagen_bucket = preguntas[activaIdx].imagen_bucket || '';
+                preguntas[activaIdx].imagen_nombre = preguntas[activaIdx].imagen_nombre || '';
             } else {
                 preguntas[activaIdx].respuesta_correcta = null;
             }
@@ -1277,7 +1309,12 @@
                             resp = JSON.stringify((p.opciones || []).map((_, idx) => ({ izqId: idx, derId: idx })));
                             break;
                         case 'imagen_click':
-                            opc = p.imagen_url ? JSON.stringify({ imagen_url: p.imagen_url.trim() }) : null;
+                            opc = p.imagen_url ? JSON.stringify({
+                                imagen_url: p.imagen_url.trim(),
+                                imagen_path: p.imagen_path || null,
+                                imagen_bucket: p.imagen_bucket || null,
+                                imagen_nombre: p.imagen_nombre || null
+                            }) : null;
                             resp = p.respuesta_correcta
                                 ? (typeof p.respuesta_correcta === 'object' ? JSON.stringify(p.respuesta_correcta) : String(p.respuesta_correcta))
                                 : '';
