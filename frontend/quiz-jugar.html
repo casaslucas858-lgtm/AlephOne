@@ -845,16 +845,12 @@
                     [shuffled[k], shuffled[j]] = [shuffled[j], shuffled[k]];
                 }
 
-                return `<div class="opciones-alumno" id="ordenarContainer">
+                return `<div style="margin-bottom:10px; color:rgba(255,255,255,0.45); font-size:0.82em;">Arrastrá las casillas para definir el orden correcto.</div><div class="opciones-alumno" id="ordenarContainer">
             ${shuffled.map((op, i) => `
                 <div class="opcion-alumno opcion-ordenar" style="cursor:grab; display:flex; justify-content:space-between;"
                      draggable="true" data-valor="${sanitize(op)}"
                      ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event)">
                     <span>${sanitize(op)}</span>
-                    <div style="display:flex; flex-direction:column; gap:4px;">
-                        <button class="btn btn-ghost btn-sm" style="padding:2px 6px;" onclick="moveItemUp(this.parentElement.parentElement)">▲</button>
-                        <button class="btn btn-ghost btn-sm" style="padding:2px 6px;" onclick="moveItemDown(this.parentElement.parentElement)">▼</button>
-                    </div>
                 </div>`).join('')}
         </div>
         <button class="btn-enviar" onclick="enviarOrden()" style="margin-top:20px; width:100%;">Enviar Orden →</button>`;
