@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz — AlephOne</title>
+    <title>Quiz — AlephProject</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         :root {
@@ -412,7 +412,7 @@
 <body>
 
 <div class="asig-topbar">
-    <span class="asig-logo">ℵ AlephOne</span>
+    <span class="asig-logo">ℵ AlephProject</span>
     <div class="asig-timer" id="asigTimer">—:——</div>
     <div class="asig-info" id="asigInfo">—</div>
 </div>
@@ -480,6 +480,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 : p.opciones;
             if (imageOptions && typeof imageOptions === 'object' && !Array.isArray(imageOptions)) {
                 p.imagen_url = imageOptions.imagen_url || '';
+                p.imagen_path = imageOptions.imagen_path || '';
+                p.imagen_bucket = imageOptions.imagen_bucket || '';
+                p.imagen_nombre = imageOptions.imagen_nombre || '';
             }
         }
     });
