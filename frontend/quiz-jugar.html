@@ -810,6 +810,11 @@
 
                 // Shuffle the right side properly (Fisher-Yates)
                 const leftSide = opts.map((o, i) => ({ id: i, text: o.izq }));
+                for (let k = leftSide.length - 1; k > 0; k--) {
+                    const j = Math.floor(Math.random() * (k + 1));
+                    [leftSide[k], leftSide[j]] = [leftSide[j], leftSide[k]];
+                }
+
                 const rightSide = opts.map((o, i) => ({ id: i, text: o.der }));
                 for (let k = rightSide.length - 1; k > 0; k--) {
                     const j = Math.floor(Math.random() * (k + 1));
