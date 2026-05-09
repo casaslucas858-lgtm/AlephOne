@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,7 +39,11 @@
             flex-shrink: 0;
         }
 
-        .quiz-meta { display: flex; flex-direction: column; gap: 10px; }
+        .quiz-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
         .quiz-title-input {
             width: 100%;
@@ -52,11 +57,16 @@
             color: var(--text);
             transition: border-color var(--t);
         }
+
         .quiz-title-input:focus {
             outline: none;
             border-bottom-color: var(--teal);
         }
-        .quiz-title-input::placeholder { color: var(--text-faint); font-weight: 600; }
+
+        .quiz-title-input::placeholder {
+            color: var(--text-faint);
+            font-weight: 600;
+        }
 
         .quiz-meta-row {
             display: grid;
@@ -77,7 +87,11 @@
             transition: all var(--t);
             appearance: none;
         }
-        .meta-select:focus { outline: none; border-color: var(--teal); }
+
+        .meta-select:focus {
+            outline: none;
+            border-color: var(--teal);
+        }
 
         /* Lista de preguntas */
         .pregunta-list {
@@ -102,10 +116,13 @@
             position: relative;
         }
 
-        .pregunta-thumb:hover { background: var(--bg-hover); border-color: var(--teal); }
+        .pregunta-thumb:hover {
+            background: var(--bg-hover);
+            border-color: var(--teal);
+        }
 
         .pregunta-thumb.active {
-            background: rgba(38,212,199,0.08);
+            background: rgba(38, 212, 199, 0.08);
             border-color: var(--teal);
             border-left: 3px solid var(--teal);
         }
@@ -119,9 +136,16 @@
             flex-shrink: 0;
             text-align: center;
         }
-        .pregunta-thumb.active .pregunta-num { color: var(--teal); }
 
-        .pregunta-thumb-info { flex: 1; min-width: 0; }
+        .pregunta-thumb.active .pregunta-num {
+            color: var(--teal);
+        }
+
+        .pregunta-thumb-info {
+            flex: 1;
+            min-width: 0;
+        }
+
         .pregunta-thumb-text {
             font-size: 0.82em;
             font-weight: 600;
@@ -130,6 +154,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
         .pregunta-thumb-tipo {
             font-size: 0.7em;
             color: var(--text-faint);
@@ -149,8 +174,15 @@
             transition: all var(--t);
             flex-shrink: 0;
         }
-        .pregunta-thumb:hover .pregunta-del { opacity: 1; }
-        .pregunta-del:hover { background: rgba(220,53,69,0.1); color: #dc3545; }
+
+        .pregunta-thumb:hover .pregunta-del {
+            opacity: 1;
+        }
+
+        .pregunta-del:hover {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
 
         /* Footer del panel izquierdo */
         .panel-left-footer {
@@ -177,7 +209,11 @@
             flex-shrink: 0;
         }
 
-        .editor-header-left { display: flex; align-items: center; gap: 12px; }
+        .editor-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
         .tipo-selector {
             display: flex;
@@ -197,7 +233,12 @@
             transition: all var(--t);
             font-family: var(--font-display);
         }
-        .tipo-chip:hover { border-color: var(--teal); color: var(--text); }
+
+        .tipo-chip:hover {
+            border-color: var(--teal);
+            color: var(--text);
+        }
+
         .tipo-chip.active {
             background: var(--teal);
             border-color: var(--teal);
@@ -222,7 +263,10 @@
             color: var(--text-muted);
         }
 
-        .setting-item label { font-family: var(--font-display); font-weight: 600; }
+        .setting-item label {
+            font-family: var(--font-display);
+            font-weight: 600;
+        }
 
         .setting-item input[type="number"] {
             width: 48px;
@@ -234,7 +278,10 @@
             font-family: var(--font-display);
             text-align: center;
         }
-        .setting-item input[type="number"]:focus { outline: none; }
+
+        .setting-item input[type="number"]:focus {
+            outline: none;
+        }
 
         /* Editor body */
         .editor-body {
@@ -258,8 +305,15 @@
             gap: 12px;
             padding: 48px;
         }
-        .editor-empty .empty-icon { font-size: 3em; opacity: 0.3; }
-        .editor-empty p { font-size: 0.875em; }
+
+        .editor-empty .empty-icon {
+            font-size: 3em;
+            opacity: 0.3;
+        }
+
+        .editor-empty p {
+            font-size: 0.875em;
+        }
 
         /* Enunciado */
         .enunciado-area {
@@ -276,15 +330,23 @@
             line-height: 1.6;
             transition: all var(--t);
         }
+
         .enunciado-area:focus {
             outline: none;
             border-color: var(--teal);
-            box-shadow: 0 0 0 3px rgba(38,212,199,0.08);
+            box-shadow: 0 0 0 3px rgba(38, 212, 199, 0.08);
         }
-        .enunciado-area::placeholder { color: var(--text-faint); }
+
+        .enunciado-area::placeholder {
+            color: var(--text-faint);
+        }
 
         /* Sección de opciones */
-        .opciones-section { display: flex; flex-direction: column; gap: 8px; }
+        .opciones-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
 
         .opcion-item {
             display: flex;
@@ -298,14 +360,29 @@
             cursor: pointer;
         }
 
-        .opcion-item:hover { border-color: rgba(255,255,255,0.2); }
+        .opcion-item:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
 
-        .opcion-item.correcta { border-color: currentColor; }
+        .opcion-item.correcta {
+            border-color: currentColor;
+        }
 
-        .opcion-item[data-opt="A"] { --opt-color: var(--opt-a); }
-        .opcion-item[data-opt="B"] { --opt-color: var(--opt-b); }
-        .opcion-item[data-opt="C"] { --opt-color: var(--opt-c); }
-        .opcion-item[data-opt="D"] { --opt-color: var(--opt-d); }
+        .opcion-item[data-opt="A"] {
+            --opt-color: var(--opt-a);
+        }
+
+        .opcion-item[data-opt="B"] {
+            --opt-color: var(--opt-b);
+        }
+
+        .opcion-item[data-opt="C"] {
+            --opt-color: var(--opt-c);
+        }
+
+        .opcion-item[data-opt="D"] {
+            --opt-color: var(--opt-d);
+        }
 
         .opcion-item.correcta {
             background: color-mix(in srgb, var(--opt-color) 10%, transparent);
@@ -313,9 +390,12 @@
         }
 
         .opcion-letra {
-            width: 28px; height: 28px;
+            width: 28px;
+            height: 28px;
             border-radius: var(--radius);
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-family: var(--font-display);
             font-size: 0.8em;
             font-weight: 800;
@@ -323,10 +403,23 @@
             flex-shrink: 0;
         }
 
-        .opcion-item[data-opt="A"] .opcion-letra { background: var(--opt-a); }
-        .opcion-item[data-opt="B"] .opcion-letra { background: var(--opt-b); }
-        .opcion-item[data-opt="C"] .opcion-letra { background: var(--opt-c); color: #0a0a0a; }
-        .opcion-item[data-opt="D"] .opcion-letra { background: var(--opt-d); color: #0a0a0a; }
+        .opcion-item[data-opt="A"] .opcion-letra {
+            background: var(--opt-a);
+        }
+
+        .opcion-item[data-opt="B"] .opcion-letra {
+            background: var(--opt-b);
+        }
+
+        .opcion-item[data-opt="C"] .opcion-letra {
+            background: var(--opt-c);
+            color: #0a0a0a;
+        }
+
+        .opcion-item[data-opt="D"] .opcion-letra {
+            background: var(--opt-d);
+            color: #0a0a0a;
+        }
 
         .opcion-input {
             flex: 1;
@@ -336,15 +429,24 @@
             color: var(--text);
             font-family: var(--font-body);
         }
-        .opcion-input:focus { outline: none; }
-        .opcion-input::placeholder { color: var(--text-faint); }
+
+        .opcion-input:focus {
+            outline: none;
+        }
+
+        .opcion-input::placeholder {
+            color: var(--text-faint);
+        }
 
         .opcion-check {
-            width: 18px; height: 18px;
+            width: 18px;
+            height: 18px;
             border: 1.5px solid var(--border);
             border-radius: 50%;
             flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: all var(--t);
             font-size: 0.7em;
         }
@@ -354,6 +456,7 @@
             border-color: var(--opt-color);
             color: white;
         }
+
         .opcion-item[data-opt="C"].correcta .opcion-check,
         .opcion-item[data-opt="D"].correcta .opcion-check {
             color: #0a0a0a;
@@ -371,10 +474,11 @@
             transition: all var(--t);
             width: 100%;
         }
+
         .respuesta-directa:focus {
             outline: none;
             border-color: var(--teal);
-            box-shadow: 0 0 0 3px rgba(38,212,199,0.08);
+            box-shadow: 0 0 0 3px rgba(38, 212, 199, 0.08);
         }
 
         /* VF */
@@ -398,15 +502,19 @@
             text-align: center;
         }
 
-        .vf-btn:hover { border-color: var(--teal); color: var(--text); }
+        .vf-btn:hover {
+            border-color: var(--teal);
+            color: var(--text);
+        }
 
         .vf-btn.selected-v {
-            background: rgba(75,230,28,0.1);
+            background: rgba(75, 230, 28, 0.1);
             border-color: var(--opt-d);
             color: var(--opt-d);
         }
+
         .vf-btn.selected-f {
-            background: rgba(220,53,69,0.08);
+            background: rgba(220, 53, 69, 0.08);
             border-color: #dc3545;
             color: #dc3545;
         }
@@ -446,208 +554,223 @@
             background: var(--bg-subtle);
             border: 1px solid var(--border);
             color: var(--text);
-            width: 34px; height: 34px;
+            width: 34px;
+            height: 34px;
             border-radius: var(--radius);
             font-size: 1em;
-            align-items: center; justify-content: center;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
         }
 
         @media (max-width: 900px) {
-            .mobile-nav-btn { display: flex; }
-            .quiz-shell { grid-template-columns: 1fr; }
-            .panel-left { display: none; height: 280px; }
-            .panel-left.open { display: flex; }
+            .mobile-nav-btn {
+                display: flex;
+            }
+
+            .quiz-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .panel-left {
+                display: none;
+                height: 280px;
+            }
+
+            .panel-left.open {
+                display: flex;
+            }
         }
     </style>
 </head>
+
 <body>
-<div class="app-shell">
+    <div class="app-shell">
 
-    <!-- TOPBAR -->
-    <header class="topbar">
-        <div style="display:flex;align-items:center;gap:10px;">
-            <button class="mobile-nav-btn" onclick="toggleMobileNav()">☰</button>
-            <span class="topbar-logo">ℵ AlephOne</span>
-        </div>
-        <div class="topbar-right">
-            <button class="dark-mode-toggle" id="darkModeBtn">🌙</button>
-            <div class="user-pill">
-                <div class="user-avatar" id="userAvatar">?</div>
-                <span id="username">—</span>
-                <span class="role-badge" id="userRole">—</span>
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <button class="mobile-nav-btn" onclick="toggleMobileNav()">☰</button>
+                <span class="topbar-logo">ℵ AlephOne</span>
             </div>
-            <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
-        </div>
-    </header>
+            <div class="topbar-right">
+                <button class="dark-mode-toggle" id="darkModeBtn">🌙</button>
+                <div class="user-pill">
+                    <div class="user-avatar" id="userAvatar">?</div>
+                    <span id="username">—</span>
+                    <span class="role-badge" id="userRole">—</span>
+                </div>
+                <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+            </div>
+        </header>
 
-    <!-- SIDEBAR -->
-    <nav class="sidebar" id="sidebar">
-        <span class="nav-section-label">Principal</span>
-        <a href="dashboard.html" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
-        <a href="comunicacion.html" class="nav-link"><span class="nav-icon">📢</span> Comunicación</a>
-        <a href="tareas.html" class="nav-link"><span class="nav-icon">📋</span> Tareas</a>
-        <span class="nav-section-label">Académico</span>
-        <a href="horario.html" class="nav-link"><span class="nav-icon">🗓️</span> Horario</a>
-        <a href="promedios.html" class="nav-link"><span class="nav-icon">📊</span> Promedios</a>
-        <span class="nav-section-label">Herramientas</span>
-        <a href="quizzit.html" class="nav-link active"><span class="nav-icon">🧪</span> Quizzit</a>
-        <a href="ai-chat.html" class="nav-link"><span class="nav-icon">🤖</span> Fractal AI</a>
-        <div class="sidebar-footer">
-            <button class="btn btn-ghost btn-sm" onclick="logout()" style="width:100%;">← Cerrar sesión</button>
-        </div>
-    </nav>
+        <!-- SIDEBAR -->
+        <nav class="sidebar" id="sidebar">
+            <span class="nav-section-label">Principal</span>
+            <a href="dashboard.html" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+            <a href="comunicacion.html" class="nav-link"><span class="nav-icon">📢</span> Comunicación</a>
+            <a href="tareas.html" class="nav-link"><span class="nav-icon">📋</span> Tareas</a>
+            <span class="nav-section-label">Académico</span>
+            <a href="horario.html" class="nav-link"><span class="nav-icon">🗓️</span> Horario</a>
+            <a href="promedios.html" class="nav-link"><span class="nav-icon">📊</span> Promedios</a>
+            <span class="nav-section-label">Herramientas</span>
+            <a href="quizzit.html" class="nav-link active"><span class="nav-icon">🧪</span> Quizzit</a>
+            <a href="ai-chat.html" class="nav-link"><span class="nav-icon">🤖</span> Fractal AI</a>
+            <div class="sidebar-footer">
+                <button class="btn btn-ghost btn-sm" onclick="logout()" style="width:100%;">← Cerrar sesión</button>
+            </div>
+        </nav>
 
-    <!-- MAIN -->
-    <main class="main-content" style="padding:0;overflow:hidden;">
-        <div class="quiz-shell">
+        <!-- MAIN -->
+        <main class="main-content" style="padding:0;overflow:hidden;">
+            <div class="quiz-shell">
 
-            <!-- PANEL IZQUIERDO -->
-            <div class="panel-left" id="panelLeft">
+                <!-- PANEL IZQUIERDO -->
+                <div class="panel-left" id="panelLeft">
 
-                <div class="panel-left-header">
-                    <div class="quiz-meta">
-                        <input type="text" class="quiz-title-input" id="quizTitulo"
-                               placeholder="Título del quiz" maxlength="80">
-                        <div class="quiz-meta-row">
-                            <select class="meta-select" id="quizCurso">
-                                <option value="3A">Curso: 3A</option>
-                                <option value="3B">Curso: 3B</option>
-                                <option value="4A">Curso: 4A</option>
-                                <option value="todos">Todos</option>
-                            </select>
-                            <select class="meta-select" id="quizModo">
-                                <option value="clasico">Modo: Clásico</option>
-                                <option value="per_cent">Modo: Per Cent</option>
-                            </select>
+                    <div class="panel-left-header">
+                        <div class="quiz-meta">
+                            <input type="text" class="quiz-title-input" id="quizTitulo" placeholder="Título del quiz"
+                                maxlength="80">
+                            <div class="quiz-meta-row">
+                                <select class="meta-select" id="quizCurso">
+                                    <option value="3A">Curso: 3A</option>
+                                    <option value="3B">Curso: 3B</option>
+                                    <option value="4A">Curso: 4A</option>
+                                    <option value="todos">Todos</option>
+                                </select>
+                                <select class="meta-select" id="quizModo">
+                                    <option value="clasico">Modo: Clásico</option>
+                                    <option value="per_cent">Modo: Per Cent</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="pregunta-list" id="preguntaList">
-                    <!-- preguntas renderizadas acá -->
-                </div>
+                    <div class="pregunta-list" id="preguntaList">
+                        <!-- preguntas renderizadas acá -->
+                    </div>
 
-                <div class="panel-left-footer">
-                    <button class="btn btn-primary" style="width:100%;justify-content:center;"
+                    <div class="panel-left-footer">
+                        <button class="btn btn-primary" style="width:100%;justify-content:center;"
                             onclick="agregarPregunta()">
-                        + Agregar pregunta
-                    </button>
+                            + Agregar pregunta
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <!-- PANEL DERECHO: editor -->
-            <div class="panel-right" id="panelRight">
+                <!-- PANEL DERECHO: editor -->
+                <div class="panel-right" id="panelRight">
 
-                <!-- Editor header — se muestra cuando hay pregunta activa -->
-                <div class="editor-header" id="editorHeader" style="display:none;">
-                    <div class="editor-header-left">
-                        <span class="pregunta-counter" id="preguntaCounter">P1</span>
-                        <div class="tipo-selector" id="tipoSelector">
-                            <button class="tipo-chip active" data-tipo="multiple_choice"
+                    <!-- Editor header — se muestra cuando hay pregunta activa -->
+                    <div class="editor-header" id="editorHeader" style="display:none;">
+                        <div class="editor-header-left">
+                            <span class="pregunta-counter" id="preguntaCounter">P1</span>
+                            <div class="tipo-selector" id="tipoSelector">
+                                <button class="tipo-chip active" data-tipo="multiple_choice"
                                     onclick="cambiarTipo('multiple_choice',this)">Múltiple (ABCD)</button>
-                            <button class="tipo-chip" data-tipo="seleccion_multiple"
+                                <button class="tipo-chip" data-tipo="seleccion_multiple"
                                     onclick="cambiarTipo('seleccion_multiple',this)">Sel. Múltiple</button>
-                            <button class="tipo-chip" data-tipo="verdadero_falso"
+                                <button class="tipo-chip" data-tipo="verdadero_falso"
                                     onclick="cambiarTipo('verdadero_falso',this)">V/F</button>
-                            <button class="tipo-chip" data-tipo="numerica"
+                                <button class="tipo-chip" data-tipo="numerica"
                                     onclick="cambiarTipo('numerica',this)">Numérica</button>
-                            <button class="tipo-chip" data-tipo="respuesta_corta"
+                                <button class="tipo-chip" data-tipo="respuesta_corta"
                                     onclick="cambiarTipo('respuesta_corta',this)">Corta</button>
-                            <button class="tipo-chip" data-tipo="completar_espacio"
+                                <button class="tipo-chip" data-tipo="completar_espacio"
                                     onclick="cambiarTipo('completar_espacio',this)">Completar</button>
-                            <button class="tipo-chip" data-tipo="ordenar"
+                                <button class="tipo-chip" data-tipo="ordenar"
                                     onclick="cambiarTipo('ordenar',this)">Ordenar</button>
-                            <button class="tipo-chip" data-tipo="relacionar_columnas"
+                                <button class="tipo-chip" data-tipo="relacionar_columnas"
                                     onclick="cambiarTipo('relacionar_columnas',this)">Relacionar</button>
-                            <button class="tipo-chip" data-tipo="imagen_click"
+                                <button class="tipo-chip" data-tipo="imagen_click"
                                     onclick="cambiarTipo('imagen_click',this)">Mapa</button>
+                            </div>
+                        </div>
+                        <div class="editor-settings">
+                            <div class="setting-item">
+                                <label>⏱</label>
+                                <input type="number" id="settingTiempo" value="30" min="5" max="120" step="5">
+                                <span>s</span>
+                            </div>
+                            <div class="setting-item">
+                                <label>★</label>
+                                <input type="number" id="settingPuntos" value="100" min="10" max="1000" step="10">
+                                <span>pts</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="editor-settings">
-                        <div class="setting-item">
-                            <label>⏱</label>
-                            <input type="number" id="settingTiempo" value="30" min="5" max="120" step="5">
-                            <span>s</span>
-                        </div>
-                        <div class="setting-item">
-                            <label>★</label>
-                            <input type="number" id="settingPuntos" value="100" min="10" max="1000" step="10">
-                            <span>pts</span>
+
+                    <!-- Editor body -->
+                    <div class="editor-body" id="editorBody">
+                        <div class="editor-empty" id="editorEmpty">
+                            <div class="empty-icon">🧪</div>
+                            <p>Agregá una pregunta para empezar</p>
                         </div>
                     </div>
-                </div>
 
-                <!-- Editor body -->
-                <div class="editor-body" id="editorBody">
-                    <div class="editor-empty" id="editorEmpty">
-                        <div class="empty-icon">🧪</div>
-                        <p>Agregá una pregunta para empezar</p>
+                    <!-- Editor footer -->
+                    <div class="editor-footer" id="editorFooter" style="display:none;">
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn btn-secondary btn-sm" onclick="preguntaAnterior()">← Anterior</button>
+                            <button class="btn btn-secondary btn-sm" onclick="preguntaSiguiente()">Siguiente →</button>
+                        </div>
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn btn-secondary" onclick="guardarBorrador()">Guardar borrador</button>
+                            <button class="btn btn-primary" onclick="publicarQuiz()">Publicar quiz →</button>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Editor footer -->
-                <div class="editor-footer" id="editorFooter" style="display:none;">
-                    <div style="display:flex;gap:8px;">
-                        <button class="btn btn-secondary btn-sm" onclick="preguntaAnterior()">← Anterior</button>
-                        <button class="btn btn-secondary btn-sm" onclick="preguntaSiguiente()">Siguiente →</button>
-                    </div>
-                    <div style="display:flex;gap:8px;">
-                        <button class="btn btn-secondary" onclick="guardarBorrador()">Guardar borrador</button>
-                        <button class="btn btn-primary" onclick="publicarQuiz()">Publicar quiz →</button>
-                    </div>
                 </div>
-
             </div>
-        </div>
-    </main>
-</div>
+        </main>
+    </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/api.js"></script>
-<script src="js/app.js"></script>
-<script>
-// ── Estado local ──────────────────────────────────────────
-let preguntas = [];
-let activaIdx  = -1;
-let currentUser = null;
-let guardandoQuiz = false;
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // ── Estado local ──────────────────────────────────────────
+        let preguntas = [];
+        let activaIdx = -1;
+        let currentUser = null;
+        let guardandoQuiz = false;
 
-const TIPO_LABELS = {
-    multiple_choice: 'Múltiple (ABCD)',
-    seleccion_multiple: 'Selección múltiple',
-    verdadero_falso: 'V/F',
-    numerica: 'Numérica',
-    respuesta_corta: 'Corta',
-    completar_espacio: 'Completar espacio',
-    ordenar: 'Ordenar',
-    relacionar_columnas: 'Relacionar',
-    imagen_click: 'Mapa (Click)'
-};
+        const TIPO_LABELS = {
+            multiple_choice: 'Múltiple (ABCD)',
+            seleccion_multiple: 'Selección múltiple',
+            verdadero_falso: 'V/F',
+            numerica: 'Numérica',
+            respuesta_corta: 'Corta',
+            completar_espacio: 'Completar espacio',
+            ordenar: 'Ordenar',
+            relacionar_columnas: 'Relacionar',
+            imagen_click: 'Mapa (Click)'
+        };
 
-function _defaultPregunta(orden) {
-    return {
-        _id: Date.now() + Math.random(), // id local temporal
-        orden,
-        tipo: 'multiple_choice',
-        enunciado: '',
-        opciones: ['', '', '', ''],
-        respuesta_correcta: null,
-        tiempo_segundos: 30,
-        puntos: 100
-    };
-}
+        function _defaultPregunta(orden) {
+            return {
+                _id: Date.now() + Math.random(), // id local temporal
+                orden,
+                tipo: 'multiple_choice',
+                enunciado: '',
+                opciones: ['', '', '', ''],
+                respuesta_correcta: null,
+                tiempo_segundos: 30,
+                puntos: 100
+            };
+        }
 
-// ── Render lista izquierda ────────────────────────────────
-function renderLista() {
-    const list = document.getElementById('preguntaList');
-    if (preguntas.length === 0) {
-        list.innerHTML = `<div style="text-align:center;padding:32px 16px;color:var(--text-faint);font-size:0.82em;">
+        // ── Render lista izquierda ────────────────────────────────
+        function renderLista() {
+            const list = document.getElementById('preguntaList');
+            if (preguntas.length === 0) {
+                list.innerHTML = `<div style="text-align:center;padding:32px 16px;color:var(--text-faint);font-size:0.82em;">
             Sin preguntas todavía
         </div>`;
-        return;
-    }
-    list.innerHTML = preguntas.map((p, i) => `
+                return;
+            }
+            list.innerHTML = preguntas.map((p, i) => `
         <div class="pregunta-thumb ${i === activaIdx ? 'active' : ''}"
              onclick="seleccionarPregunta(${i})">
             <span class="pregunta-num">${i + 1}</span>
@@ -658,40 +781,40 @@ function renderLista() {
             <button class="pregunta-del" onclick="eliminarPregunta(event,${i})">✕</button>
         </div>
     `).join('');
-}
+        }
 
-// ── Render editor derecho ─────────────────────────────────
-function renderEditor() {
-    const header  = document.getElementById('editorHeader');
-    const body    = document.getElementById('editorBody');
-    const footer  = document.getElementById('editorFooter');
-    const empty   = document.getElementById('editorEmpty');
+        // ── Render editor derecho ─────────────────────────────────
+        function renderEditor() {
+            const header = document.getElementById('editorHeader');
+            const body = document.getElementById('editorBody');
+            const footer = document.getElementById('editorFooter');
+            const empty = document.getElementById('editorEmpty');
 
-    if (activaIdx === -1 || !preguntas[activaIdx]) {
-        header.style.display  = 'none';
-        footer.style.display  = 'none';
-        body.innerHTML = `<div class="editor-empty"><div class="empty-icon">🧪</div><p>Agregá una pregunta para empezar</p></div>`;
-        return;
-    }
+            if (activaIdx === -1 || !preguntas[activaIdx]) {
+                header.style.display = 'none';
+                footer.style.display = 'none';
+                body.innerHTML = `<div class="editor-empty"><div class="empty-icon">🧪</div><p>Agregá una pregunta para empezar</p></div>`;
+                return;
+            }
 
-    const p = preguntas[activaIdx];
-    header.style.display = 'flex';
-    footer.style.display = 'flex';
+            const p = preguntas[activaIdx];
+            header.style.display = 'flex';
+            footer.style.display = 'flex';
 
-    // Counter
-    document.getElementById('preguntaCounter').textContent = `P${activaIdx + 1}`;
+            // Counter
+            document.getElementById('preguntaCounter').textContent = `P${activaIdx + 1}`;
 
-    // Tipo chips
-    document.querySelectorAll('.tipo-chip').forEach(c => {
-        c.classList.toggle('active', c.dataset.tipo === p.tipo);
-    });
+            // Tipo chips
+            document.querySelectorAll('.tipo-chip').forEach(c => {
+                c.classList.toggle('active', c.dataset.tipo === p.tipo);
+            });
 
-    // Settings
-    document.getElementById('settingTiempo').value = p.tiempo_segundos;
-    document.getElementById('settingPuntos').value  = p.puntos;
+            // Settings
+            document.getElementById('settingTiempo').value = p.tiempo_segundos;
+            document.getElementById('settingPuntos').value = p.puntos;
 
-    // Body
-    body.innerHTML = `
+            // Body
+            body.innerHTML = `
         <div>
             <div class="section-label">Enunciado</div>
             <textarea class="enunciado-area" id="enunciadoArea"
@@ -701,16 +824,16 @@ function renderEditor() {
         <div id="opcionesContainer">
             ${renderOpciones(p)}
         </div>`;
-}
+        }
 
-function renderOpciones(p) {
-    const letras = ['A','B','C','D'];
+        function renderOpciones(p) {
+            const letras = ['A', 'B', 'C', 'D'];
 
-    if (p.tipo === 'multiple_choice') {
-        return `
+            if (p.tipo === 'multiple_choice') {
+                return `
             <div class="section-label">Opciones — clic para marcar correcta</div>
             <div class="opciones-section">
-                ${(p.opciones || ['','','','']).map((op, i) => `
+                ${(p.opciones || ['', '', '', '']).map((op, i) => `
                     <div class="opcion-item ${p.respuesta_correcta === letras[i] ? 'correcta' : ''}"
                          data-opt="${letras[i]}"
                          onclick="marcarCorrecta('${letras[i]}')">
@@ -724,14 +847,14 @@ function renderOpciones(p) {
                         <div class="opcion-check">${p.respuesta_correcta === letras[i] ? '✓' : ''}</div>
                     </div>`).join('')}
             </div>`;
-    }
+            }
 
-    if (p.tipo === 'seleccion_multiple') {
-        const correctas = Array.isArray(p.respuesta_correcta) ? p.respuesta_correcta : [];
-        return `
+            if (p.tipo === 'seleccion_multiple') {
+                const correctas = Array.isArray(p.respuesta_correcta) ? p.respuesta_correcta : [];
+                return `
             <div class="section-label">Opciones — clic para marcar correctas (pueden ser varias)</div>
             <div class="opciones-section">
-                ${(p.opciones || ['','','','']).map((op, i) => `
+                ${(p.opciones || ['', '', '', '']).map((op, i) => `
                     <div class="opcion-item ${correctas.includes(letras[i]) ? 'correcta' : ''}"
                          data-opt="${letras[i]}"
                          onclick="toggleCorrecta('${letras[i]}')">
@@ -745,10 +868,10 @@ function renderOpciones(p) {
                         <div class="opcion-check" style="border-radius:4px;">${correctas.includes(letras[i]) ? '✓' : ''}</div>
                     </div>`).join('')}
             </div>`;
-    }
+            }
 
-    if (p.tipo === 'verdadero_falso') {
-        return `
+            if (p.tipo === 'verdadero_falso') {
+                return `
             <div class="section-label">Respuesta correcta</div>
             <div class="vf-row">
                 <button class="vf-btn ${p.respuesta_correcta === 'Verdadero' ? 'selected-v' : ''}"
@@ -756,19 +879,19 @@ function renderOpciones(p) {
                 <button class="vf-btn ${p.respuesta_correcta === 'Falso' ? 'selected-f' : ''}"
                         onclick="setVF('Falso')">✗ Falso</button>
             </div>`;
-    }
+            }
 
-    if (p.tipo === 'numerica') {
-        return `
+            if (p.tipo === 'numerica') {
+                return `
             <div class="section-label">Respuesta numérica correcta</div>
             <input type="number" class="respuesta-directa"
                    placeholder="Ej: 42"
                    value="${p.respuesta_correcta !== null ? p.respuesta_correcta : ''}"
                    oninput="syncRespuestaDirecta(this.value)">`;
-    }
+            }
 
-    if (p.tipo === 'respuesta_corta') {
-        return `
+            if (p.tipo === 'respuesta_corta') {
+                return `
             <div class="section-label">Respuesta corta correcta</div>
             <input type="text" class="respuesta-directa"
                    placeholder="Ej: fotosíntesis"
@@ -777,10 +900,10 @@ function renderOpciones(p) {
             <p style="font-size:0.76em;color:var(--text-faint);margin-top:4px;">
                 Se comparará ignorando mayúsculas y espacios extra.
             </p>`;
-    }
+            }
 
-    if (p.tipo === 'completar_espacio') {
-        return `
+            if (p.tipo === 'completar_espacio') {
+                return `
             <div class="section-label">Palabra para completar el espacio</div>
             <input type="text" class="respuesta-directa"
                    placeholder="Ej: mitocondria"
@@ -789,11 +912,11 @@ function renderOpciones(p) {
             <p style="font-size:0.76em;color:var(--text-faint);margin-top:4px;">
                 Usá <strong style="color:var(--teal)">[___]</strong> en el enunciado donde quieras que vaya el espacio en blanco.
             </p>`;
-    }
+            }
 
-    if (p.tipo === 'ordenar') {
-        const opciones = p.opciones || ['','',''];
-        return `
+            if (p.tipo === 'ordenar') {
+                const opciones = p.opciones || ['', '', ''];
+                return `
             <div class="section-label">Elementos a ordenar (en el orden correcto)</div>
             <div class="opciones-section" id="ordenarSection">
                 ${opciones.map((op, i) => `
@@ -811,11 +934,11 @@ function renderOpciones(p) {
             <p style="font-size:0.76em;color:var(--text-faint);margin-top:10px;">
                 Los alumnos verán estos elementos mezclados aleatoriamente y deberán ordenarlos en la secuencia que definiste acá.
             </p>`;
-    }
+            }
 
-    if (p.tipo === 'relacionar_columnas') {
-        const opciones = p.opciones || [{izq:'', der:''}, {izq:'', der:''}];
-        return `
+            if (p.tipo === 'relacionar_columnas') {
+                const opciones = p.opciones || [{ izq: '', der: '' }, { izq: '', der: '' }];
+                return `
             <div class="section-label">Pares correctos para relacionar</div>
             <div class="opciones-section" id="relacionarSection">
                 ${opciones.map((op, i) => `
@@ -830,12 +953,12 @@ function renderOpciones(p) {
             <p style="font-size:0.76em;color:var(--text-faint);margin-top:10px;">
                 Los alumnos deberán conectar los ítems de la izquierda con los de la derecha.
             </p>`;
-    }
+            }
 
-    if (p.tipo === 'imagen_click') {
-        const url = p.imagen_url || '';
-        const corr = p.respuesta_correcta || null; // {x, y, r}
-        return `
+            if (p.tipo === 'imagen_click') {
+                const url = p.imagen_url || '';
+                const corr = p.respuesta_correcta || null; // {x, y, r}
+                return `
             <div class="section-label">URL de la Imagen</div>
             <input type="text" class="respuesta-directa"
                    placeholder="https://ejemplo.com/imagen.jpg"
@@ -846,7 +969,7 @@ function renderOpciones(p) {
                 <div style="position:relative; display:inline-block; max-width:100%; border-radius:8px; overflow:hidden;" onclick="marcarZonaImagen(event)">
                     <img src="${sanitize(url)}" style="display:block; max-width:100%; height:auto;" id="imagenClickMap">
                     ${corr ? `
-                        <div style="position:absolute; top:${corr.y}%; left:${corr.x}%; width:${corr.r*2}%; height:${corr.r*2}%; background:rgba(38,212,199,0.4); border:2px solid var(--teal); border-radius:50%; transform:translate(-50%, -50%); pointer-events:none;"></div>
+                        <div style="position:absolute; top:${corr.y}%; left:${corr.x}%; width:${corr.r * 2}%; height:${corr.r * 2}%; background:rgba(38,212,199,0.4); border:2px solid var(--teal); border-radius:50%; transform:translate(-50%, -50%); pointer-events:none;"></div>
                     ` : ''}
                 </div>
                 <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
@@ -855,386 +978,375 @@ function renderOpciones(p) {
                     <span style="font-size:0.82em;">${corr ? corr.r : 5}%</span>
                 </div>
             ` : ''}`;
-    }
+            }
 
-    return '';
-}
-
-// ── Sync handlers ─────────────────────────────────────────
-function syncImagenUrl(val) {
-    if (activaIdx < 0) return;
-    preguntas[activaIdx].imagen_url = val;
-    document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
-}
-
-function marcarZonaImagen(e) {
-    if (activaIdx < 0) return;
-    const img = document.getElementById('imagenClickMap');
-    const rect = img.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    const currentR = preguntas[activaIdx].respuesta_correcta?.r || 5;
-    
-    preguntas[activaIdx].respuesta_correcta = { x, y, r: currentR };
-    document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
-}
-
-function syncImagenRadio(val) {
-    if (activaIdx < 0 || !preguntas[activaIdx].respuesta_correcta) return;
-    preguntas[activaIdx].respuesta_correcta.r = parseInt(val);
-    document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
-}
-
-// ── Sync handlers ─────────────────────────────────────────
-function syncEnunciado(val) {
-    if (activaIdx < 0) return;
-    preguntas[activaIdx].enunciado = val;
-    renderLista();
-}
-
-function syncOpcion(i, val) {
-    if (activaIdx < 0) return;
-    preguntas[activaIdx].opciones[i] = val;
-}
-
-function syncOpcionRel(i, col, val) {
-    if (activaIdx < 0) return;
-    if (!preguntas[activaIdx].opciones[i]) preguntas[activaIdx].opciones[i] = {izq:'', der:''};
-    preguntas[activaIdx].opciones[i][col] = val;
-}
-
-function agregarOpcionRel() {
-    if (activaIdx < 0) return;
-    preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || [];
-    preguntas[activaIdx].opciones.push({izq:'', der:''});
-    document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
-}
-
-function eliminarOpcionRel(i) {
-    if (activaIdx < 0) return;
-    preguntas[activaIdx].opciones.splice(i, 1);
-    document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
-}
-
-function syncRespuestaDirecta(val) {
-    if (activaIdx < 0) return;
-    preguntas[activaIdx].respuesta_correcta = val;
-}
-
-function marcarCorrecta(letra) {
-    if (activaIdx < 0) return;
-    preguntas[activaIdx].respuesta_correcta = letra;
-    document.getElementById('opcionesContainer').innerHTML =
-        renderOpciones(preguntas[activaIdx]);
-}
-
-function toggleCorrecta(letra) {
-    if (activaIdx < 0) return;
-    let correctas = Array.isArray(preguntas[activaIdx].respuesta_correcta) 
-        ? preguntas[activaIdx].respuesta_correcta 
-        : [];
-    if (correctas.includes(letra)) {
-        correctas = correctas.filter(l => l !== letra);
-    } else {
-        correctas.push(letra);
-    }
-    preguntas[activaIdx].respuesta_correcta = correctas;
-    document.getElementById('opcionesContainer').innerHTML =
-        renderOpciones(preguntas[activaIdx]);
-}
-
-function setVF(valor) {
-    if (activaIdx < 0) return;
-    preguntas[activaIdx].respuesta_correcta = valor;
-    document.getElementById('opcionesContainer').innerHTML =
-        renderOpciones(preguntas[activaIdx]);
-}
-
-function cambiarTipo(tipo, el) {
-    if (activaIdx < 0) return;
-    preguntas[activaIdx].tipo = tipo;
-    
-    if (tipo === 'seleccion_multiple') {
-        preguntas[activaIdx].respuesta_correcta = [];
-        preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || ['','','',''];
-    } else if (tipo === 'multiple_choice') {
-        preguntas[activaIdx].respuesta_correcta = null;
-        preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || ['','','',''];
-    } else if (tipo === 'ordenar') {
-        preguntas[activaIdx].respuesta_correcta = null;
-        preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || ['','',''];
-    } else if (tipo === 'relacionar_columnas') {
-        preguntas[activaIdx].respuesta_correcta = null;
-        preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || [{izq:'', der:''}, {izq:'', der:''}];
-    } else if (tipo === 'imagen_click') {
-        preguntas[activaIdx].respuesta_correcta = null;
-        preguntas[activaIdx].imagen_url = preguntas[activaIdx].imagen_url || '';
-    } else {
-        preguntas[activaIdx].respuesta_correcta = null;
-    }
-    
-    renderEditor();
-    renderLista();
-}
-
-function agregarOpcion() {
-    if (activaIdx < 0) return;
-    preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || [];
-    preguntas[activaIdx].opciones.push('');
-    document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
-}
-
-function eliminarOpcion(i) {
-    if (activaIdx < 0) return;
-    preguntas[activaIdx].opciones.splice(i, 1);
-    document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
-}
-
-// Settings sync
-document.addEventListener('input', e => {
-    if (activaIdx < 0) return;
-    if (e.target.id === 'settingTiempo')
-        preguntas[activaIdx].tiempo_segundos = parseInt(e.target.value) || 30;
-    if (e.target.id === 'settingPuntos')
-        preguntas[activaIdx].puntos = parseInt(e.target.value) || 100;
-    renderLista();
-});
-
-// ── Navegación ────────────────────────────────────────────
-function agregarPregunta() {
-    const nueva = _defaultPregunta(preguntas.length);
-    preguntas.push(nueva);
-    activaIdx = preguntas.length - 1;
-    renderLista();
-    renderEditor();
-}
-
-function seleccionarPregunta(i) {
-    activaIdx = i;
-    renderLista();
-    renderEditor();
-}
-
-function eliminarPregunta(e, i) {
-    e.stopPropagation();
-    if (!confirm('¿Eliminar esta pregunta?')) return;
-    preguntas.splice(i, 1);
-    if (activaIdx >= preguntas.length) activaIdx = preguntas.length - 1;
-    renderLista();
-    renderEditor();
-}
-
-function preguntaAnterior() {
-    if (activaIdx > 0) { activaIdx--; renderLista(); renderEditor(); }
-}
-
-function preguntaSiguiente() {
-    if (activaIdx < preguntas.length - 1) { activaIdx++; renderLista(); renderEditor(); }
-}
-
-// ── Guardar / Publicar ───────────────────────────────────
-async function guardarBorrador() {
-    await _guardar(false);
-}
-
-async function publicarQuiz() {
-    await _guardar(true);
-}
-
-async function _guardar(redirigir) {
-    if (guardandoQuiz) return;
-
-    const titulo = document.getElementById('quizTitulo').value.trim();
-    if (!titulo) { showToast('Poné un título al quiz', 'warning'); return; }
-    if (preguntas.length === 0) { showToast('Agregá al menos una pregunta', 'warning'); return; }
-
-    const curso = document.getElementById('quizCurso').value;
-    const guardarBtn = document.querySelector('.editor-footer .btn-secondary');
-    const publicarBtn = document.querySelector('.editor-footer .btn-primary');
-
-    guardandoQuiz = true;
-    if (guardarBtn) guardarBtn.disabled = true;
-    if (publicarBtn) publicarBtn.disabled = true;
-    if (guardarBtn) guardarBtn.textContent = 'Guardando...';
-    if (publicarBtn) publicarBtn.textContent = 'Guardando...';
-
-    try {
-        console.log('%c[GUARDAR] Inicio', 'color:yellow;font-weight:bold', { titulo, curso });
-        
-        // Check auth
-        const authUser = AlephAPI.Auth.getCurrentUser();
-        console.log('%c[GUARDAR] Usuario:', 'color:yellow', authUser);
-        if (!authUser) {
-            showToast('No hay sesión activa. Recargá la página.', 'error');
-            return;
+            return '';
         }
 
-        console.log('%c[GUARDAR] Llamando Quiz.crear...', 'color:yellow');
-        const quizPromise = AlephAPI.Quiz.crear({ titulo, descripcion: '', curso });
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Quiz.crear tardó más de 15s — ¿conexión a Supabase?')), 15000)
-        );
-        const resQuiz = await Promise.race([quizPromise, timeoutPromise]);
-        console.log('%c[GUARDAR] Quiz.crear resultado:', 'color:yellow', resQuiz);
-        if (!resQuiz.ok) {
-            showToast('Error guardando quiz: ' + resQuiz.error, 'error');
-            return;
+        // ── Sync handlers ─────────────────────────────────────────
+        function syncImagenUrl(val) {
+            if (activaIdx < 0) return;
+            preguntas[activaIdx].imagen_url = val;
+            document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
         }
 
-        const quizId = resQuiz.quiz.id;
-        console.log('%c[GUARDAR] Quiz creado, id:', 'color:lime', quizId);
+        function marcarZonaImagen(e) {
+            if (activaIdx < 0) return;
+            const img = document.getElementById('imagenClickMap');
+            const rect = img.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            const currentR = preguntas[activaIdx].respuesta_correcta?.r || 5;
 
-        for (let i = 0; i < preguntas.length; i++) {
-            const p = preguntas[i];
-            console.log(`%c[GUARDAR] Pregunta ${i+1}/${preguntas.length} tipo=${p.tipo}`, 'color:cyan', p);
+            preguntas[activaIdx].respuesta_correcta = { x, y, r: currentR };
+            document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
+        }
 
-            let opcionesParaGuardar = null;
-            if (['multiple_choice', 'seleccion_multiple', 'ordenar', 'relacionar_columnas'].includes(p.tipo)) {
-                opcionesParaGuardar = p.opciones;
+        function syncImagenRadio(val) {
+            if (activaIdx < 0 || !preguntas[activaIdx].respuesta_correcta) return;
+            preguntas[activaIdx].respuesta_correcta.r = parseInt(val);
+            document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
+        }
+
+        // ── Sync handlers ─────────────────────────────────────────
+        function syncEnunciado(val) {
+            if (activaIdx < 0) return;
+            preguntas[activaIdx].enunciado = val;
+            renderLista();
+        }
+
+        function syncOpcion(i, val) {
+            if (activaIdx < 0) return;
+            preguntas[activaIdx].opciones[i] = val;
+        }
+
+        function syncOpcionRel(i, col, val) {
+            if (activaIdx < 0) return;
+            if (!preguntas[activaIdx].opciones[i]) preguntas[activaIdx].opciones[i] = { izq: '', der: '' };
+            preguntas[activaIdx].opciones[i][col] = val;
+        }
+
+        function agregarOpcionRel() {
+            if (activaIdx < 0) return;
+            preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || [];
+            preguntas[activaIdx].opciones.push({ izq: '', der: '' });
+            document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
+        }
+
+        function eliminarOpcionRel(i) {
+            if (activaIdx < 0) return;
+            preguntas[activaIdx].opciones.splice(i, 1);
+            document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
+        }
+
+        function syncRespuestaDirecta(val) {
+            if (activaIdx < 0) return;
+            preguntas[activaIdx].respuesta_correcta = val;
+        }
+
+        function marcarCorrecta(letra) {
+            if (activaIdx < 0) return;
+            preguntas[activaIdx].respuesta_correcta = letra;
+            document.getElementById('opcionesContainer').innerHTML =
+                renderOpciones(preguntas[activaIdx]);
+        }
+
+        function toggleCorrecta(letra) {
+            if (activaIdx < 0) return;
+            let correctas = Array.isArray(preguntas[activaIdx].respuesta_correcta)
+                ? preguntas[activaIdx].respuesta_correcta
+                : [];
+            if (correctas.includes(letra)) {
+                correctas = correctas.filter(l => l !== letra);
+            } else {
+                correctas.push(letra);
+            }
+            preguntas[activaIdx].respuesta_correcta = correctas;
+            document.getElementById('opcionesContainer').innerHTML =
+                renderOpciones(preguntas[activaIdx]);
+        }
+
+        function setVF(valor) {
+            if (activaIdx < 0) return;
+            preguntas[activaIdx].respuesta_correcta = valor;
+            document.getElementById('opcionesContainer').innerHTML =
+                renderOpciones(preguntas[activaIdx]);
+        }
+
+        function cambiarTipo(tipo, el) {
+            if (activaIdx < 0) return;
+            preguntas[activaIdx].tipo = tipo;
+
+            if (tipo === 'seleccion_multiple') {
+                preguntas[activaIdx].respuesta_correcta = [];
+                preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || ['', '', '', ''];
+            } else if (tipo === 'multiple_choice') {
+                preguntas[activaIdx].respuesta_correcta = null;
+                preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || ['', '', '', ''];
+            } else if (tipo === 'ordenar') {
+                preguntas[activaIdx].respuesta_correcta = null;
+                preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || ['', '', ''];
+            } else if (tipo === 'relacionar_columnas') {
+                preguntas[activaIdx].respuesta_correcta = null;
+                preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || [{ izq: '', der: '' }, { izq: '', der: '' }];
+            } else if (tipo === 'imagen_click') {
+                preguntas[activaIdx].respuesta_correcta = null;
+                preguntas[activaIdx].imagen_url = preguntas[activaIdx].imagen_url || '';
+            } else {
+                preguntas[activaIdx].respuesta_correcta = null;
             }
 
-            // Derivar respuesta_correcta para tipos que la tienen implícita
-            let respuestaParaGuardar = p.respuesta_correcta;
-            if (p.tipo === 'ordenar' && (respuestaParaGuardar === null || respuestaParaGuardar === undefined)) {
-                // El orden correcto es el mismo array de opciones
-                respuestaParaGuardar = JSON.stringify(p.opciones);
-            }
-            if (p.tipo === 'relacionar_columnas' && (respuestaParaGuardar === null || respuestaParaGuardar === undefined)) {
-                // Pares correctos: cada índice se conecta consigo mismo
-                respuestaParaGuardar = JSON.stringify(p.opciones.map((_, i) => ({ izqId: i, derId: i })));
-            }
-            if ((respuestaParaGuardar === null || respuestaParaGuardar === undefined) && p.tipo === 'completar_espacio') {
-                respuestaParaGuardar = '';
-            }
-            // Fallback: nunca mandar null
-            if (respuestaParaGuardar === null || respuestaParaGuardar === undefined) {
-                respuestaParaGuardar = '';
-            }
-            if (typeof respuestaParaGuardar === 'object') {
-                respuestaParaGuardar = JSON.stringify(respuestaParaGuardar);
-            }
+            renderEditor();
+            renderLista();
+        }
 
-            if (p.tipo === 'imagen_click' && p.imagen_url) {
-                opcionesParaGuardar = { imagen_url: p.imagen_url };
+        function agregarOpcion() {
+            if (activaIdx < 0) return;
+            preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || [];
+            preguntas[activaIdx].opciones.push('');
+            document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
+        }
+
+        function eliminarOpcion(i) {
+            if (activaIdx < 0) return;
+            preguntas[activaIdx].opciones.splice(i, 1);
+            document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
+        }
+
+        // Settings sync
+        document.addEventListener('input', e => {
+            if (activaIdx < 0) return;
+            if (e.target.id === 'settingTiempo')
+                preguntas[activaIdx].tiempo_segundos = parseInt(e.target.value) || 30;
+            if (e.target.id === 'settingPuntos')
+                preguntas[activaIdx].puntos = parseInt(e.target.value) || 100;
+            renderLista();
+        });
+
+        // ── Navegación ────────────────────────────────────────────
+        function agregarPregunta() {
+            const nueva = _defaultPregunta(preguntas.length);
+            preguntas.push(nueva);
+            activaIdx = preguntas.length - 1;
+            renderLista();
+            renderEditor();
+        }
+
+        function seleccionarPregunta(i) {
+            activaIdx = i;
+            renderLista();
+            renderEditor();
+        }
+
+        function eliminarPregunta(e, i) {
+            e.stopPropagation();
+            if (!confirm('¿Eliminar esta pregunta?')) return;
+            preguntas.splice(i, 1);
+            if (activaIdx >= preguntas.length) activaIdx = preguntas.length - 1;
+            renderLista();
+            renderEditor();
+        }
+
+        function preguntaAnterior() {
+            if (activaIdx > 0) { activaIdx--; renderLista(); renderEditor(); }
+        }
+
+        function preguntaSiguiente() {
+            if (activaIdx < preguntas.length - 1) { activaIdx++; renderLista(); renderEditor(); }
+        }
+
+        // ── Guardar / Publicar ───────────────────────────────────
+        async function guardarBorrador() {
+            await _guardar(false);
+        }
+
+        async function publicarQuiz() {
+            await _guardar(true);
+        }
+
+        async function _guardar(redirigir) {
+            if (guardandoQuiz) return;
+
+            const titulo = document.getElementById('quizTitulo').value.trim();
+            if (!titulo) { showToast('Poné un título al quiz', 'warning'); return; }
+            if (preguntas.length === 0) { showToast('Agregá al menos una pregunta', 'warning'); return; }
+
+            const curso = document.getElementById('quizCurso').value;
+            const guardarBtn = document.querySelector('.editor-footer .btn-secondary');
+            const publicarBtn = document.querySelector('.editor-footer .btn-primary');
+
+            guardandoQuiz = true;
+            if (guardarBtn) guardarBtn.disabled = true;
+            if (publicarBtn) publicarBtn.disabled = true;
+            if (guardarBtn) guardarBtn.textContent = 'Guardando...';
+            if (publicarBtn) publicarBtn.textContent = 'Guardando...';
+
+            try {
+                const resQuiz = await AlephAPI.Quiz.crear({ titulo, descripcion: '', curso });
+                if (!resQuiz.ok) {
+                    showToast('Error guardando quiz: ' + resQuiz.error, 'error');
+                    return;
+                }
+                const quizId = resQuiz.quiz.id;
+
+                for (let i = 0; i < preguntas.length; i++) {
+                    const p = preguntas[i];
+
+                    // Cada tipo define: opc (jsonb, puede ser null) y resp (string, NUNCA null)
+                    let opc = null;
+                    let resp = '';
+
+                    switch (p.tipo) {
+                        case 'multiple_choice':
+                            opc = p.opciones || [];
+                            resp = p.respuesta_correcta || '';
+                            break;
+                        case 'seleccion_multiple':
+                            opc = p.opciones || [];
+                            resp = JSON.stringify(Array.isArray(p.respuesta_correcta) ? p.respuesta_correcta : []);
+                            break;
+                        case 'verdadero_falso':
+                            resp = p.respuesta_correcta || '';
+                            break;
+                        case 'numerica':
+                            resp = String(p.respuesta_correcta ?? '');
+                            break;
+                        case 'respuesta_corta':
+                        case 'completar_espacio':
+                            resp = p.respuesta_correcta || '';
+                            break;
+                        case 'ordenar':
+                            opc = p.opciones || [];
+                            resp = JSON.stringify(p.opciones || []);
+                            break;
+                        case 'relacionar_columnas':
+                            opc = p.opciones || [];
+                            resp = JSON.stringify((p.opciones || []).map((_, idx) => ({ izqId: idx, derId: idx })));
+                            break;
+                        case 'imagen_click':
+                            opc = p.imagen_url ? { imagen_url: p.imagen_url } : null;
+                            resp = p.respuesta_correcta
+                                ? (typeof p.respuesta_correcta === 'object' ? JSON.stringify(p.respuesta_correcta) : String(p.respuesta_correcta))
+                                : '';
+                            break;
+                        default:
+                            resp = String(p.respuesta_correcta || '');
+                    }
+
+                    console.log(`[GUARDAR] P${i+1} tipo=${p.tipo}`, { opc, resp });
+
+                    const resPregunta = await AlephAPI.Preguntas.crear({
+                        quizId, orden: i, tipo: p.tipo,
+                        enunciado: p.enunciado, opciones: opc,
+                        respuestaCorrecta: resp,
+                        tiempoSegundos: p.tiempo_segundos, puntos: p.puntos
+                    });
+
+                    if (!resPregunta.ok) {
+                        await AlephAPI.Quiz.eliminar(quizId);
+                        showToast(`Error en pregunta ${i + 1}: ${resPregunta.error}`, 'error');
+                        return;
+                    }
+                }
+
+                showToast('Quiz guardado ✓', 'success');
+                if (redirigir) setTimeout(() => window.location.href = 'quizzit.html', 1000);
+            } catch (err) {
+                console.error('[GUARDAR] Error:', err);
+                showToast('Error al guardar: ' + (err.message || err), 'error');
+            } finally {
+                guardandoQuiz = false;
+                if (guardarBtn) {
+                    guardarBtn.disabled = false;
+                    guardarBtn.textContent = 'Guardar borrador';
+                }
+                if (publicarBtn) {
+                    publicarBtn.disabled = false;
+                    publicarBtn.textContent = 'Publicar quiz →';
+                }
             }
+        }
 
-            const payload = {
-                quizId, orden: i, tipo: p.tipo, enunciado: p.enunciado,
-                opciones: opcionesParaGuardar, respuestaCorrecta: respuestaParaGuardar,
-                tiempoSegundos: p.tiempo_segundos, puntos: p.puntos
-            };
-            console.log(`%c[GUARDAR] Payload ${i+1}:`, 'color:cyan', JSON.parse(JSON.stringify(payload)));
+        // ── Mobile nav ────────────────────────────────────────────
+        function toggleMobileNav() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
 
-            const resPregunta = await AlephAPI.Preguntas.crear(payload);
-            console.log(`%c[GUARDAR] Resultado ${i+1}:`, 'color:cyan', resPregunta);
+        function renderAvatar(user) {
+            const el = document.getElementById('userAvatar');
+            if (el) el.textContent = user.username.charAt(0).toUpperCase();
+            const roleEl = document.getElementById('userRole');
+            if (roleEl) {
+                const roles = { student: 'Estudiante', teacher: 'Docente', director: 'Director' };
+                roleEl.textContent = roles[user.role] || user.role;
+                roleEl.className = `role-badge ${user.role}`;
+            }
+        }
 
-            if (!resPregunta.ok) {
-                console.error(`%c[GUARDAR] ERROR pregunta ${i+1}:`, 'color:red', resPregunta.error);
-                await AlephAPI.Quiz.eliminar(quizId);
-                showToast(`Error guardando la pregunta ${i + 1}: ${resPregunta.error}`, 'error');
+        // ── Init ─────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', async () => {
+            await AlephAPI.Auth.init();
+            currentUser = requireAuth();
+            if (!currentUser) return;
+            if (currentUser.role === 'student') {
+                showToast('Solo los docentes pueden crear quizzes', 'error');
+                setTimeout(() => window.location.href = 'dashboard.html', 1500);
                 return;
             }
-            console.log(`%c[GUARDAR] Pregunta ${i+1} OK`, 'color:lime');
+            renderAvatar(currentUser);
+            renderLista();
+        });
+    </script>
+
+    <!-- BOTTOM NAV (mobile only) -->
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="dashboard.html" class="bn-item">
+            <span class="bn-icon">🏠</span>
+            <span class="bn-label">Inicio</span>
+        </a>
+        <a href="comunicacion.html" class="bn-item">
+            <span class="bn-icon">📢</span>
+            <span class="bn-label">Mensajes</span>
+        </a>
+        <a href="tareas.html" class="bn-item">
+            <span class="bn-icon">📋</span>
+            <span class="bn-label">Tareas</span>
+        </a>
+        <button type="button" class="bn-item active" onclick="toggleMasSheet()">
+            <span class="bn-icon">⋯</span>
+            <span class="bn-label">Más</span>
+        </button>
+    </nav>
+
+    <!-- SHEET MÁS -->
+    <div class="mas-overlay" id="masOverlay" onclick="toggleMasSheet()"></div>
+    <div class="mas-sheet" id="masSheet">
+        <div class="mas-handle"></div>
+        <a href="horario.html" class="mas-item" onclick="toggleMasSheet()">
+            <span class="mas-icon">🗓️</span>
+            <span>Horario</span>
+        </a>
+        <a href="promedios.html" class="mas-item" onclick="toggleMasSheet()">
+            <span class="mas-icon">📊</span>
+            <span>Promedios</span>
+        </a>
+        <a href="quizzit.html" class="mas-item active" onclick="toggleMasSheet()">
+            <span class="mas-icon">🧪</span>
+            <span>Quizzit</span>
+        </a>
+        <a href="ai-chat.html" class="mas-item" onclick="toggleMasSheet()">
+            <span class="mas-icon">🤖</span>
+            <span>Fractal AI</span>
+        </a>
+    </div>
+
+    <script>
+        function toggleMasSheet() {
+            document.getElementById('masSheet').classList.toggle('open');
+            document.getElementById('masOverlay').classList.toggle('open');
         }
-
-        console.log('%c[GUARDAR] Todo guardado!', 'color:lime;font-weight:bold');
-        showToast('Quiz guardado ✓', 'success');
-        if (redirigir) setTimeout(() => window.location.href = 'quizzit.html', 1000);
-    } catch (err) {
-        console.error('%c[GUARDAR] EXCEPCION:', 'color:red;font-weight:bold', err);
-        showToast('Error inesperado al guardar: ' + (err.message || err), 'error');
-    } finally {
-        guardandoQuiz = false;
-        if (guardarBtn) {
-            guardarBtn.disabled = false;
-            guardarBtn.textContent = 'Guardar borrador';
-        }
-        if (publicarBtn) {
-            publicarBtn.disabled = false;
-            publicarBtn.textContent = 'Publicar quiz →';
-        }
-    }
-}
-
-// ── Mobile nav ────────────────────────────────────────────
-function toggleMobileNav() {
-    document.getElementById('sidebar').classList.toggle('open');
-}
-
-function renderAvatar(user) {
-    const el = document.getElementById('userAvatar');
-    if (el) el.textContent = user.username.charAt(0).toUpperCase();
-    const roleEl = document.getElementById('userRole');
-    if (roleEl) {
-        const roles = { student: 'Estudiante', teacher: 'Docente', director: 'Director' };
-        roleEl.textContent = roles[user.role] || user.role;
-        roleEl.className = `role-badge ${user.role}`;
-    }
-}
-
-// ── Init ─────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', async () => {
-    await AlephAPI.Auth.init();
-    currentUser = requireAuth();
-    if (!currentUser) return;
-    if (currentUser.role === 'student') {
-        showToast('Solo los docentes pueden crear quizzes', 'error');
-        setTimeout(() => window.location.href = 'dashboard.html', 1500);
-        return;
-    }
-    renderAvatar(currentUser);
-    renderLista();
-});
-</script>
-
-<!-- BOTTOM NAV (mobile only) -->
-<nav class="bottom-nav" id="bottomNav">
-    <a href="dashboard.html" class="bn-item">
-        <span class="bn-icon">🏠</span>
-        <span class="bn-label">Inicio</span>
-    </a>
-    <a href="comunicacion.html" class="bn-item">
-        <span class="bn-icon">📢</span>
-        <span class="bn-label">Mensajes</span>
-    </a>
-    <a href="tareas.html" class="bn-item">
-        <span class="bn-icon">📋</span>
-        <span class="bn-label">Tareas</span>
-    </a>
-    <button type="button" class="bn-item active" onclick="toggleMasSheet()">
-        <span class="bn-icon">⋯</span>
-        <span class="bn-label">Más</span>
-    </button>
-</nav>
-
-<!-- SHEET MÁS -->
-<div class="mas-overlay" id="masOverlay" onclick="toggleMasSheet()"></div>
-<div class="mas-sheet" id="masSheet">
-    <div class="mas-handle"></div>
-    <a href="horario.html" class="mas-item" onclick="toggleMasSheet()">
-        <span class="mas-icon">🗓️</span>
-        <span>Horario</span>
-    </a>
-    <a href="promedios.html" class="mas-item" onclick="toggleMasSheet()">
-        <span class="mas-icon">📊</span>
-        <span>Promedios</span>
-    </a>
-    <a href="quizzit.html" class="mas-item active" onclick="toggleMasSheet()">
-        <span class="mas-icon">🧪</span>
-        <span>Quizzit</span>
-    </a>
-    <a href="ai-chat.html" class="mas-item" onclick="toggleMasSheet()">
-        <span class="mas-icon">🤖</span>
-        <span>Fractal AI</span>
-    </a>
-</div>
-
-<script>
-function toggleMasSheet() {
-    document.getElementById('masSheet').classList.toggle('open');
-    document.getElementById('masOverlay').classList.toggle('open');
-}
-</script>
+    </script>
 
 </body>
+
 </html>
