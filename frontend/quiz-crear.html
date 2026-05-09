@@ -1059,56 +1059,59 @@ async function _guardar(redirigir) {
     if (publicarBtn) publicarBtn.textContent = 'Guardando...';
 
     try {
+        console.log('%c[GUARDAR] Inicio', 'color:yellow;font-weight:bold', { titulo, curso });
         const resQuiz = await AlephAPI.Quiz.crear({ titulo, descripcion: '', curso });
+        console.log('%c[GUARDAR] Quiz.crear resultado:', 'color:yellow', resQuiz);
         if (!resQuiz.ok) {
             showToast('Error guardando quiz: ' + resQuiz.error, 'error');
             return;
         }
 
         const quizId = resQuiz.quiz.id;
+        console.log('%c[GUARDAR] Quiz creado, id:', 'color:lime', quizId);
 
         for (let i = 0; i < preguntas.length; i++) {
             const p = preguntas[i];
+            console.log(`%c[GUARDAR] Pregunta ${i+1}/${preguntas.length} tipo=${p.tipo}`, 'color:cyan', p);
 
-            // Determinar qué opciones enviar según el tipo
             let opcionesParaGuardar = null;
             if (['multiple_choice', 'seleccion_multiple', 'ordenar', 'relacionar_columnas'].includes(p.tipo)) {
                 opcionesParaGuardar = p.opciones;
             }
 
-            // Serializar respuesta_correcta si es array u objeto (imagen_click, seleccion_multiple)
             let respuestaParaGuardar = p.respuesta_correcta;
             if (respuestaParaGuardar !== null && typeof respuestaParaGuardar === 'object') {
                 respuestaParaGuardar = JSON.stringify(respuestaParaGuardar);
             }
 
-            // Para imagen_click, guardar la URL en el enunciado como metadata o en opciones
             if (p.tipo === 'imagen_click' && p.imagen_url) {
                 opcionesParaGuardar = { imagen_url: p.imagen_url };
             }
 
-            const resPregunta = await AlephAPI.Preguntas.crear({
-                quizId,
-                orden: i,
-                tipo: p.tipo,
-                enunciado: p.enunciado,
-                opciones: opcionesParaGuardar,
-                respuestaCorrecta: respuestaParaGuardar,
-                tiempoSegundos: p.tiempo_segundos,
-                puntos: p.puntos
-            });
+            const payload = {
+                quizId, orden: i, tipo: p.tipo, enunciado: p.enunciado,
+                opciones: opcionesParaGuardar, respuestaCorrecta: respuestaParaGuardar,
+                tiempoSegundos: p.tiempo_segundos, puntos: p.puntos
+            };
+            console.log(`%c[GUARDAR] Payload ${i+1}:`, 'color:cyan', JSON.parse(JSON.stringify(payload)));
+
+            const resPregunta = await AlephAPI.Preguntas.crear(payload);
+            console.log(`%c[GUARDAR] Resultado ${i+1}:`, 'color:cyan', resPregunta);
 
             if (!resPregunta.ok) {
+                console.error(`%c[GUARDAR] ERROR pregunta ${i+1}:`, 'color:red', resPregunta.error);
                 await AlephAPI.Quiz.eliminar(quizId);
                 showToast(`Error guardando la pregunta ${i + 1}: ${resPregunta.error}`, 'error');
                 return;
             }
+            console.log(`%c[GUARDAR] Pregunta ${i+1} OK`, 'color:lime');
         }
 
+        console.log('%c[GUARDAR] Todo guardado!', 'color:lime;font-weight:bold');
         showToast('Quiz guardado ✓', 'success');
         if (redirigir) setTimeout(() => window.location.href = 'quizzit.html', 1000);
     } catch (err) {
-        console.error('Error guardando quiz:', err);
+        console.error('%c[GUARDAR] EXCEPCION:', 'color:red;font-weight:bold', err);
         showToast('Error inesperado al guardar: ' + (err.message || err), 'error');
     } finally {
         guardandoQuiz = false;
