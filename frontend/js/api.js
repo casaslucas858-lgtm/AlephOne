@@ -1,9 +1,10 @@
 // ============================================================
-// AlephOne - api.js - FASE 2: Supabase (Produccion)
+// AlephProject - api.js - FASE 2: Supabase (Produccion)
 // ============================================================
 
 const SUPABASE_URL = 'https://ikxvbmsvzmsiztxvzdtz.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_cN4exqC8p4r9Hg3ZQYWcWg_gLwcRdui';
+const QUIZ_IMAGE_BUCKET = 'quiz-images';
 
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let _authInitPromise = null;
@@ -518,6 +519,44 @@ const AlephAPI = (() => {
         }
     };
 
+    // --- STORAGE ---------------------------------------------
+    const Storage = {
+        async subirImagenQuiz(file) {
+            const user = Auth.getCurrentUser();
+            if (!user) return { ok: false, error: 'Tenes que iniciar sesion para subir imagenes.' };
+            if (!file) return { ok: false, error: 'No se selecciono ningun archivo.' };
+
+            const safeExt = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
+            const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${safeExt}`;
+            const path = `${user.id}/${safeName}`;
+
+            const { error } = await _sb.storage
+                .from(QUIZ_IMAGE_BUCKET)
+                .upload(path, file, {
+                    cacheControl: '3600',
+                    upsert: false,
+                    contentType: file.type || 'image/png'
+                });
+
+            if (error) {
+                if (error.message?.toLowerCase().includes('bucket')) {
+                    return { ok: false, error: `No se pudo subir la imagen. Verifica que exista el bucket "${QUIZ_IMAGE_BUCKET}" en Supabase Storage.` };
+                }
+                return { ok: false, error: error.message };
+            }
+
+            const { data } = _sb.storage.from(QUIZ_IMAGE_BUCKET).getPublicUrl(path);
+            return {
+                ok: true,
+                file: {
+                    bucket: QUIZ_IMAGE_BUCKET,
+                    path,
+                    publicUrl: data?.publicUrl || ''
+                }
+            };
+        }
+    };
+
     // --- SALA ------------------------------------------------
     const Sala = {
         async crear({ quizId, modo }) {
@@ -724,6 +763,6 @@ const AlephAPI = (() => {
         }
     };
 
-    return { Auth, Comunicacion, Tareas, Horario, Promedios, Calendario, Quiz, Preguntas, Sala, Asignacion };
+    return { Auth, Comunicacion, Tareas, Horario, Promedios, Calendario, Quiz, Preguntas, Sala, Asignacion, Storage };
 
 })();
