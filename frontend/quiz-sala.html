@@ -662,8 +662,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             } catch(e) { /* string normal */ }
         }
-        if (p.tipo === 'imagen_click' && p.opciones && typeof p.opciones === 'object' && !Array.isArray(p.opciones)) {
-            p.imagen_url = p.opciones.imagen_url || '';
+        if (p.tipo === 'imagen_click' && p.opciones) {
+            const imageOptions = typeof p.opciones === 'string'
+                ? (() => { try { return JSON.parse(p.opciones); } catch { return null; } })()
+                : p.opciones;
+            if (imageOptions && typeof imageOptions === 'object' && !Array.isArray(imageOptions)) {
+                p.imagen_url = imageOptions.imagen_url || '';
+            }
         }
     });
 
