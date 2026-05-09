@@ -526,6 +526,8 @@ function formatTimer(seg) {
 // ── PANTALLA: Pregunta ────────────────────────────────────
 function renderPregunta(i) {
     idx = i;
+    seleccionadasMultiplesAsig = [];
+    paresConectadosAsig = [];
     const p = preguntas[i];
     if (!p) return;
 
@@ -572,6 +574,7 @@ function renderOpcionesAsig(p, yaResp) {
         const correcta = p.respuesta_correcta;
         return `<div class="opciones-asig">
             ${opts.map((op, i) => {
+                if (!op.trim()) return '';
                 let extra = '';
                 if (yaResp) {
                     if (LETRAS[i] === correcta) extra = 'correcta-reveal';
@@ -589,6 +592,35 @@ function renderOpcionesAsig(p, yaResp) {
         </div>`;
     }
 
+    if (p.tipo === 'seleccion_multiple') {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        const correctas = Array.isArray(p.respuesta_correcta) ? p.respuesta_correcta : [];
+        let valArr = yaResp ? (typeof yaResp.valor === 'string' ? JSON.parse(yaResp.valor) : yaResp.valor) : [];
+        if (!Array.isArray(valArr)) valArr = [];
+
+        return `<div class="opciones-asig">
+            ${opts.map((op, i) => {
+                if (!op.trim()) return '';
+                let extra = '';
+                if (yaResp) {
+                    const eraCorrecta = correctas.includes(LETRAS[i]);
+                    const fueSeleccionada = valArr.includes(LETRAS[i]);
+                    if (eraCorrecta) extra = 'correcta-reveal';
+                    else if (fueSeleccionada) extra = 'incorrecta-reveal seleccionada';
+                } else {
+                    // we handle selection dynamically in JS
+                }
+                return `
+                <div class="opc-asig seleccion-multiple-asig ${bloq} ${extra}" data-opt="${LETRAS[i]}"
+                     onclick="toggleOpcionMultipleAsig(this, '${LETRAS[i]}')">
+                    <div class="opc-letra" style="border-radius:4px;">${LETRAS[i]}</div>
+                    <span>${sanitize(op)}</span>
+                </div>`;
+            }).join('')}
+        </div>
+        ${!yaResp ? `<button class="btn-enviar-asig" style="margin-top:20px; width:100%;" onclick="enviarSeleccionMultipleAsig('${p.id}')">Enviar Respuestas →</button>` : ''}`;
+    }
+
     if (p.tipo === 'verdadero_falso') {
         const sel = yaResp?.valor;
         const cor = p.respuesta_correcta;
@@ -600,16 +632,298 @@ function renderOpcionesAsig(p, yaResp) {
         </div>`;
     }
 
-    // Numérica / corta
+    if (p.tipo === 'ordenar') {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        
+        let displayOpts;
+        if (yaResp) {
+            // Si ya respondió, mostramos el orden que guardó
+            displayOpts = typeof yaResp.valor === 'string' ? JSON.parse(yaResp.valor) : yaResp.valor;
+        } else {
+            // Mezclamos
+            displayOpts = [...opts].sort(() => Math.random() - 0.5);
+        }
+
+        const esCorrectoGlobal = yaResp && yaResp.esCorrecta;
+        const extraCls = yaResp ? (esCorrectoGlobal ? 'correcta-reveal' : 'incorrecta-reveal') : '';
+        
+        return `<div class="opciones-asig" id="ordenarContainerAsig" style="display:flex; flex-direction:column;">
+            ${displayOpts.map((op, i) => `
+                <div class="opc-asig opcion-ordenar-asig ${bloq} ${extraCls}" style="cursor:${yaResp ? 'default' : 'grab'}; display:flex; justify-content:space-between;"
+                     draggable="${!yaResp}" data-valor="${sanitize(op)}"
+                     ondragstart="dragStartAsig(event)" ondragover="dragOverAsig(event)" ondrop="dropAsig(event)">
+                    <span>${sanitize(op)}</span>
+                    ${!yaResp ? `
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <button class="btn btn-ghost btn-sm" style="padding:2px 6px;" onclick="moveItemUpAsig(this.parentElement.parentElement)">▲</button>
+                        <button class="btn btn-ghost btn-sm" style="padding:2px 6px;" onclick="moveItemDownAsig(this.parentElement.parentElement)">▼</button>
+                    </div>` : ''}
+                </div>`).join('')}
+        </div>
+        ${!yaResp ? `<button class="btn-enviar-asig" style="margin-top:20px; width:100%;" onclick="enviarOrdenAsig('${p.id}')">Enviar Orden →</button>` : ''}`;
+    }
+
+    if (p.tipo === 'relacionar_columnas') {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        
+        let paresVal = [];
+        if (yaResp) {
+            paresVal = typeof yaResp.valor === 'string' ? JSON.parse(yaResp.valor) : yaResp.valor;
+        }
+
+        const leftSide = opts.map((o, i) => ({ id: i, text: o.izq }));
+        const rightSide = opts.map((o, i) => ({ id: i, text: o.der })).sort(() => Math.random() - 0.5);
+
+        return `<div class="opciones-asig" style="display:flex; gap:20px; justify-content:space-between;" id="relacionarContainerAsig">
+            <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
+                ${leftSide.map(l => {
+                    const parGuardado = paresVal.find(pv => pv.izqId === l.id);
+                    const isConnected = !!parGuardado;
+                    const esCorrecto = isConnected && parGuardado.izqId === parGuardado.derId;
+                    const extra = yaResp ? (isConnected ? (esCorrecto ? 'correcta-reveal conectado' : 'incorrecta-reveal conectado') : '') : '';
+                    return `
+                    <div class="opc-asig rel-izq-asig ${bloq} ${extra}" data-id="${l.id}" onclick="selectRelIzqAsig(this, ${l.id})">
+                        <span>${sanitize(l.text)}</span>
+                    </div>`;
+                }).join('')}
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
+                ${rightSide.map(r => {
+                    const parGuardado = paresVal.find(pv => pv.derId === r.id);
+                    const isConnected = !!parGuardado;
+                    const esCorrecto = isConnected && parGuardado.izqId === parGuardado.derId;
+                    const extra = yaResp ? (isConnected ? (esCorrecto ? 'correcta-reveal conectado' : 'incorrecta-reveal conectado') : '') : '';
+                    return `
+                    <div class="opc-asig rel-der-asig ${bloq} ${extra}" data-id="${r.id}" onclick="selectRelDerAsig(this, ${r.id})">
+                        <span>${sanitize(r.text)}</span>
+                    </div>`;
+                }).join('')}
+            </div>
+        </div>
+        ${!yaResp ? `<button class="btn-enviar-asig" style="margin-top:20px; width:100%;" onclick="enviarRelacionarAsig('${p.id}')">Enviar Relaciones →</button>` : ''}`;
+    }
+
+    if (p.tipo === 'imagen_click') {
+        const url = p.imagen_url || '';
+        
+        let marcaVal = null;
+        if (yaResp) {
+            marcaVal = typeof yaResp.valor === 'string' ? JSON.parse(yaResp.valor) : yaResp.valor;
+        }
+
+        const corr = typeof p.respuesta_correcta === 'string' ? JSON.parse(p.respuesta_correcta) : p.respuesta_correcta;
+
+        return `
+        <div class="opciones-asig" style="display:flex; justify-content:center; flex-direction:column; align-items:center;">
+            <div style="position:relative; display:inline-block; max-width:100%; border-radius:8px; overflow:hidden; cursor:${yaResp ? 'default' : 'crosshair'};" onclick="marcarImagenClickAsig(event, '${p.id}')">
+                <img src="${sanitize(url)}" style="display:block; max-width:100%; height:auto;" id="imagenClickMapAsig_${p.id}">
+                <div id="marcadorImagenAsig_${p.id}" style="position:absolute; width:16px; height:16px; background:${yaResp && yaResp.esCorrecta ? '#4ade80' : 'var(--teal)'}; border:2px solid white; border-radius:50%; transform:translate(-50%, -50%); display:${marcaVal ? 'block' : 'none'}; pointer-events:none; box-shadow:0 0 10px rgba(0,0,0,0.5); left:${marcaVal ? marcaVal.x : 0}%; top:${marcaVal ? marcaVal.y : 0}%;"></div>
+                
+                ${yaResp ? `
+                    <div style="position:absolute; top:${corr.y}%; left:${corr.x}%; width:${corr.r*2}%; height:${corr.r*2}%; background:rgba(38,212,199,0.2); border:2px dashed var(--teal); border-radius:50%; transform:translate(-50%, -50%); pointer-events:none;"></div>
+                ` : ''}
+            </div>
+        </div>
+        ${!yaResp ? `<button class="btn-enviar-asig" style="margin-top:20px; width:100%;" onclick="enviarImagenClickAsig('${p.id}')">Enviar Marca →</button>` : ''}`;
+    }
+
+    // Numérica / corta / completar
+    let ph = 'Tu respuesta...';
+    let type = 'text';
+    if (p.tipo === 'numerica') { type = 'number'; ph = 'Número...'; }
+    if (p.tipo === 'completar_espacio') ph = 'Completá la palabra...';
+
     return `<div class="texto-wrap">
-        <input type="${p.tipo === 'numerica' ? 'number' : 'text'}"
+        <input type="${type}"
                class="texto-input"
                id="textoInput"
-               placeholder="${p.tipo === 'numerica' ? 'Número...' : 'Tu respuesta...'}"
+               placeholder="${ph}"
                ${yaResp ? `value="${sanitize(yaResp.valor)}" disabled` : ''}
                onkeydown="if(event.key==='Enter')responderTexto('${p.id}','${p.tipo}')">
         ${!yaResp ? `<button class="btn-enviar-asig" onclick="responderTexto('${p.id}','${p.tipo}')">Enviar</button>` : ''}
     </div>`;
+}
+
+// ── Ordenar Asig ──────────────────────────────────────────
+let draggedItemAsig = null;
+
+function dragStartAsig(e) {
+    if (e.target.classList.contains('bloqueada')) return;
+    draggedItemAsig = e.target;
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", "");
+}
+
+function dragOverAsig(e) {
+    if (draggedItemAsig && draggedItemAsig.classList.contains('bloqueada')) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+}
+
+function dropAsig(e) {
+    e.preventDefault();
+    if (e.target.closest('.opcion-ordenar-asig')) {
+        const target = e.target.closest('.opcion-ordenar-asig');
+        if (target.classList.contains('bloqueada')) return;
+        
+        const container = document.getElementById('ordenarContainerAsig');
+        const allItems = [...container.querySelectorAll('.opcion-ordenar-asig')];
+        
+        if (draggedItemAsig && draggedItemAsig !== target) {
+            const draggedIdx = allItems.indexOf(draggedItemAsig);
+            const targetIdx = allItems.indexOf(target);
+            if (draggedIdx < targetIdx) {
+                target.after(draggedItemAsig);
+            } else {
+                target.before(draggedItemAsig);
+            }
+        }
+    }
+}
+
+function moveItemUpAsig(el) {
+    if (el.classList.contains('bloqueada')) return;
+    const prev = el.previousElementSibling;
+    if (prev) prev.before(el);
+}
+
+function moveItemDownAsig(el) {
+    if (el.classList.contains('bloqueada')) return;
+    const next = el.nextElementSibling;
+    if (next) next.after(el);
+}
+
+function enviarOrdenAsig(pregId) {
+    if (respuestas[pregId]) return;
+    const p = preguntas.find(q => q.id === pregId);
+    if (!p) return;
+    
+    const items = [...document.querySelectorAll('.opcion-ordenar-asig')];
+    const orden = items.map(i => i.dataset.valor);
+    
+    const correctaArr = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : p.opciones;
+    const esCorrecta = JSON.stringify(orden) === JSON.stringify(correctaArr);
+    
+    guardarRespuesta(pregId, JSON.stringify(orden), esCorrecta, p.puntos || 100);
+}
+
+let seleccionadasMultiplesAsig = [];
+
+function toggleOpcionMultipleAsig(el, letra) {
+    if (el.classList.contains('bloqueada')) return;
+    if (seleccionadasMultiplesAsig.includes(letra)) {
+        seleccionadasMultiplesAsig = seleccionadasMultiplesAsig.filter(l => l !== letra);
+        el.classList.remove('seleccionada');
+    } else {
+        seleccionadasMultiplesAsig.push(letra);
+        el.classList.add('seleccionada');
+    }
+}
+
+function enviarSeleccionMultipleAsig(pregId) {
+    if (respuestas[pregId] || seleccionadasMultiplesAsig.length === 0) return;
+    const p = preguntas.find(q => q.id === pregId);
+    if (!p) return;
+    
+    const correctas = Array.isArray(p.respuesta_correcta) ? p.respuesta_correcta : [];
+    const valSorted = [...seleccionadasMultiplesAsig].sort();
+    const corrSorted = [...correctas].sort();
+    
+    const esCorrecta = JSON.stringify(valSorted) === JSON.stringify(corrSorted);
+    const valorGuardar = JSON.stringify(valSorted);
+    
+    guardarRespuesta(pregId, valorGuardar, esCorrecta, p.puntos || 100);
+}
+
+// ── Relacionar Asig ─────────────────────────────────────────
+let selectedIzqAsig = null;
+let selectedDerAsig = null;
+let paresConectadosAsig = []; // {izqId, derId}
+
+function selectRelIzqAsig(el, id) {
+    if (el.classList.contains('bloqueada') || el.classList.contains('conectado')) return;
+    document.querySelectorAll('.rel-izq-asig').forEach(e => e.classList.remove('seleccionada'));
+    el.classList.add('seleccionada');
+    selectedIzqAsig = { el, id };
+    checkRelacionAsig();
+}
+
+function selectRelDerAsig(el, id) {
+    if (el.classList.contains('bloqueada') || el.classList.contains('conectado')) return;
+    document.querySelectorAll('.rel-der-asig').forEach(e => e.classList.remove('seleccionada'));
+    el.classList.add('seleccionada');
+    selectedDerAsig = { el, id };
+    checkRelacionAsig();
+}
+
+function checkRelacionAsig() {
+    if (selectedIzqAsig && selectedDerAsig) {
+        paresConectadosAsig.push({ izqId: selectedIzqAsig.id, derId: selectedDerAsig.id });
+        
+        selectedIzqAsig.el.classList.add('conectado');
+        selectedDerAsig.el.classList.add('conectado');
+        selectedIzqAsig.el.classList.remove('seleccionada');
+        selectedDerAsig.el.classList.remove('seleccionada');
+        
+        const color = `hsl(${Math.random() * 360}, 70%, 40%)`;
+        selectedIzqAsig.el.style.borderLeft = `4px solid ${color}`;
+        selectedDerAsig.el.style.borderLeft = `4px solid ${color}`;
+        
+        selectedIzqAsig = null;
+        selectedDerAsig = null;
+    }
+}
+
+function enviarRelacionarAsig(pregId) {
+    if (respuestas[pregId]) return;
+    const p = preguntas.find(q => q.id === pregId);
+    if (!p) return;
+    
+    const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+    
+    // esCorrecta only if all pairs are made and they all match
+    let esCorrecta = false;
+    if (paresConectadosAsig.length === opts.length) {
+        esCorrecta = paresConectadosAsig.every(par => par.izqId === par.derId);
+    }
+    
+    guardarRespuesta(pregId, JSON.stringify(paresConectadosAsig), esCorrecta, p.puntos || 100);
+}
+
+// ── Imagen Click Asig ──────────────────────────────────────
+let marcaImagenClickAsig = {};
+
+function marcarImagenClickAsig(e, pregId) {
+    if (respuestas[pregId]) return;
+    const img = document.getElementById(`imagenClickMapAsig_${pregId}`);
+    const rect = img.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    
+    marcaImagenClickAsig[pregId] = { x, y };
+    const marcador = document.getElementById(`marcadorImagenAsig_${pregId}`);
+    marcador.style.left = `${x}%`;
+    marcador.style.top = `${y}%`;
+    marcador.style.display = 'block';
+}
+
+function enviarImagenClickAsig(pregId) {
+    if (respuestas[pregId] || !marcaImagenClickAsig[pregId]) return;
+    const p = preguntas.find(q => q.id === pregId);
+    if (!p) return;
+    
+    const marca = marcaImagenClickAsig[pregId];
+    const corr = typeof p.respuesta_correcta === 'string' ? JSON.parse(p.respuesta_correcta) : p.respuesta_correcta;
+    
+    let esCorrecta = false;
+    if (corr) {
+        const dx = marca.x - corr.x;
+        const dy = marca.y - corr.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        esCorrecta = dist <= corr.r;
+    }
+    
+    guardarRespuesta(pregId, JSON.stringify(marca), esCorrecta, p.puntos || 100);
 }
 
 // ── Responder ─────────────────────────────────────────────
