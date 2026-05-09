@@ -799,7 +799,7 @@ function mostrarPregunta(idx) {
             <div style="position:relative; display:inline-block; max-width:100%; border-radius:8px; overflow:hidden;">
                 <img src="${sanitize(url)}" style="display:block; max-width:100%; height:auto;">
                 ${corr ? `
-                    <div style="position:absolute; top:${corr.y}%; left:${corr.x}%; width:${corr.r*2}%; height:${corr.r*2}%; background:rgba(38,212,199,0.4); border:2px solid var(--teal); border-radius:50%; transform:translate(-50%, -50%); pointer-events:none;"></div>
+                    <div style="position:absolute; top:${corr.y}%; left:${corr.x}%; width:16px; height:16px; background:var(--teal); border:2px solid white; border-radius:50%; transform:translate(-50%, -50%); pointer-events:none; box-shadow:0 0 10px rgba(0,0,0,0.5);"></div>
                 ` : ''}
             </div>
         `;
