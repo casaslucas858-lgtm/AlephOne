@@ -669,6 +669,12 @@
                             <div class="tipo-selector" id="tipoSelector">
                                 <button class="tipo-chip active" data-tipo="multiple_choice"
                                     onclick="cambiarTipo('multiple_choice',this)">Múltiple (ABCD)</button>
+                                <button class="tipo-chip" data-tipo="slide"
+                                    onclick="cambiarTipo('slide',this)">Slide</button>
+                                <button class="tipo-chip" data-tipo="encuesta"
+                                    onclick="cambiarTipo('encuesta',this)">Encuesta</button>
+                                <button class="tipo-chip" data-tipo="escala"
+                                    onclick="cambiarTipo('escala',this)">Escala</button>
                                 <button class="tipo-chip" data-tipo="seleccion_multiple"
                                     onclick="cambiarTipo('seleccion_multiple',this)">Sel. Múltiple</button>
                                 <button class="tipo-chip" data-tipo="verdadero_falso"
@@ -685,6 +691,8 @@
                                     onclick="cambiarTipo('relacionar_columnas',this)">Relacionar</button>
                                 <button class="tipo-chip" data-tipo="imagen_click"
                                     onclick="cambiarTipo('imagen_click',this)">Mapa</button>
+                                <button class="tipo-chip" data-tipo="libre_imagen"
+                                    onclick="cambiarTipo('libre_imagen',this)">Libre + imagen</button>
                             </div>
                         </div>
                         <div class="editor-settings">
@@ -738,6 +746,9 @@
 
         const TIPO_LABELS = {
             multiple_choice: 'Múltiple (ABCD)',
+            slide: 'Diapositiva',
+            encuesta: 'Encuesta',
+            escala: 'Escala',
             seleccion_multiple: 'Selección múltiple',
             verdadero_falso: 'V/F',
             numerica: 'Numérica',
@@ -745,7 +756,8 @@
             completar_espacio: 'Completar espacio',
             ordenar: 'Ordenar',
             relacionar_columnas: 'Relacionar',
-            imagen_click: 'Mapa (Click)'
+            imagen_click: 'Mapa (Click)',
+            libre_imagen: 'Libre + imagen'
         };
 
         function _defaultPregunta(orden) {
@@ -779,12 +791,33 @@
             return parts.join(' · ');
         }
 
+        function _imageQuestionMeta(p) {
+            const parts = [];
+            if (_tieneTexto(p.imagen_nombre)) parts.push(p.imagen_nombre);
+            if (_tieneTexto(p.imagen_url)) parts.push('lista para usar');
+            return parts.join(' · ');
+        }
+
         function _validarPregunta(p, idx) {
             const pref = `Pregunta ${idx + 1}`;
 
             if (!_tieneTexto(p.enunciado)) return `${pref}: falta el enunciado.`;
 
             switch (p.tipo) {
+                case 'slide':
+                    if (!_tieneTexto(p.slide_titulo)) return `${pref}: falta el título de la diapositiva.`;
+                    break;
+                case 'encuesta':
+                    if (!(p.opciones || []).every(_tieneTexto)) return `${pref}: completá todas las opciones de la encuesta.`;
+                    break;
+                case 'escala':
+                    if (!Number.isFinite(Number(p.escala_min)) || !Number.isFinite(Number(p.escala_max))) {
+                        return `${pref}: definí un rango válido para la escala.`;
+                    }
+                    if (Number(p.escala_min) >= Number(p.escala_max)) {
+                        return `${pref}: el mínimo de la escala debe ser menor que el máximo.`;
+                    }
+                    break;
                 case 'multiple_choice':
                     if (!(p.opciones || []).every(_tieneTexto)) return `${pref}: completá todas las opciones.`;
                     if (!_tieneTexto(p.respuesta_correcta)) return `${pref}: marcá la opción correcta.`;
@@ -816,6 +849,10 @@
                 case 'imagen_click':
                     if (!_tieneTexto(p.imagen_url)) return `${pref}: falta subir la imagen.`;
                     if (!_esPuntoMapaValido(p.respuesta_correcta)) return `${pref}: marcá el punto correcto sobre la imagen.`;
+                    break;
+                case 'libre_imagen':
+                    if (!_tieneTexto(p.imagen_url)) return `${pref}: falta subir la imagen.`;
+                    if (!_tieneTexto(p.respuesta_correcta)) return `${pref}: completá la respuesta esperada.`;
                     break;
             }
 
@@ -889,6 +926,65 @@
 
         function renderOpciones(p) {
             const letras = ['A', 'B', 'C', 'D'];
+
+            if (p.tipo === 'slide') {
+                return `
+            <div class="section-label">Título de la diapositiva</div>
+            <input type="text" class="respuesta-directa"
+                   placeholder="Ej: Repaso antes de empezar"
+                   value="${sanitize(p.slide_titulo || '')}"
+                   oninput="syncSlideTitulo(this.value)">
+            <div class="section-label" style="margin-top:16px;">Imagen opcional</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <label class="btn btn-secondary btn-sm" for="imagenSlideInput">${p.imagen_url ? 'Cambiar imagen' : 'Subir imagen'}</label>
+                <input type="file" id="imagenSlideInput" accept="image/*" style="display:none;" onchange="subirImagenSlide(this.files && this.files[0])">
+                <span style="font-size:0.78em; color:var(--text-faint);">${sanitize(_imageQuestionMeta(p) || 'PNG, JPG o WEBP')}</span>
+            </div>
+            ${p.imagen_subiendo ? `<div class="timer-info" style="margin-top:12px;">⏳ Subiendo imagen...</div>` : ''}
+            ${p.imagen_url ? `<div style="margin-top:14px;"><img src="${sanitize(p.imagen_url)}" style="display:block; max-width:100%; max-height:260px; border-radius:8px;"></div>` : ''}
+            <p style="font-size:0.76em;color:var(--text-faint);margin-top:10px;">El enunciado principal funciona como cuerpo o texto de apoyo de la diapositiva.</p>`;
+            }
+
+            if (p.tipo === 'encuesta') {
+                return `
+            <div class="section-label">Opciones de encuesta</div>
+            <div class="opciones-section">
+                ${(p.opciones || ['', '', '', '']).map((op, i) => `
+                    <div class="opcion-item" style="cursor:default;">
+                        <div class="opcion-letra">${letras[i]}</div>
+                        <input class="opcion-input"
+                               type="text"
+                               placeholder="Opción ${letras[i]}"
+                               value="${sanitize(op)}"
+                               oninput="syncOpcion(${i}, this.value)">
+                    </div>`).join('')}
+            </div>
+            <p style="font-size:0.76em;color:var(--text-faint);margin-top:10px;">No tiene respuesta correcta: solo recolecta opinión.</p>`;
+            }
+
+            if (p.tipo === 'escala') {
+                return `
+            <div class="section-label">Configuración de escala</div>
+            <div class="opciones-section" style="grid-template-columns:1fr 1fr;">
+                <input class="respuesta-directa" type="number" min="0" step="1"
+                       placeholder="Mínimo"
+                       value="${sanitize(String(p.escala_min ?? 1))}"
+                       oninput="syncEscala('min', this.value)">
+                <input class="respuesta-directa" type="number" min="1" step="1"
+                       placeholder="Máximo"
+                       value="${sanitize(String(p.escala_max ?? 5))}"
+                       oninput="syncEscala('max', this.value)">
+                <input class="respuesta-directa" type="text"
+                       placeholder="Etiqueta izquierda (opcional)"
+                       value="${sanitize(p.escala_label_izq || '')}"
+                       oninput="syncEscala('izq', this.value)">
+                <input class="respuesta-directa" type="text"
+                       placeholder="Etiqueta derecha (opcional)"
+                       value="${sanitize(p.escala_label_der || '')}"
+                       oninput="syncEscala('der', this.value)">
+            </div>
+            <p style="font-size:0.76em;color:var(--text-faint);margin-top:10px;">Ejemplo: 1 a 5, de “Nada” a “Mucho”.</p>`;
+            }
 
             if (p.tipo === 'multiple_choice') {
                 return `
@@ -1043,11 +1139,44 @@
             ` : ''}`;
             }
 
+            if (p.tipo === 'libre_imagen') {
+                const url = p.imagen_url || '';
+                return `
+            <div class="section-label">Imagen de referencia</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <label class="btn btn-secondary btn-sm" for="imagenLibreInput">${url ? 'Cambiar imagen' : 'Subir imagen'}</label>
+                <input type="file" id="imagenLibreInput" accept="image/*" style="display:none;" onchange="subirImagenLibre(this.files && this.files[0])">
+                <span style="font-size:0.78em; color:var(--text-faint);">${sanitize(_imageQuestionMeta(p) || 'PNG, JPG o WEBP')}</span>
+            </div>
+            ${p.imagen_subiendo ? `<div class="timer-info" style="margin-top:12px;">⏳ Subiendo imagen...</div>` : ''}
+            ${url ? `<div style="margin-top:14px;"><img src="${sanitize(url)}" style="display:block; max-width:100%; max-height:280px; border-radius:8px;"></div>` : ''}
+            <div class="section-label" style="margin-top:16px;">Respuesta esperada</div>
+            <input type="text" class="respuesta-directa"
+                   placeholder="Ej: Aparato de Golgi"
+                   value="${sanitize(p.respuesta_correcta || '')}"
+                   oninput="syncRespuestaDirecta(this.value)">`;
+            }
+
             return '';
         }
 
         // ── Sync handlers ─────────────────────────────────────────
-        async function subirImagenMapa(file) {
+        function syncSlideTitulo(val) {
+            if (activaIdx < 0) return;
+            preguntas[activaIdx].slide_titulo = val;
+            renderLista();
+        }
+
+        function syncEscala(campo, val) {
+            if (activaIdx < 0) return;
+            if (campo === 'min') preguntas[activaIdx].escala_min = parseInt(val, 10);
+            if (campo === 'max') preguntas[activaIdx].escala_max = parseInt(val, 10);
+            if (campo === 'izq') preguntas[activaIdx].escala_label_izq = val;
+            if (campo === 'der') preguntas[activaIdx].escala_label_der = val;
+            renderLista();
+        }
+
+        async function _subirImagenPregunta(file, mode) {
             if (activaIdx < 0 || !file) return;
 
             preguntas[activaIdx].imagen_subiendo = true;
@@ -1066,9 +1195,21 @@
             preguntas[activaIdx].imagen_path = res.file.path;
             preguntas[activaIdx].imagen_bucket = res.file.bucket;
             preguntas[activaIdx].imagen_nombre = file.name;
-            preguntas[activaIdx].respuesta_correcta = null;
+            if (mode === 'mapa') preguntas[activaIdx].respuesta_correcta = null;
             document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
             showToast('Imagen subida ✓', 'success');
+        }
+
+        async function subirImagenSlide(file) {
+            await _subirImagenPregunta(file, 'slide');
+        }
+
+        async function subirImagenMapa(file) {
+            await _subirImagenPregunta(file, 'mapa');
+        }
+
+        async function subirImagenLibre(file) {
+            await _subirImagenPregunta(file, 'libre');
         }
 
         function marcarZonaImagen(e) {
@@ -1154,6 +1295,23 @@
             if (tipo === 'seleccion_multiple') {
                 preguntas[activaIdx].respuesta_correcta = [];
                 preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || ['', '', '', ''];
+            } else if (tipo === 'slide') {
+                preguntas[activaIdx].respuesta_correcta = '';
+                preguntas[activaIdx].puntos = 0;
+                preguntas[activaIdx].slide_titulo = preguntas[activaIdx].slide_titulo || '';
+                preguntas[activaIdx].opciones = null;
+            } else if (tipo === 'encuesta') {
+                preguntas[activaIdx].respuesta_correcta = '';
+                preguntas[activaIdx].puntos = 0;
+                preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || ['', '', '', ''];
+            } else if (tipo === 'escala') {
+                preguntas[activaIdx].respuesta_correcta = '';
+                preguntas[activaIdx].puntos = 0;
+                preguntas[activaIdx].opciones = null;
+                preguntas[activaIdx].escala_min = Number.isFinite(preguntas[activaIdx].escala_min) ? preguntas[activaIdx].escala_min : 1;
+                preguntas[activaIdx].escala_max = Number.isFinite(preguntas[activaIdx].escala_max) ? preguntas[activaIdx].escala_max : 5;
+                preguntas[activaIdx].escala_label_izq = preguntas[activaIdx].escala_label_izq || '';
+                preguntas[activaIdx].escala_label_der = preguntas[activaIdx].escala_label_der || '';
             } else if (tipo === 'multiple_choice') {
                 preguntas[activaIdx].respuesta_correcta = null;
                 preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || ['', '', '', ''];
@@ -1165,6 +1323,12 @@
                 preguntas[activaIdx].opciones = preguntas[activaIdx].opciones || [{ izq: '', der: '' }, { izq: '', der: '' }];
             } else if (tipo === 'imagen_click') {
                 preguntas[activaIdx].respuesta_correcta = null;
+                preguntas[activaIdx].imagen_url = preguntas[activaIdx].imagen_url || '';
+                preguntas[activaIdx].imagen_path = preguntas[activaIdx].imagen_path || '';
+                preguntas[activaIdx].imagen_bucket = preguntas[activaIdx].imagen_bucket || '';
+                preguntas[activaIdx].imagen_nombre = preguntas[activaIdx].imagen_nombre || '';
+            } else if (tipo === 'libre_imagen') {
+                preguntas[activaIdx].respuesta_correcta = preguntas[activaIdx].respuesta_correcta || '';
                 preguntas[activaIdx].imagen_url = preguntas[activaIdx].imagen_url || '';
                 preguntas[activaIdx].imagen_path = preguntas[activaIdx].imagen_path || '';
                 preguntas[activaIdx].imagen_bucket = preguntas[activaIdx].imagen_bucket || '';
@@ -1282,6 +1446,29 @@
                     let resp = '';
 
                     switch (p.tipo) {
+                        case 'slide':
+                            opc = JSON.stringify({
+                                slide_titulo: p.slide_titulo || '',
+                                imagen_url: p.imagen_url || null,
+                                imagen_path: p.imagen_path || null,
+                                imagen_bucket: p.imagen_bucket || null,
+                                imagen_nombre: p.imagen_nombre || null
+                            });
+                            resp = '';
+                            break;
+                        case 'encuesta':
+                            opc = p.opciones || [];
+                            resp = '';
+                            break;
+                        case 'escala':
+                            opc = JSON.stringify({
+                                min: Number(p.escala_min ?? 1),
+                                max: Number(p.escala_max ?? 5),
+                                left_label: p.escala_label_izq || '',
+                                right_label: p.escala_label_der || ''
+                            });
+                            resp = '';
+                            break;
                         case 'multiple_choice':
                             opc = p.opciones || [];
                             resp = p.respuesta_correcta || '';
@@ -1318,6 +1505,15 @@
                             resp = p.respuesta_correcta
                                 ? (typeof p.respuesta_correcta === 'object' ? JSON.stringify(p.respuesta_correcta) : String(p.respuesta_correcta))
                                 : '';
+                            break;
+                        case 'libre_imagen':
+                            opc = p.imagen_url ? JSON.stringify({
+                                imagen_url: p.imagen_url.trim(),
+                                imagen_path: p.imagen_path || null,
+                                imagen_bucket: p.imagen_bucket || null,
+                                imagen_nombre: p.imagen_nombre || null
+                            }) : null;
+                            resp = p.respuesta_correcta || '';
                             break;
                         default:
                             resp = String(p.respuesta_correcta || '');
