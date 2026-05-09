@@ -1179,25 +1179,38 @@
         async function _subirImagenPregunta(file, mode) {
             if (activaIdx < 0 || !file) return;
 
-            preguntas[activaIdx].imagen_subiendo = true;
-            document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
+            const idx = activaIdx;
+            const pregunta = preguntas[idx];
+            if (!pregunta) return;
 
-            const res = await AlephAPI.Storage.subirImagenQuiz(file);
-            preguntas[activaIdx].imagen_subiendo = false;
-
-            if (!res.ok) {
-                document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
-                showToast(res.error || 'No se pudo subir la imagen.', 'error');
-                return;
+            pregunta.imagen_subiendo = true;
+            if (activaIdx === idx) {
+                document.getElementById('opcionesContainer').innerHTML = renderOpciones(pregunta);
             }
 
-            preguntas[activaIdx].imagen_url = res.file.publicUrl;
-            preguntas[activaIdx].imagen_path = res.file.path;
-            preguntas[activaIdx].imagen_bucket = res.file.bucket;
-            preguntas[activaIdx].imagen_nombre = file.name;
-            if (mode === 'mapa') preguntas[activaIdx].respuesta_correcta = null;
-            document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
-            showToast('Imagen subida ✓', 'success');
+            try {
+                const res = await AlephAPI.Storage.subirImagenQuiz(file);
+
+                if (!res.ok) {
+                    showToast(res.error || 'No se pudo subir la imagen.', 'error');
+                    return;
+                }
+
+                pregunta.imagen_url = res.file.publicUrl;
+                pregunta.imagen_path = res.file.path;
+                pregunta.imagen_bucket = res.file.bucket;
+                pregunta.imagen_nombre = file.name;
+                if (mode === 'mapa') pregunta.respuesta_correcta = null;
+                showToast('Imagen subida ✓', 'success');
+            } catch (error) {
+                console.error('Error en la subida de imagen:', error);
+                showToast(error?.message || 'La imagen no termino de subirse.', 'error');
+            } finally {
+                pregunta.imagen_subiendo = false;
+                if (activaIdx === idx) {
+                    document.getElementById('opcionesContainer').innerHTML = renderOpciones(pregunta);
+                }
+            }
         }
 
         async function subirImagenSlide(file) {
