@@ -957,7 +957,7 @@
 
             if (p.tipo === 'imagen_click') {
                 const url = p.imagen_url || '';
-                const corr = p.respuesta_correcta || null; // {x, y, r}
+                const corr = p.respuesta_correcta || null; // {x, y}
                 return `
             <div class="section-label">URL de la Imagen</div>
             <input type="text" class="respuesta-directa"
@@ -965,18 +965,16 @@
                    value="${sanitize(url)}"
                    oninput="syncImagenUrl(this.value)">
             ${url ? `
-                <div class="section-label" style="margin-top:16px;">Hacé clic en la imagen para marcar la zona correcta</div>
-                <div style="position:relative; display:inline-block; max-width:100%; border-radius:8px; overflow:hidden;" onclick="marcarZonaImagen(event)">
+                <div class="section-label" style="margin-top:16px;">Hacé clic en la imagen para marcar el punto correcto</div>
+                <div style="position:relative; display:inline-block; max-width:100%; border-radius:8px; overflow:hidden; cursor:crosshair;" onclick="marcarZonaImagen(event)">
                     <img src="${sanitize(url)}" style="display:block; max-width:100%; height:auto;" id="imagenClickMap">
                     ${corr ? `
-                        <div style="position:absolute; top:${corr.y}%; left:${corr.x}%; width:${corr.r * 2}%; height:${corr.r * 2}%; background:rgba(38,212,199,0.4); border:2px solid var(--teal); border-radius:50%; transform:translate(-50%, -50%); pointer-events:none;"></div>
+                        <div style="position:absolute; top:${corr.y}%; left:${corr.x}%; width:16px; height:16px; background:var(--teal); border:2px solid white; border-radius:50%; transform:translate(-50%, -50%); pointer-events:none; box-shadow:0 0 10px rgba(0,0,0,0.5);"></div>
                     ` : ''}
                 </div>
-                <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:0.82em; color:var(--text-faint);">Radio de tolerancia (%):</span>
-                    <input type="range" min="1" max="30" value="${corr ? corr.r : 5}" oninput="syncImagenRadio(this.value)" style="flex:1;">
-                    <span style="font-size:0.82em;">${corr ? corr.r : 5}%</span>
-                </div>
+                <p style="font-size:0.76em;color:var(--text-faint);margin-top:10px;">
+                    El alumno ganará más puntos cuanto más cerca haga clic de este punto. (100% puntos a &le;3% dist, 0 puntos a &gt;20%).
+                </p>
             ` : ''}`;
             }
 
@@ -996,15 +994,8 @@
             const rect = img.getBoundingClientRect();
             const x = ((e.clientX - rect.left) / rect.width) * 100;
             const y = ((e.clientY - rect.top) / rect.height) * 100;
-            const currentR = preguntas[activaIdx].respuesta_correcta?.r || 5;
-
-            preguntas[activaIdx].respuesta_correcta = { x, y, r: currentR };
-            document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
-        }
-
-        function syncImagenRadio(val) {
-            if (activaIdx < 0 || !preguntas[activaIdx].respuesta_correcta) return;
-            preguntas[activaIdx].respuesta_correcta.r = parseInt(val);
+            
+            preguntas[activaIdx].respuesta_correcta = { x, y };
             document.getElementById('opcionesContainer').innerHTML = renderOpciones(preguntas[activaIdx]);
         }
 
