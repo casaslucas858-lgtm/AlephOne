@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz en vivo — AlephOne</title>
+    <title>Quiz en vivo — AlephProject</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         :root {
@@ -544,7 +544,7 @@
 <body>
 
     <div class="jugar-topbar">
-        <span class="jugar-logo">ℵ AlephOne</span>
+        <span class="jugar-logo">ℵ AlephProject</span>
         <div class="jugar-user">
             <span id="jugarUsername">—</span>
             <span class="jugar-pts" id="jugarPts">0 pts</span>
@@ -617,6 +617,9 @@
                         : p.opciones;
                     if (imageOptions && typeof imageOptions === 'object' && !Array.isArray(imageOptions)) {
                         p.imagen_url = imageOptions.imagen_url || '';
+                        p.imagen_path = imageOptions.imagen_path || '';
+                        p.imagen_bucket = imageOptions.imagen_bucket || '';
+                        p.imagen_nombre = imageOptions.imagen_nombre || '';
                     }
                 }
             });
