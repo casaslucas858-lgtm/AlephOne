@@ -1994,3 +1994,210 @@ body.dark-mode .sim-result strong { color: var(--teal); }
         display: block;
     }
 }
+
+/* ============================================================
+   AlephOne — Accessibility Layer
+   Agregar al final de style.css
+   ============================================================ */
+
+/* ─── FILTROS DE VISIÓN DE COLOR ────────────────────────── */
+
+/* Deuteranopia — déficit verde (el más común) */
+body.vision-deuteranopia {
+    filter: url('#filter-deuteranopia');
+}
+
+/* Protanopia — déficit rojo */
+body.vision-protanopia {
+    filter: url('#filter-protanopia');
+}
+
+/* Tritanopia — déficit azul */
+body.vision-tritanopia {
+    filter: url('#filter-tritanopia');
+}
+
+/* Escala de grises */
+body.vision-grayscale {
+    filter: grayscale(100%);
+}
+
+/* SVG con matrices de simulación (insertar en el HTML, invisible) */
+/* Los filtros están en el <svg> oculto del dashboard.html */
+
+/* ─── ALTO CONTRASTE ────────────────────────────────────── */
+body.high-contrast {
+    --bg:           #000000;
+    --bg-card:      #0a0a0a;
+    --bg-subtle:    #111111;
+    --bg-hover:     #1a1a1a;
+    --text:         #ffffff;
+    --text-muted:   #dddddd;
+    --text-faint:   #aaaaaa;
+    --border:       rgba(255,255,255,0.3);
+    --border-strong: rgba(255,255,255,0.5);
+    --teal:         #00ffee;
+    --teal-dim:     #00ccbb;
+    --accent:       #66ccff;
+}
+
+body.high-contrast .day-greeting {
+    background: #000;
+    border-color: #00ffee;
+}
+
+body.high-contrast .nav-link.active {
+    border-left-color: #00ffee;
+    color: #00ffee;
+}
+
+body.high-contrast .btn-primary {
+    background: #00ffee;
+    color: #000;
+    border: 2px solid #00ffee;
+}
+
+body.high-contrast .topbar-logo {
+    -webkit-text-fill-color: #00ffee;
+    background: none;
+}
+
+/* ─── REDUCIR MOVIMIENTO ────────────────────────────────── */
+body.reduce-motion *,
+body.reduce-motion *::before,
+body.reduce-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+}
+
+body.reduce-motion .spinner {
+    animation: none !important;
+    border-top-color: var(--teal);
+    opacity: 0.6;
+}
+
+/* ─── REDUCIR TRANSPARENCIAS ────────────────────────────── */
+body.reduce-transparency .topbar,
+body.reduce-transparency .sidebar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.reduce-transparency .topbar {
+    background: var(--bg-subtle) !important;
+}
+
+body.reduce-transparency .sidebar {
+    background: var(--bg-card) !important;
+}
+
+body.reduce-transparency .modal {
+    backdrop-filter: none !important;
+    background: var(--bg-card) !important;
+}
+
+body.reduce-transparency .bottom-nav {
+    backdrop-filter: none !important;
+    background: var(--bg-card) !important;
+}
+
+/* ─── FUENTE DISLEXIA ───────────────────────────────────── */
+@font-face {
+    font-family: 'OpenDyslexic';
+    src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/fonts/OpenDyslexic-Regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'OpenDyslexic';
+    src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/fonts/OpenDyslexic-Bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+body.font-dyslexic {
+    --font-body:    'OpenDyslexic', sans-serif;
+    --font-display: 'OpenDyslexic', sans-serif;
+    font-family: 'OpenDyslexic', sans-serif !important;
+    letter-spacing: 0.05em;
+    word-spacing: 0.15em;
+    line-height: 1.8 !important;
+}
+
+body.font-dyslexic h1,
+body.font-dyslexic h2,
+body.font-dyslexic h3,
+body.font-dyslexic h4,
+body.font-dyslexic .card-title,
+body.font-dyslexic .nav-link,
+body.font-dyslexic .btn {
+    font-family: 'OpenDyslexic', sans-serif !important;
+    letter-spacing: 0.04em;
+}
+
+/* ─── ESPACIADO ENTRE LETRAS ────────────────────────────── */
+body.letter-spacing-wide {
+    letter-spacing: 0.06em;
+}
+
+body.letter-spacing-wide h1,
+body.letter-spacing-wide h2,
+body.letter-spacing-wide h3 {
+    letter-spacing: 0.04em;
+}
+
+/* ─── INTERLINEADO AMPLIO ───────────────────────────────── */
+body.line-height-wide {
+    line-height: 2 !important;
+}
+
+body.line-height-wide p,
+body.line-height-wide .item-meta,
+body.line-height-wide .msg-body,
+body.line-height-wide .bubble {
+    line-height: 2 !important;
+}
+
+/* ─── SUBRAYAR LINKS ────────────────────────────────────── */
+body.underline-links a,
+body.underline-links .nav-link,
+body.underline-links .msg-titulo {
+    text-decoration: underline !important;
+    text-underline-offset: 3px;
+}
+
+/* ─── FOCUS VISIBLE MEJORADO ────────────────────────────── */
+body.enhanced-focus *:focus-visible {
+    outline: 3px solid var(--teal) !important;
+    outline-offset: 3px !important;
+    border-radius: 4px;
+}
+
+body.enhanced-focus button:focus-visible,
+body.enhanced-focus a:focus-visible,
+body.enhanced-focus input:focus-visible,
+body.enhanced-focus select:focus-visible,
+body.enhanced-focus textarea:focus-visible {
+    box-shadow: 0 0 0 4px rgba(38, 212, 199, 0.3) !important;
+}
+
+/* ─── ÁREA DE CLICK AMPLIADA ────────────────────────────── */
+body.large-targets .btn,
+body.large-targets .nav-link,
+body.large-targets .bn-item,
+body.large-targets .filter-chip {
+    min-height: 48px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+body.large-targets .form-input,
+body.large-targets .form-select {
+    min-height: 48px;
+    padding: 12px 14px;
+}
