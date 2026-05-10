@@ -1,5 +1,5 @@
 // ============================================================
-// AlephOne — dashboard.js — FASE 2: async Supabase
+// AlephProject — dashboard.js — FASE 2: async Supabase
 // ============================================================
 
 const CURSO = '3A';
@@ -213,6 +213,45 @@ function renderAvatar(user) {
     }
 }
 
+function renderThemeEditor() {
+    const el = document.getElementById('themeEditor');
+    if (!el || typeof ALEPH_THEMES === 'undefined' || typeof applyTheme !== 'function') return;
+
+    const currentTheme = typeof getStoredTheme === 'function' ? getStoredTheme() : localStorage.getItem('aleph_theme') || 'dark';
+    el.innerHTML = ALEPH_THEMES.map(theme => `
+        <button
+            type="button"
+            class="theme-option ${theme.id === currentTheme ? 'active' : ''}"
+            data-theme="${sanitize(theme.id)}"
+            aria-pressed="${theme.id === currentTheme ? 'true' : 'false'}">
+            <span class="theme-swatch theme-swatch-${sanitize(theme.id)}"></span>
+            <span>${sanitize(theme.label)}</span>
+        </button>
+    `).join('');
+
+    el.querySelectorAll('.theme-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            applyTheme(btn.dataset.theme);
+            el.querySelectorAll('.theme-option').forEach(option => {
+                const isActive = option.dataset.theme === btn.dataset.theme;
+                option.classList.toggle('active', isActive);
+                option.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+        });
+    });
+}
+
+function updateThemeEditorState(themeId) {
+    const el = document.getElementById('themeEditor');
+    if (!el) return;
+
+    el.querySelectorAll('.theme-option').forEach(option => {
+        const isActive = option.dataset.theme === themeId;
+        option.classList.toggle('active', isActive);
+        option.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+}
+
 function toggleMobileNav() {
     document.getElementById('sidebar').classList.toggle('open');
 }
@@ -228,6 +267,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     renderAvatar(user);
+    renderThemeEditor();
+    document.addEventListener('aleph:themechange', event => updateThemeEditorState(event.detail.theme));
 
     await Promise.all([
         renderGreeting(user),
