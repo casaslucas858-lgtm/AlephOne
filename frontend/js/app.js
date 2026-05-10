@@ -101,6 +101,10 @@ function applyTheme(themeId) {
 
     const selector = document.getElementById('darkModeBtn') || document.getElementById('themeBtn');
     if (selector) selector.value = selectedTheme.id;
+
+    document.dispatchEvent(new CustomEvent('aleph:themechange', {
+        detail: { theme: selectedTheme.id }
+    }));
 }
 
 function createThemeSelector(existingControl) {
