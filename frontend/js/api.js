@@ -521,17 +521,18 @@ const AlephAPI = (() => {
 
     // --- STORAGE ---------------------------------------------
     const Storage = {
-        async subirImagenQuiz(file) {
-            try {
-                const user = Auth.getCurrentUser();
-                if (!user) return { ok: false, error: 'Tenes que iniciar sesion para subir imagenes.' };
-                if (!file) return { ok: false, error: 'No se selecciono ningun archivo.' };
+        async subirImagenQuiz(file, { timeoutMs = 15000, reintentos = 2 } = {}) {
+            const user = Auth.getCurrentUser();
+            if (!user) return { ok: false, error: 'Tenés que iniciar sesión para subir imágenes.' };
+            if (!file)  return { ok: false, error: 'No se seleccionó ningún archivo.' };
 
-                const safeExt = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
-                const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${safeExt}`;
-                const path = `${user.id}/${safeName}`;
+            const safeExt  = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
+            const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${safeExt}`;
+            const path     = `${user.id}/${safeName}`;
 
-                const { error } = await _sb.storage
+            // Intenta el upload con timeout. Si no responde en timeoutMs, rechaza.
+            async function _intentar() {
+                const uploadPromise = _sb.storage
                     .from(QUIZ_IMAGE_BUCKET)
                     .upload(path, file, {
                         cacheControl: '3600',
@@ -539,29 +540,64 @@ const AlephAPI = (() => {
                         contentType: file.type || 'image/png'
                     });
 
-                if (error) {
-                    if (error.message?.toLowerCase().includes('bucket')) {
-                        return { ok: false, error: `No se pudo subir la imagen. Verifica que exista el bucket "${QUIZ_IMAGE_BUCKET}" en Supabase Storage.` };
-                    }
-                    return { ok: false, error: error.message };
-                }
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('timeout')), timeoutMs)
+                );
 
-                const { data } = _sb.storage.from(QUIZ_IMAGE_BUCKET).getPublicUrl(path);
-                return {
-                    ok: true,
-                    file: {
-                        bucket: QUIZ_IMAGE_BUCKET,
-                        path,
-                        publicUrl: data?.publicUrl || ''
-                    }
-                };
-            } catch (error) {
-                console.error('Error subiendo imagen del quiz:', error);
-                return {
-                    ok: false,
-                    error: error?.message || 'La subida fallo antes de completarse. Intenta otra vez.'
-                };
+                return Promise.race([uploadPromise, timeoutPromise]);
             }
+
+            let ultimoError = null;
+
+            for (let intento = 0; intento <= reintentos; intento++) {
+                try {
+                    const { error } = await _intentar();
+
+                    if (error) {
+                        ultimoError = error;
+                        // Error de bucket — no tiene sentido reintentar
+                        if (error.message?.toLowerCase().includes('bucket')) {
+                            return {
+                                ok: false,
+                                error: `No se pudo subir la imagen. Verificá que exista el bucket "${QUIZ_IMAGE_BUCKET}" en Supabase Storage.`
+                            };
+                        }
+                        // Cualquier otro error de Supabase — reintenta
+                        console.warn(`[Storage] Intento ${intento + 1} falló:`, error.message);
+                        continue;
+                    }
+
+                    // Upload exitoso — obtener URL pública
+                    const { data } = _sb.storage.from(QUIZ_IMAGE_BUCKET).getPublicUrl(path);
+                    return {
+                        ok: true,
+                        file: {
+                            bucket:    QUIZ_IMAGE_BUCKET,
+                            path,
+                            publicUrl: data?.publicUrl || ''
+                        }
+                    };
+
+                } catch (err) {
+                    ultimoError = err;
+                    if (err.message === 'timeout') {
+                        console.warn(`[Storage] Intento ${intento + 1} — timeout después de ${timeoutMs}ms`);
+                    } else {
+                        console.error(`[Storage] Intento ${intento + 1} — error inesperado:`, err);
+                    }
+                    // Pequeña pausa antes del reintento
+                    if (intento < reintentos) await new Promise(r => setTimeout(r, 800));
+                }
+            }
+
+            // Agotó los reintentos
+            const esTimeout = ultimoError?.message === 'timeout';
+            return {
+                ok: false,
+                error: esTimeout
+                    ? `La subida tardó demasiado (${timeoutMs / 1000}s). Revisá tu conexión y volvé a intentarlo.`
+                    : (ultimoError?.message || 'La subida falló. Intentá de nuevo.')
+            };
         }
     };
 
