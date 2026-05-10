@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AlephOne</title>
+    <title>AlephProject</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
     <style>
@@ -11,13 +11,67 @@
         html,body{width:100%;height:100%;overflow:hidden}
 
         body {
+            --auth-bg:#13131A;
+            --auth-card:rgba(19,19,26,0.80);
+            --auth-card-border:rgba(255,255,255,0.06);
+            --auth-logo-border:rgba(38,212,199,0.16);
+            --auth-primary:#26D4C7;
+            --auth-primary-dim:#1aab9f;
+            --auth-primary-rgb:38,212,199;
+            --auth-secondary:#73C2FB;
+            --auth-secondary-rgb:115,194,251;
+            --auth-text:rgba(255,255,255,0.88);
+            --auth-muted:rgba(255,255,255,0.38);
+            --auth-faint:rgba(255,255,255,0.22);
+            --auth-input:rgba(255,255,255,0.05);
+            --auth-input-border:rgba(255,255,255,0.08);
+            --auth-tab:rgba(255,255,255,0.03);
+            --auth-control:rgba(255,255,255,0.05);
             font-family:'DM Sans',sans-serif;
-            background:#13131A;
+            background:var(--auth-bg);
             display:flex;
             align-items:center;
             justify-content:center;
             min-height:100vh;
             position:relative;
+            transition:background 0.17s ease,color 0.17s ease;
+        }
+
+        body.theme-light, body.lm{
+            --auth-bg:#F5F4F0;
+            --auth-card:rgba(245,244,240,0.86);
+            --auth-card-border:rgba(17,17,19,0.10);
+            --auth-logo-border:rgba(17,17,19,0.10);
+            --auth-primary:#26D4C7;
+            --auth-primary-dim:#1aab9f;
+            --auth-primary-rgb:38,212,199;
+            --auth-secondary:#73C2FB;
+            --auth-secondary-rgb:115,194,251;
+            --auth-text:#111113;
+            --auth-muted:rgba(17,17,19,0.45);
+            --auth-faint:rgba(17,17,19,0.28);
+            --auth-input:rgba(17,17,19,0.04);
+            --auth-input-border:rgba(17,17,19,0.10);
+            --auth-tab:rgba(17,17,19,0.03);
+            --auth-control:rgba(17,17,19,0.04);
+        }
+        body.theme-grey{
+            --auth-bg:#F1F3F5;--auth-card:rgba(255,255,255,0.86);--auth-card-border:rgba(51,65,85,0.12);--auth-logo-border:rgba(51,65,85,0.12);--auth-primary:#64748B;--auth-primary-dim:#475569;--auth-primary-rgb:100,116,139;--auth-secondary:#94A3B8;--auth-secondary-rgb:148,163,184;--auth-text:#111827;--auth-muted:rgba(17,24,39,0.48);--auth-faint:rgba(17,24,39,0.30);--auth-input:rgba(17,24,39,0.04);--auth-input-border:rgba(17,24,39,0.10);--auth-tab:rgba(17,24,39,0.03);--auth-control:rgba(17,24,39,0.04);
+        }
+        body.theme-azure{
+            --auth-bg:#EAF6FF;--auth-card:rgba(247,252,255,0.88);--auth-card-border:rgba(14,165,233,0.14);--auth-logo-border:rgba(14,165,233,0.16);--auth-primary:#0EA5E9;--auth-primary-dim:#0284C7;--auth-primary-rgb:14,165,233;--auth-secondary:#38BDF8;--auth-secondary-rgb:56,189,248;--auth-text:#0F172A;--auth-muted:rgba(15,23,42,0.48);--auth-faint:rgba(15,23,42,0.30);--auth-input:rgba(14,165,233,0.05);--auth-input-border:rgba(14,165,233,0.14);--auth-tab:rgba(14,165,233,0.05);--auth-control:rgba(14,165,233,0.06);
+        }
+        body.theme-pink{
+            --auth-bg:#FFF1F7;--auth-card:rgba(255,247,251,0.88);--auth-card-border:rgba(236,72,153,0.14);--auth-logo-border:rgba(236,72,153,0.16);--auth-primary:#EC4899;--auth-primary-dim:#DB2777;--auth-primary-rgb:236,72,153;--auth-secondary:#F9A8D4;--auth-secondary-rgb:249,168,212;--auth-text:#23111B;--auth-muted:rgba(35,17,27,0.48);--auth-faint:rgba(35,17,27,0.30);--auth-input:rgba(236,72,153,0.05);--auth-input-border:rgba(236,72,153,0.14);--auth-tab:rgba(236,72,153,0.05);--auth-control:rgba(236,72,153,0.06);
+        }
+        body.theme-andromeda{
+            --auth-bg:#0B1020;--auth-card:rgba(21,26,47,0.84);--auth-card-border:rgba(244,242,255,0.08);--auth-logo-border:rgba(167,139,250,0.18);--auth-primary:#A78BFA;--auth-primary-dim:#8B5CF6;--auth-primary-rgb:167,139,250;--auth-secondary:#22D3EE;--auth-secondary-rgb:34,211,238;--auth-text:#F4F2FF;--auth-muted:rgba(244,242,255,0.42);--auth-faint:rgba(244,242,255,0.22);--auth-input:rgba(244,242,255,0.05);--auth-input-border:rgba(244,242,255,0.08);--auth-tab:rgba(244,242,255,0.03);--auth-control:rgba(244,242,255,0.05);
+        }
+        body.theme-red{
+            --auth-bg:#FFF1F2;--auth-card:rgba(255,247,247,0.88);--auth-card-border:rgba(239,68,68,0.14);--auth-logo-border:rgba(239,68,68,0.16);--auth-primary:#EF4444;--auth-primary-dim:#DC2626;--auth-primary-rgb:239,68,68;--auth-secondary:#FB7185;--auth-secondary-rgb:251,113,133;--auth-text:#241313;--auth-muted:rgba(36,19,19,0.48);--auth-faint:rgba(36,19,19,0.30);--auth-input:rgba(239,68,68,0.05);--auth-input-border:rgba(239,68,68,0.14);--auth-tab:rgba(239,68,68,0.05);--auth-control:rgba(239,68,68,0.06);
+        }
+        body.theme-green{
+            --auth-bg:#EFFAF2;--auth-card:rgba(248,255,249,0.88);--auth-card-border:rgba(34,197,94,0.14);--auth-logo-border:rgba(34,197,94,0.16);--auth-primary:#22C55E;--auth-primary-dim:#16A34A;--auth-primary-rgb:34,197,94;--auth-secondary:#86EFAC;--auth-secondary-rgb:134,239,172;--auth-text:#102017;--auth-muted:rgba(16,32,23,0.48);--auth-faint:rgba(16,32,23,0.30);--auth-input:rgba(34,197,94,0.05);--auth-input-border:rgba(34,197,94,0.14);--auth-tab:rgba(34,197,94,0.05);--auth-control:rgba(34,197,94,0.06);
         }
 
         /* ── FONDO ANIMADO ── */
@@ -30,25 +84,25 @@
         }
         .orb-1{
             width:560px;height:560px;
-            background:radial-gradient(circle,rgba(38,212,199,0.45) 0%,transparent 70%);
+            background:radial-gradient(circle,rgba(var(--auth-primary-rgb),0.45) 0%,transparent 70%);
             top:-180px;left:-120px;
             animation:o1 20s ease-in-out infinite;
         }
         .orb-2{
             width:460px;height:460px;
-            background:radial-gradient(circle,rgba(17,17,132,0.7) 0%,transparent 70%);
+            background:radial-gradient(circle,rgba(var(--auth-secondary-rgb),0.55) 0%,transparent 70%);
             bottom:-120px;right:-100px;
             animation:o2 25s ease-in-out infinite;
         }
         .orb-3{
             width:300px;height:300px;
-            background:radial-gradient(circle,rgba(115,194,251,0.35) 0%,transparent 70%);
+            background:radial-gradient(circle,rgba(var(--auth-secondary-rgb),0.35) 0%,transparent 70%);
             top:45%;right:8%;
             animation:o3 17s ease-in-out infinite;
         }
         .orb-4{
             width:220px;height:220px;
-            background:radial-gradient(circle,rgba(38,212,199,0.22) 0%,transparent 70%);
+            background:radial-gradient(circle,rgba(var(--auth-primary-rgb),0.22) 0%,transparent 70%);
             bottom:18%;left:8%;
             animation:o4 22s ease-in-out infinite;
         }
@@ -71,10 +125,10 @@
 
         /* ── CARD LOGO — Mica ── */
         .logo-card {
-            background:rgba(19,19,26,0.80);
+            background:var(--auth-card);
             backdrop-filter:blur(24px);
             -webkit-backdrop-filter:blur(24px);
-            border:1px solid rgba(38,212,199,0.16);
+            border:1px solid var(--auth-logo-border);
             border-radius:16px;
             padding:26px 28px 22px;
             text-align:center;
@@ -83,13 +137,13 @@
         .logo-card::before{
             content:'';position:absolute;
             top:0;left:0;right:0;height:1px;
-            background:linear-gradient(90deg,transparent,rgba(38,212,199,0.55),transparent);
+            background:linear-gradient(90deg,transparent,rgba(var(--auth-primary-rgb),0.55),transparent);
         }
 
         .logo-sym {
             font-family:'Syne',sans-serif;
             font-size:2.6em;font-weight:800;
-            background:linear-gradient(135deg,#26D4C7,#73C2FB);
+            background:linear-gradient(135deg,var(--auth-primary),var(--auth-secondary));
             -webkit-background-clip:text;-webkit-text-fill-color:transparent;
             background-clip:text;
             line-height:1;display:block;margin-bottom:5px;
@@ -97,23 +151,23 @@
         .logo-name {
             font-family:'Syne',sans-serif;
             font-size:1.5em;font-weight:800;
-            background:linear-gradient(135deg,#26D4C7,#73C2FB);
+            background:linear-gradient(135deg,var(--auth-primary),var(--auth-secondary));
             -webkit-background-clip:text;-webkit-text-fill-color:transparent;
             background-clip:text;
             letter-spacing:0.5px;display:block;margin-bottom:7px;
         }
         .logo-tag{
             font-size:0.8em;
-            color:rgba(255,255,255,0.35);
+            color:var(--auth-muted);
             line-height:1.55;
         }
 
         /* ── CARD FORM — Mica ── */
         .form-card {
-            background:rgba(19,19,26,0.80);
+            background:var(--auth-card);
             backdrop-filter:blur(24px);
             -webkit-backdrop-filter:blur(24px);
-            border:1px solid rgba(255,255,255,0.06);
+            border:1px solid var(--auth-card-border);
             border-radius:16px;
             padding:22px 26px 20px;
         }
@@ -121,23 +175,23 @@
         /* Tabs */
         .tabs {
             display:flex;gap:3px;
-            background:rgba(255,255,255,0.03);
-            border:1px solid rgba(255,255,255,0.06);
+            background:var(--auth-tab);
+            border:1px solid var(--auth-card-border);
             padding:3px;border-radius:10px;
             margin-bottom:20px;
         }
         .tab-btn {
             flex:1;padding:7px 8px;
             border-radius:8px;font-size:0.8em;font-weight:600;
-            color:rgba(255,255,255,0.3);
+            color:var(--auth-faint);
             background:transparent;border:none;cursor:pointer;
             transition:all 0.17s ease;
             font-family:'Syne',sans-serif;
         }
         .tab-btn.active{
-            background:rgba(38,212,199,0.11);
-            color:#26D4C7;
-            border:1px solid rgba(38,212,199,0.18);
+            background:rgba(var(--auth-primary-rgb),0.11);
+            color:var(--auth-primary);
+            border:1px solid rgba(var(--auth-primary-rgb),0.18);
         }
 
         /* Forms */
@@ -146,107 +200,97 @@
 
         .flabel{
             display:block;font-size:0.72em;font-weight:700;
-            color:rgba(255,255,255,0.38);
+            color:var(--auth-muted);
             margin-bottom:5px;letter-spacing:0.5px;
             text-transform:uppercase;font-family:'Syne',sans-serif;
         }
         .finput{
             width:100%;padding:9px 12px;
-            background:rgba(255,255,255,0.05);
-            border:1px solid rgba(255,255,255,0.08);
+            background:var(--auth-input);
+            border:1px solid var(--auth-input-border);
             border-radius:8px;font-size:0.85em;
-            color:rgba(255,255,255,0.88);
+            color:var(--auth-text);
             font-family:'DM Sans',sans-serif;
             transition:all 0.17s ease;
         }
-        .finput::placeholder{color:rgba(255,255,255,0.2);}
+        .finput::placeholder{color:var(--auth-faint);}
         .finput:focus{
             outline:none;
-            border-color:rgba(38,212,199,0.42);
-            background:rgba(38,212,199,0.04);
-            box-shadow:0 0 0 3px rgba(38,212,199,0.07);
+            border-color:rgba(var(--auth-primary-rgb),0.42);
+            background:rgba(var(--auth-primary-rgb),0.04);
+            box-shadow:0 0 0 3px rgba(var(--auth-primary-rgb),0.07);
         }
 
         /* Roles */
         .roles{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
         .role-opt{
             padding:8px 7px;
-            border:1px solid rgba(255,255,255,0.07);
+            border:1px solid var(--auth-card-border);
             border-radius:8px;
-            background:rgba(255,255,255,0.03);
+            background:var(--auth-tab);
             cursor:pointer;text-align:center;
             transition:all 0.17s ease;
             font-size:0.78em;font-weight:600;
-            color:rgba(255,255,255,0.32);
+            color:var(--auth-faint);
             font-family:'Syne',sans-serif;
         }
-        .role-opt:hover{border-color:rgba(38,212,199,0.28);color:rgba(255,255,255,0.55);}
+        .role-opt:hover{border-color:rgba(var(--auth-primary-rgb),0.28);color:var(--auth-muted);}
         .role-opt.sel{
-            border-color:rgba(38,212,199,0.38);
-            background:rgba(38,212,199,0.07);
-            color:#26D4C7;
+            border-color:rgba(var(--auth-primary-rgb),0.38);
+            background:rgba(var(--auth-primary-rgb),0.07);
+            color:var(--auth-primary);
         }
         .role-emoji{display:block;font-size:1.25em;margin-bottom:3px;}
 
         /* Submit */
         .btn-go{
             width:100%;padding:11px;
-            background:linear-gradient(135deg,#26D4C7,#73C2FB);
+            background:linear-gradient(135deg,var(--auth-primary),var(--auth-secondary));
             border:none;border-radius:8px;
             font-size:0.86em;font-weight:700;color:#0a0a0a;
             cursor:pointer;font-family:'Syne',sans-serif;
             letter-spacing:0.3px;
             transition:all 0.17s ease;
-            box-shadow:0 3px 14px rgba(38,212,199,0.22);
+            box-shadow:0 3px 14px rgba(var(--auth-primary-rgb),0.22);
         }
-        .btn-go:hover{transform:translateY(-1px);box-shadow:0 5px 22px rgba(38,212,199,0.35);}
+        .btn-go:hover{transform:translateY(-1px);box-shadow:0 5px 22px rgba(var(--auth-primary-rgb),0.35);}
 
         .ferr{font-size:0.76em;color:#f87171;min-height:15px;}
 
         /* Demo */
         .demo{
             margin-top:6px;text-align:center;
-            font-size:0.72em;color:rgba(255,255,255,0.18);
+            font-size:0.72em;color:var(--auth-faint);
             line-height:1.7;
         }
-        .demo strong{color:rgba(38,212,199,0.5);}
+        .demo strong{color:rgba(var(--auth-primary-rgb),0.65);}
 
         /* Bottom bar */
         .bar{display:flex;justify-content:center;padding-top:2px;}
         .theme-btn{
-            background:rgba(255,255,255,0.05);
-            border:1px solid rgba(255,255,255,0.07);
-            color:rgba(255,255,255,0.3);
-            width:32px;height:32px;
+            background:var(--auth-control);
+            border:1px solid var(--auth-card-border);
+            color:var(--auth-muted);
+            min-width:118px;height:32px;
+            padding:0 28px 0 10px;
             border-radius:8px;font-size:0.9em;
             display:flex;align-items:center;justify-content:center;
             cursor:pointer;transition:all 0.17s ease;
         }
-        .theme-btn:hover{background:rgba(255,255,255,0.09);color:rgba(255,255,255,0.6);}
-
-        /* Light mode */
-        body.lm{background:#F5F4F0;}
-        body.lm .orb-1{opacity:0.2;}
-        body.lm .orb-2{opacity:0.18;}
-        body.lm .orb-3{opacity:0.12;}
-        body.lm .orb-4{opacity:0.1;}
-        body.lm .logo-card,body.lm .form-card{
-            background:rgba(245,244,240,0.86);
-            border-color:rgba(17,17,19,0.1);
+        select.theme-btn{
+            appearance:none;
+            display:block;
+            background-image:
+                linear-gradient(45deg,transparent 50%,var(--auth-muted) 50%),
+                linear-gradient(135deg,var(--auth-muted) 50%,transparent 50%);
+            background-position:calc(100% - 14px) 13px,calc(100% - 9px) 13px;
+            background-size:5px 5px,5px 5px;
+            background-repeat:no-repeat;
+            justify-content:flex-start;
+            font-family:'Syne',sans-serif;
+            font-weight:700;
         }
-        body.lm .logo-tag{color:rgba(17,17,19,0.42);}
-        body.lm .tabs{background:rgba(17,17,19,0.03);border-color:rgba(17,17,19,0.07);}
-        body.lm .tab-btn{color:rgba(17,17,19,0.32);}
-        body.lm .tab-btn.active{color:#1aab9f;background:rgba(38,212,199,0.08);}
-        body.lm .flabel{color:rgba(17,17,19,0.45);}
-        body.lm .finput{background:rgba(17,17,19,0.04);border-color:rgba(17,17,19,0.1);color:#111113;}
-        body.lm .finput::placeholder{color:rgba(17,17,19,0.25);}
-        body.lm .finput:focus{border-color:rgba(38,212,199,0.45);background:rgba(38,212,199,0.04);}
-        body.lm .role-opt{color:rgba(17,17,19,0.35);border-color:rgba(17,17,19,0.08);}
-        body.lm .role-opt.sel{color:#1aab9f;}
-        body.lm .demo{color:rgba(17,17,19,0.28);}
-        body.lm .demo strong{color:rgba(26,171,159,0.65);}
-        body.lm .theme-btn{color:rgba(17,17,19,0.38);background:rgba(17,17,19,0.04);border-color:rgba(17,17,19,0.08);}
+        .theme-btn:hover{background:rgba(var(--auth-primary-rgb),0.08);color:var(--auth-text);}
 
         @media(max-width:440px){
             .wrap{padding:12px;}
@@ -269,7 +313,7 @@
     <!-- Logo Mica card -->
     <div class="logo-card">
         <span class="logo-sym">ℵ</span>
-        <span class="logo-name">AlephOne</span>
+        <span class="logo-name">AlephProject</span>
         <p class="logo-tag">La plataforma que organiza la vida<br>escolar en un solo lugar.</p>
     </div>
 
@@ -363,15 +407,17 @@
     }
 
     function toggleTheme() {
-        const isLight = document.body.classList.toggle('lm');
-        localStorage.setItem('aleph_theme', isLight ? 'light' : 'dark');
-        document.getElementById('themeBtn').textContent = isLight ? '🌙' : '☀️';
+        const currentTheme = localStorage.getItem('aleph_theme') || 'dark';
+        if (typeof applyTheme === 'function') {
+            applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        }
     }
 
-    // Restaurar tema
-    if (localStorage.getItem('aleph_theme') === 'light') {
-        document.body.classList.add('lm');
-        document.getElementById('themeBtn').textContent = '🌙';
+    // Restaurar tema lo antes posible en la pantalla de ingreso.
+    const validThemes = ['dark','light','grey','azure','pink','andromeda','red','green'];
+    const savedTheme = localStorage.getItem('aleph_theme') || (localStorage.getItem('aleph_dark_mode') === 'false' ? 'light' : 'dark');
+    if (validThemes.includes(savedTheme) && typeof applyTheme === 'function') {
+        applyTheme(savedTheme);
     }
 </script>
 </body>
