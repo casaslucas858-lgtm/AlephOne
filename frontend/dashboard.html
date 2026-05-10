@@ -3,18 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — AlephProject</title>
-    <meta name="description" content="AlephProject Dashboard — Tu resumen diario de clases, tareas y comunicación escolar.">
+    <title>Dashboard — AlephOne</title>
+    <meta name="description" content="AlephOne Dashboard — Tu resumen diario de clases, tareas y comunicación escolar.">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* ─── SETTINGS PANEL ──────────────────────────────────── */
+        .greeting-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .greeting-content { flex: 1; min-width: 0; }
+
+        .settings-trigger {
+            flex-shrink: 0;
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            border: 1.5px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.45);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s, color 0.2s;
+            margin-top: 4px;
+        }
+        .settings-trigger:hover { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8); }
+        .settings-trigger.active { background: var(--teal); color: #0a0a0a; border-color: transparent; }
+        .settings-trigger svg {
+            width: 16px; height: 16px;
+            transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .settings-trigger.active svg { transform: rotate(60deg); }
+
+        .settings-panel {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.38s cubic-bezier(0.4,0,0.2,1), opacity 0.28s ease, margin-top 0.3s ease;
+            margin-top: 0;
+        }
+        .settings-panel.open { max-height: 900px; opacity: 1; margin-top: 18px; }
+
+        .settings-inner {
+            background: rgba(255,255,255,0.05);
+            border: 1.5px solid rgba(255,255,255,0.09);
+            border-radius: 14px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Tabs */
+        .stabs {
+            display: flex; gap: 4px;
+            background: rgba(0,0,0,0.25);
+            padding: 3px; border-radius: 10px;
+        }
+        .stab {
+            flex: 1; padding: 6px 8px;
+            border-radius: 8px; border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.4);
+            font-size: 0.73rem; font-weight: 600;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            font-family: var(--font-display);
+        }
+        .stab.active { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.9); }
+        .stab:hover:not(.active) { color: rgba(255,255,255,0.65); }
+
+        .spane { display: none; flex-direction: column; gap: 12px; }
+        .spane.active { display: flex; }
+
+        .slabel {
+            font-size: 0.67rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.09em;
+            color: rgba(255,255,255,0.28);
+        }
+
+        /* Perfil */
+        .s-profile-row { display: flex; align-items: center; gap: 12px; }
+        .s-avatar {
+            width: 42px; height: 42px; border-radius: 11px;
+            background: var(--teal); color: #0a0a0a;
+            font-weight: 800; font-size: 1.05rem;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-family: var(--font-display);
+        }
+        .s-profile-info strong { display: block; font-size: 0.88rem; font-weight: 600; color: rgba(255,255,255,0.9); }
+        .s-profile-info span { font-size: 0.74rem; color: rgba(255,255,255,0.35); }
+        .s-actions { display: flex; flex-direction: column; gap: 6px; }
+        .s-action-btn {
+            display: flex; align-items: center; gap: 9px;
+            padding: 8px 11px; border-radius: 9px;
+            border: 1.5px solid rgba(255,255,255,0.07);
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.75);
+            cursor: pointer; font-size: 0.8rem; font-weight: 500;
+            text-align: left; width: 100%;
+            transition: background 0.16s;
+            font-family: var(--font-body);
+        }
+        .s-action-btn:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.95); }
+        .s-action-btn.danger { color: #f87171; border-color: rgba(248,113,113,0.15); }
+        .s-action-btn.danger:hover { background: rgba(248,113,113,0.09); }
+        .s-action-btn svg { width: 14px; height: 14px; opacity: 0.7; flex-shrink: 0; }
+
+        /* Tema */
+        .theme-row { display: flex; gap: 6px; }
+        .theme-btn {
+            flex: 1; padding: 8px 4px; border-radius: 9px;
+            border: 1.5px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.45);
+            cursor: pointer; font-size: 0.76rem; font-weight: 600;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            transition: all 0.16s;
+        }
+        .theme-btn:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.8); }
+        .theme-btn.active { border-color: var(--teal); background: rgba(38,212,199,0.12); color: var(--teal); }
+        .theme-btn svg { width: 17px; height: 17px; }
+
+        .font-size-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 10px; border-radius: 9px;
+            border: 1.5px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.03);
+        }
+        .font-size-row span { font-size: 0.8rem; color: rgba(255,255,255,0.75); font-weight: 500; }
+        .fs-controls { display: flex; align-items: center; gap: 8px; }
+        .fs-controls button {
+            width: 24px; height: 24px; border-radius: 6px;
+            border: 1.5px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.8);
+            cursor: pointer; font-size: 0.9rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s; line-height: 1;
+        }
+        .fs-controls button:hover { background: rgba(255,255,255,0.14); }
+        .fs-val { font-size: 0.78rem; font-weight: 700; color: var(--teal); min-width: 30px; text-align: center; }
+
+        /* Visión */
+        .vision-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .vision-btn {
+            padding: 9px 8px; border-radius: 9px;
+            border: 1.5px solid rgba(255,255,255,0.07);
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.55);
+            cursor: pointer; font-size: 0.76rem; font-weight: 600;
+            text-align: center; transition: all 0.16s;
+            font-family: var(--font-display); line-height: 1.3;
+        }
+        .vision-btn:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.9); }
+        .vision-btn.active { border-color: var(--teal); background: rgba(38,212,199,0.1); color: var(--teal); }
+        .vision-btn small { display: block; font-size: 0.67rem; font-weight: 400; opacity: 0.5; margin-top: 1px; }
+
+        /* Accesibilidad — toggles */
+        .toggle-list { display: flex; flex-direction: column; gap: 5px; }
+        .toggle-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 10px; border-radius: 9px;
+            border: 1.5px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.03);
+            cursor: pointer; transition: background 0.16s;
+        }
+        .toggle-row:hover { background: rgba(255,255,255,0.07); }
+        .toggle-row-label { display: flex; flex-direction: column; gap: 1px; }
+        .toggle-row-label strong { font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.8); }
+        .toggle-row-label small { font-size: 0.67rem; color: rgba(255,255,255,0.28); }
+        .tswitch {
+            width: 36px; height: 20px; border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            position: relative; transition: background 0.2s; flex-shrink: 0;
+        }
+        .tswitch.on { background: var(--teal); }
+        .tswitch::after {
+            content: ''; width: 14px; height: 14px;
+            border-radius: 50%; background: #fff;
+            position: absolute; top: 3px; left: 3px;
+            transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .tswitch.on::after { transform: translateX(16px); }
+    </style>
 </head>
 <body>
+
+<!-- SVG filters para visión de color -->
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
+    <defs>
+        <filter id="filter-deuteranopia" color-interpolation-filters="linearRGB">
+            <feColorMatrix type="matrix" values="0.367 0.861 -0.228 0 0  0.280 0.673 0.047 0 0  -0.012 0.043 0.969 0 0  0 0 0 1 0"/>
+        </filter>
+        <filter id="filter-protanopia" color-interpolation-filters="linearRGB">
+            <feColorMatrix type="matrix" values="0.152 1.053 -0.205 0 0  0.115 0.786 0.099 0 0  -0.004 -0.048 1.052 0 0  0 0 0 1 0"/>
+        </filter>
+        <filter id="filter-tritanopia" color-interpolation-filters="linearRGB">
+            <feColorMatrix type="matrix" values="1.256 -0.077 -0.179 0 0  -0.078 0.931 0.148 0 0  0.005 0.691 0.304 0 0  0 0 0 1 0"/>
+        </filter>
+    </defs>
+</svg>
+
 <div class="app-shell">
 
-    <!-- TOPBAR -->
     <header class="topbar">
         <div class="topbar-left">
             <button class="mobile-nav-btn" id="mobileNavBtn" onclick="toggleMobileNav()">☰</button>
-            <span class="topbar-logo">ℵ AlephProject</span>
+            <span class="topbar-logo">ℵ AlephOne</span>
         </div>
         <div class="topbar-right">
             <button class="dark-mode-toggle" id="darkModeBtn" title="Cambiar tema">🌙</button>
@@ -27,12 +223,9 @@
         </div>
     </header>
 
-    <!-- SIDEBAR -->
     <nav class="sidebar" id="sidebar">
         <span class="nav-section-label">Principal</span>
-        <a href="dashboard.html" class="nav-link active">
-            <span class="nav-icon">🏠</span> Dashboard
-        </a>
+        <a href="dashboard.html" class="nav-link active"><span class="nav-icon">🏠</span> Dashboard</a>
         <a href="comunicacion.html" class="nav-link">
             <span class="nav-icon">📢</span> Comunicación
             <span class="nav-badge" id="navBadgeMensajes" style="display:none;">0</span>
@@ -42,38 +235,162 @@
             <span class="nav-badge" id="navBadgeTareas" style="display:none;">0</span>
         </a>
         <span class="nav-section-label">Académico</span>
-        <a href="horario.html" class="nav-link">
-            <span class="nav-icon">🗓️</span> Horario
-        </a>
-        <a href="promedios.html" class="nav-link">
-            <span class="nav-icon">📊</span> Promedios
-        </a>
+        <a href="horario.html" class="nav-link"><span class="nav-icon">🗓️</span> Horario</a>
+        <a href="promedios.html" class="nav-link"><span class="nav-icon">📊</span> Promedios</a>
         <span class="nav-section-label">Herramientas</span>
-        <a href="quizzit.html" class="nav-link">
-            <span class="nav-icon">🧪</span> Quizzit
-        </a>
-        <a href="ai-chat.html" class="nav-link">
-            <span class="nav-icon">🤖</span> Fractal AI
-        </a>
+        <a href="quizzit.html" class="nav-link"><span class="nav-icon">🧪</span> Quizzit</a>
+        <a href="ai-chat.html" class="nav-link"><span class="nav-icon">🤖</span> Fractal AI</a>
         <div class="sidebar-footer">
-            <button class="btn btn-ghost btn-sm" onclick="logout()" style="width:100%;">
-                ← Cerrar sesión
-            </button>
+            <button class="btn btn-ghost btn-sm" onclick="logout()" style="width:100%;">← Cerrar sesión</button>
         </div>
     </nav>
 
-    <!-- MAIN -->
     <main class="main-content">
 
-        <!-- Greeting -->
         <div class="day-greeting fade-up" id="dayGreeting">
-            <div class="greeting-label">HOY ES <span id="greetingDia"></span></div>
-            <h2 id="greetingMsg">Hola 👋</h2>
-            <div class="greeting-date" id="greetingDate"></div>
-            <div class="greeting-badges" id="greetingBadges"></div>
+            <div class="greeting-row">
+                <div class="greeting-content">
+                    <div class="greeting-label">HOY ES <span id="greetingDia"></span></div>
+                    <h2 id="greetingMsg">Hola 👋</h2>
+                    <div class="greeting-date" id="greetingDate"></div>
+                    <div class="greeting-badges" id="greetingBadges"></div>
+                </div>
+                <button class="settings-trigger" id="settingsToggle" title="Ajustes y perfil"
+                    onclick="toggleSettingsPanel()" aria-expanded="false" aria-controls="settingsPanel">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="settings-panel" id="settingsPanel" role="region" aria-label="Ajustes">
+                <div class="settings-inner">
+
+                    <div class="stabs">
+                        <button class="stab active" onclick="switchStab('perfil')">Perfil</button>
+                        <button class="stab" onclick="switchStab('tema')">Tema</button>
+                        <button class="stab" onclick="switchStab('vision')">Visión</button>
+                        <button class="stab" onclick="switchStab('accesibilidad')">Accesibilidad</button>
+                    </div>
+
+                    <!-- Perfil -->
+                    <div class="spane active" id="spane-perfil">
+                        <div class="s-profile-row">
+                            <div class="s-avatar" id="settingsAvatar">?</div>
+                            <div class="s-profile-info">
+                                <strong id="settingsUsername">—</strong>
+                                <span id="settingsRole">—</span>
+                            </div>
+                        </div>
+                        <div class="s-actions">
+                            <button class="s-action-btn" onclick="copyUsername()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Copiar nombre de usuario
+                            </button>
+                            <button class="s-action-btn danger" onclick="logout()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                Cerrar sesión
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tema -->
+                    <div class="spane" id="spane-tema">
+                        <div class="slabel">Modo</div>
+                        <div class="theme-row">
+                            <button class="theme-btn" id="themeBtnLight" onclick="setTheme('light')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                                Claro
+                            </button>
+                            <button class="theme-btn active" id="themeBtnDark" onclick="setTheme('dark')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                                Oscuro
+                            </button>
+                            <button class="theme-btn" id="themeBtnAuto" onclick="setTheme('auto')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                                Auto
+                            </button>
+                        </div>
+                        <div class="slabel">Tamaño de texto</div>
+                        <div class="font-size-row">
+                            <span>Letra</span>
+                            <div class="fs-controls">
+                                <button onclick="changeFontSize(-1)" aria-label="Reducir">−</button>
+                                <span class="fs-val" id="fontSizeVal">100%</span>
+                                <button onclick="changeFontSize(1)" aria-label="Aumentar">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visión -->
+                    <div class="spane" id="spane-vision">
+                        <div class="slabel">Modo de visión de color</div>
+                        <div class="vision-grid">
+                            <button class="vision-btn active" id="visionNormal" onclick="setVision('normal')">
+                                Normal <small>Sin filtro</small>
+                            </button>
+                            <button class="vision-btn" id="visionDeuteranopia" onclick="setVision('deuteranopia')">
+                                Deuteranopia <small>Déficit verde</small>
+                            </button>
+                            <button class="vision-btn" id="visionProtanopia" onclick="setVision('protanopia')">
+                                Protanopia <small>Déficit rojo</small>
+                            </button>
+                            <button class="vision-btn" id="visionTritanopia" onclick="setVision('tritanopia')">
+                                Tritanopia <small>Déficit azul</small>
+                            </button>
+                            <button class="vision-btn" id="visionGrayscale" onclick="setVision('grayscale')" style="grid-column:1/-1;">
+                                Escala de grises <small>Sin color</small>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Accesibilidad -->
+                    <div class="spane" id="spane-accesibilidad">
+                        <div class="toggle-list">
+                            <div class="toggle-row" onclick="toggleA11y('reduce-motion')" role="switch" id="row-reduce-motion" aria-checked="false">
+                                <div class="toggle-row-label"><strong>Reducir movimiento</strong><small>Desactiva animaciones y transiciones</small></div>
+                                <div class="tswitch" id="sw-reduce-motion"></div>
+                            </div>
+                            <div class="toggle-row" onclick="toggleA11y('reduce-transparency')" role="switch" id="row-reduce-transparency" aria-checked="false">
+                                <div class="toggle-row-label"><strong>Reducir transparencias</strong><small>Elimina efectos blur y glass</small></div>
+                                <div class="tswitch" id="sw-reduce-transparency"></div>
+                            </div>
+                            <div class="toggle-row" onclick="toggleA11y('high-contrast')" role="switch" id="row-high-contrast" aria-checked="false">
+                                <div class="toggle-row-label"><strong>Alto contraste</strong><small>Mayor diferencia entre fondo y texto</small></div>
+                                <div class="tswitch" id="sw-high-contrast"></div>
+                            </div>
+                            <div class="toggle-row" onclick="toggleA11y('font-dyslexic')" role="switch" id="row-font-dyslexic" aria-checked="false">
+                                <div class="toggle-row-label"><strong>Fuente para dislexia</strong><small>OpenDyslexic con mayor espaciado</small></div>
+                                <div class="tswitch" id="sw-font-dyslexic"></div>
+                            </div>
+                            <div class="toggle-row" onclick="toggleA11y('letter-spacing-wide')" role="switch" id="row-letter-spacing-wide" aria-checked="false">
+                                <div class="toggle-row-label"><strong>Espaciado de letras</strong><small>Más espacio entre caracteres</small></div>
+                                <div class="tswitch" id="sw-letter-spacing-wide"></div>
+                            </div>
+                            <div class="toggle-row" onclick="toggleA11y('line-height-wide')" role="switch" id="row-line-height-wide" aria-checked="false">
+                                <div class="toggle-row-label"><strong>Interlineado amplio</strong><small>Más espacio entre líneas de texto</small></div>
+                                <div class="tswitch" id="sw-line-height-wide"></div>
+                            </div>
+                            <div class="toggle-row" onclick="toggleA11y('underline-links')" role="switch" id="row-underline-links" aria-checked="false">
+                                <div class="toggle-row-label"><strong>Subrayar links</strong><small>Todos los enlaces siempre subrayados</small></div>
+                                <div class="tswitch" id="sw-underline-links"></div>
+                            </div>
+                            <div class="toggle-row" onclick="toggleA11y('enhanced-focus')" role="switch" id="row-enhanced-focus" aria-checked="false">
+                                <div class="toggle-row-label"><strong>Focus visible mejorado</strong><small>Indicador de foco más visible al navegar con teclado</small></div>
+                                <div class="tswitch" id="sw-enhanced-focus"></div>
+                            </div>
+                            <div class="toggle-row" onclick="toggleA11y('large-targets')" role="switch" id="row-large-targets" aria-checked="false">
+                                <div class="toggle-row-label"><strong>Área de toque ampliada</strong><small>Botones e inputs más grandes</small></div>
+                                <div class="tswitch" id="sw-large-targets"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
 
-        <!-- Stats -->
         <div class="stats-grid" id="statsGrid">
             <div class="stat-card fade-up"><div class="spinner" style="margin:12px auto;"></div></div>
             <div class="stat-card fade-up"><div class="spinner" style="margin:12px auto;"></div></div>
@@ -81,95 +398,35 @@
             <div class="stat-card fade-up"><div class="spinner" style="margin:12px auto;"></div></div>
         </div>
 
-        <!-- Grid -->
         <div class="dashboard-grid">
-
             <div class="dashboard-main">
-
-                <!-- Panel docente -->
                 <div class="card fade-up" id="teacherPanel" style="display:none;">
-                    <div class="card-header">
-                        <span class="card-title">⚡ Acciones rápidas</span>
-                    </div>
+                    <div class="card-header"><span class="card-title">⚡ Acciones rápidas</span></div>
                     <div class="teacher-actions">
-                        <a href="comunicacion.html" class="action-card">
-                            <div class="action-icon">📢</div>
-                            <div class="action-label">Anuncio</div>
-                            <div class="action-sub">Comunicar</div>
-                        </a>
-                        <a href="tareas.html" class="action-card">
-                            <div class="action-icon">📋</div>
-                            <div class="action-label">Tarea</div>
-                            <div class="action-sub">Asignar</div>
-                        </a>
-                        <a href="horario.html" class="action-card">
-                            <div class="action-icon">🗓️</div>
-                            <div class="action-label">Horario</div>
-                            <div class="action-sub">Editar</div>
-                        </a>
-                        <a href="promedios.html" class="action-card">
-                            <div class="action-icon">📊</div>
-                            <div class="action-label">Notas</div>
-                            <div class="action-sub">Calificar</div>
-                        </a>
+                        <a href="comunicacion.html" class="action-card"><div class="action-icon">📢</div><div class="action-label">Anuncio</div><div class="action-sub">Comunicar</div></a>
+                        <a href="tareas.html" class="action-card"><div class="action-icon">📋</div><div class="action-label">Tarea</div><div class="action-sub">Asignar</div></a>
+                        <a href="horario.html" class="action-card"><div class="action-icon">🗓️</div><div class="action-label">Horario</div><div class="action-sub">Editar</div></a>
+                        <a href="promedios.html" class="action-card"><div class="action-icon">📊</div><div class="action-label">Notas</div><div class="action-sub">Calificar</div></a>
                     </div>
                 </div>
-
-                <!-- Tareas -->
                 <div class="card fade-up">
-                    <div class="card-header">
-                        <span class="card-title">📋 Tareas pendientes</span>
-                        <a href="tareas.html" class="btn btn-ghost btn-sm">Ver todas →</a>
-                    </div>
-                    <div id="tareasList" class="item-list">
-                        <div style="padding:24px 0;text-align:center;"><div class="spinner"></div></div>
-                    </div>
+                    <div class="card-header"><span class="card-title">📋 Tareas pendientes</span><a href="tareas.html" class="btn btn-ghost btn-sm">Ver todas →</a></div>
+                    <div id="tareasList" class="item-list"><div style="padding:24px 0;text-align:center;"><div class="spinner"></div></div></div>
                 </div>
-
-                <!-- Mensajes -->
                 <div class="card fade-up">
-                    <div class="card-header">
-                        <span class="card-title">📢 Mensajes recientes</span>
-                        <a href="comunicacion.html" class="btn btn-ghost btn-sm">Ver todos →</a>
-                    </div>
-                    <div id="mensajesList">
-                        <div style="padding:24px 0;text-align:center;"><div class="spinner"></div></div>
-                    </div>
+                    <div class="card-header"><span class="card-title">📢 Mensajes recientes</span><a href="comunicacion.html" class="btn btn-ghost btn-sm">Ver todos →</a></div>
+                    <div id="mensajesList"><div style="padding:24px 0;text-align:center;"><div class="spinner"></div></div></div>
                 </div>
-
             </div>
-
             <div class="dashboard-side">
-
-                <!-- Apariencia -->
                 <div class="card fade-up">
-                    <div class="card-header">
-                        <span class="card-title">Apariencia</span>
-                    </div>
-                    <div class="theme-editor" id="themeEditor"></div>
+                    <div class="card-header"><span class="card-title">🏫 Clases de hoy</span></div>
+                    <div id="clasesHoy" class="today-schedule"><div style="padding:24px 0;text-align:center;"><div class="spinner"></div></div></div>
                 </div>
-
-                <!-- Clases hoy -->
                 <div class="card fade-up">
-                    <div class="card-header">
-                        <span class="card-title">🏫 Clases de hoy</span>
-                    </div>
-                    <div id="clasesHoy" class="today-schedule">
-                        <div style="padding:24px 0;text-align:center;"><div class="spinner"></div></div>
-                    </div>
+                    <div class="card-header"><span class="card-title">📅 Próximos eventos</span><a href="horario.html" class="btn btn-ghost btn-sm">Ver →</a></div>
+                    <div id="eventosList"><div style="padding:24px 0;text-align:center;"><div class="spinner"></div></div></div>
                 </div>
-
-                <!-- Eventos -->
-                <div class="card fade-up">
-                    <div class="card-header">
-                        <span class="card-title">📅 Próximos eventos</span>
-                        <a href="horario.html" class="btn btn-ghost btn-sm">Ver →</a>
-                    </div>
-                    <div id="eventosList">
-                        <div style="padding:24px 0;text-align:center;"><div class="spinner"></div></div>
-                    </div>
-                </div>
-
             </div>
         </div>
     </main>
@@ -180,46 +437,20 @@
 <script src="js/app.js"></script>
 <script src="js/dashboard.js"></script>
 
-<!-- BOTTOM NAV (mobile only) -->
 <nav class="bottom-nav" id="bottomNav">
-    <a href="dashboard.html" class="bn-item active">
-        <span class="bn-icon">🏠</span>
-        <span class="bn-label">Inicio</span>
-    </a>
-    <a href="comunicacion.html" class="bn-item">
-        <span class="bn-icon">📢</span>
-        <span class="bn-label">Mensajes</span>
-    </a>
-    <a href="tareas.html" class="bn-item">
-        <span class="bn-icon">📋</span>
-        <span class="bn-label">Tareas</span>
-    </a>
-    <button type="button" class="bn-item" onclick="toggleMasSheet()">
-        <span class="bn-icon">⋯</span>
-        <span class="bn-label">Más</span>
-    </button>
+    <a href="dashboard.html" class="bn-item active"><span class="bn-icon">🏠</span><span class="bn-label">Inicio</span></a>
+    <a href="comunicacion.html" class="bn-item"><span class="bn-icon">📢</span><span class="bn-label">Mensajes</span></a>
+    <a href="tareas.html" class="bn-item"><span class="bn-icon">📋</span><span class="bn-label">Tareas</span></a>
+    <button type="button" class="bn-item" onclick="toggleMasSheet()"><span class="bn-icon">⋯</span><span class="bn-label">Más</span></button>
 </nav>
 
-<!-- SHEET MÁS -->
 <div class="mas-overlay" id="masOverlay" onclick="toggleMasSheet()"></div>
 <div class="mas-sheet" id="masSheet">
     <div class="mas-handle"></div>
-    <a href="horario.html" class="mas-item" onclick="toggleMasSheet()">
-        <span class="mas-icon">🗓️</span>
-        <span>Horario</span>
-    </a>
-    <a href="promedios.html" class="mas-item" onclick="toggleMasSheet()">
-        <span class="mas-icon">📊</span>
-        <span>Promedios</span>
-    </a>
-    <a href="quizzit.html" class="mas-item" onclick="toggleMasSheet()">
-        <span class="mas-icon">🧪</span>
-        <span>Quizzit</span>
-    </a>
-    <a href="ai-chat.html" class="mas-item" onclick="toggleMasSheet()">
-        <span class="mas-icon">🤖</span>
-        <span>Fractal AI</span>
-    </a>
+    <a href="horario.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🗓️</span><span>Horario</span></a>
+    <a href="promedios.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">📊</span><span>Promedios</span></a>
+    <a href="quizzit.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🧪</span><span>Quizzit</span></a>
+    <a href="ai-chat.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🤖</span><span>Fractal AI</span></a>
 </div>
 
 <script>
@@ -227,6 +458,149 @@ function toggleMasSheet() {
     document.getElementById('masSheet').classList.toggle('open');
     document.getElementById('masOverlay').classList.toggle('open');
 }
+
+// ─── SETTINGS ────────────────────────────────────────────────
+function toggleSettingsPanel() {
+    const panel = document.getElementById('settingsPanel');
+    const btn   = document.getElementById('settingsToggle');
+    const isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open');
+    btn.classList.toggle('active');
+    btn.setAttribute('aria-expanded', String(!isOpen));
+    if (!isOpen) syncSettingsProfile();
+}
+
+document.addEventListener('click', e => {
+    const greeting = document.getElementById('dayGreeting');
+    if (!greeting?.contains(e.target)) {
+        document.getElementById('settingsPanel').classList.remove('open');
+        const btn = document.getElementById('settingsToggle');
+        btn.classList.remove('active');
+        btn.setAttribute('aria-expanded', 'false');
+    }
+});
+
+function switchStab(id) {
+    const ids = ['perfil','tema','vision','accesibilidad'];
+    document.querySelectorAll('.stab').forEach((b,i) => b.classList.toggle('active', ids[i] === id));
+    document.querySelectorAll('.spane').forEach(p => p.classList.toggle('active', p.id === 'spane-' + id));
+}
+
+function syncSettingsProfile() {
+    const user = window._alephUser;
+    if (!user) return;
+    const el = document.getElementById('settingsAvatar');
+    if (el) el.textContent = (user.username || '?')[0].toUpperCase();
+    const uEl = document.getElementById('settingsUsername');
+    if (uEl) uEl.textContent = user.username || '—';
+    const roles = { student: 'Estudiante', teacher: 'Docente', director: 'Director' };
+    const rEl = document.getElementById('settingsRole');
+    if (rEl) rEl.textContent = roles[user.role] || user.role || '—';
+}
+
+// ─── TEMA ────────────────────────────────────────────────────
+const FONT_SIZES = [85, 92, 100, 107, 115];
+let fontSizeIdx = 2;
+
+function setTheme(theme) {
+    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+    const darkBtn = document.getElementById('darkModeBtn');
+    if (theme === 'light') {
+        document.body.classList.remove('dark-mode');
+        document.getElementById('themeBtnLight').classList.add('active');
+        if (darkBtn) darkBtn.textContent = '🌙';
+    } else if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.getElementById('themeBtnDark').classList.add('active');
+        if (darkBtn) darkBtn.textContent = '☀️';
+    } else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.body.classList.toggle('dark-mode', prefersDark);
+        document.getElementById('themeBtnAuto').classList.add('active');
+        if (darkBtn) darkBtn.textContent = prefersDark ? '☀️' : '🌙';
+    }
+    localStorage.setItem('aleph_theme', theme);
+    localStorage.setItem('aleph_dark_mode', document.body.classList.contains('dark-mode'));
+}
+
+function syncThemeButtons() {
+    const saved = localStorage.getItem('aleph_theme') || 'dark';
+    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+    if (saved === 'light')     document.getElementById('themeBtnLight')?.classList.add('active');
+    else if (saved === 'auto') document.getElementById('themeBtnAuto')?.classList.add('active');
+    else                       document.getElementById('themeBtnDark')?.classList.add('active');
+}
+
+function changeFontSize(dir) {
+    fontSizeIdx = Math.max(0, Math.min(FONT_SIZES.length - 1, fontSizeIdx + dir));
+    const size = FONT_SIZES[fontSizeIdx];
+    document.documentElement.style.fontSize = size + '%';
+    document.getElementById('fontSizeVal').textContent = size + '%';
+    localStorage.setItem('aleph_font_size_idx', fontSizeIdx);
+}
+
+// ─── VISIÓN ──────────────────────────────────────────────────
+const VISION_MODES = ['deuteranopia','protanopia','tritanopia','grayscale'];
+
+function setVision(mode) {
+    VISION_MODES.forEach(m => document.body.classList.remove('vision-' + m));
+    document.querySelectorAll('.vision-btn').forEach(b => b.classList.remove('active'));
+    if (mode !== 'normal') document.body.classList.add('vision-' + mode);
+    const id = 'vision' + mode.charAt(0).toUpperCase() + mode.slice(1);
+    document.getElementById(id)?.classList.add('active');
+    localStorage.setItem('aleph_vision', mode);
+}
+
+// ─── ACCESIBILIDAD ───────────────────────────────────────────
+const A11Y_KEYS = [
+    'reduce-motion','reduce-transparency','high-contrast',
+    'font-dyslexic','letter-spacing-wide','line-height-wide',
+    'underline-links','enhanced-focus','large-targets'
+];
+
+function toggleA11y(key) {
+    const isOn = document.body.classList.toggle(key);
+    document.getElementById('sw-' + key)?.classList.toggle('on', isOn);
+    document.getElementById('row-' + key)?.setAttribute('aria-checked', String(isOn));
+    localStorage.setItem('aleph_a11y_' + key, isOn);
+}
+
+// ─── COPIAR USUARIO ──────────────────────────────────────────
+function copyUsername() {
+    const user = window._alephUser;
+    if (!user?.username) return;
+    navigator.clipboard.writeText(user.username).then(() => {
+        if (typeof showToast === 'function') showToast('Usuario copiado', 'success');
+    });
+}
+
+// ─── INIT ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    syncThemeButtons();
+
+    // Font size
+    const savedFS = localStorage.getItem('aleph_font_size_idx');
+    if (savedFS !== null) {
+        fontSizeIdx = parseInt(savedFS);
+        const size = FONT_SIZES[fontSizeIdx] || 100;
+        document.documentElement.style.fontSize = size + '%';
+        const el = document.getElementById('fontSizeVal');
+        if (el) el.textContent = size + '%';
+    }
+
+    // Vision
+    const savedV = localStorage.getItem('aleph_vision') || 'normal';
+    setVision(savedV);
+
+    // A11y toggles
+    A11Y_KEYS.forEach(key => {
+        if (localStorage.getItem('aleph_a11y_' + key) === 'true') {
+            document.body.classList.add(key);
+            document.getElementById('sw-' + key)?.classList.add('on');
+            document.getElementById('row-' + key)?.setAttribute('aria-checked', 'true');
+        }
+    });
+});
 </script>
 
 </body>
