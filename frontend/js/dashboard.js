@@ -215,33 +215,84 @@ function renderAvatar(user) {
 
 function renderThemeEditor() {
     const el = document.getElementById('themeEditor');
-    if (!el || typeof ALEPH_THEMES === 'undefined' || typeof applyTheme !== 'function') return;
+    if (
+        !el ||
+        typeof ALEPH_THEMES === 'undefined' ||
+        typeof ALEPH_THEME_MODES === 'undefined' ||
+        typeof ALEPH_TEXT_SIZES === 'undefined' ||
+        typeof applyTheme !== 'function'
+    ) return;
 
     const currentTheme = typeof getStoredTheme === 'function' ? getStoredTheme() : localStorage.getItem('aleph_theme') || 'dark';
-    el.innerHTML = ALEPH_THEMES.map(theme => `
-        <button
-            type="button"
-            class="theme-option ${theme.id === currentTheme ? 'active' : ''}"
-            data-theme="${sanitize(theme.id)}"
-            aria-pressed="${theme.id === currentTheme ? 'true' : 'false'}">
-            <span class="theme-swatch theme-swatch-${sanitize(theme.id)}"></span>
-            <span>${sanitize(theme.label)}</span>
-        </button>
-    `).join('');
+    const currentMode = typeof getStoredThemeMode === 'function' ? getStoredThemeMode() : '';
+    const settings = typeof getAccessibilitySettings === 'function' ? getAccessibilitySettings() : {};
+
+    el.innerHTML = `
+        <div class="settings-group">
+            <div class="settings-label">Paleta</div>
+            <div class="theme-palette">
+                ${ALEPH_THEMES.map(theme => `
+                    <button
+                        type="button"
+                        class="theme-option ${theme.id === currentTheme ? 'active' : ''}"
+                        data-theme="${sanitize(theme.id)}"
+                        aria-pressed="${theme.id === currentTheme ? 'true' : 'false'}">
+                        <span class="theme-swatch theme-swatch-${sanitize(theme.id)}"></span>
+                        <span>${sanitize(theme.label)}</span>
+                    </button>
+                `).join('')}
+            </div>
+        </div>
+        <div class="settings-group">
+            <div class="settings-label">Tema</div>
+            <div class="settings-segmented" id="themeModeEditor">
+                ${ALEPH_THEME_MODES.map(mode => `
+                    <button
+                        type="button"
+                        class="settings-choice ${mode.id === currentMode ? 'active' : ''}"
+                        data-theme-mode="${sanitize(mode.id)}"
+                        aria-pressed="${mode.id === currentMode ? 'true' : 'false'}">
+                        ${sanitize(mode.label)}
+                    </button>
+                `).join('')}
+            </div>
+        </div>
+        <div class="settings-group">
+            <div class="settings-label">Tamaño de texto</div>
+            <div class="settings-segmented text-size-editor" id="textSizeEditor">
+                ${ALEPH_TEXT_SIZES.map(size => `
+                    <button
+                        type="button"
+                        class="settings-choice ${size.id === settings.textSize ? 'active' : ''}"
+                        data-text-size="${sanitize(size.id)}"
+                        aria-pressed="${size.id === settings.textSize ? 'true' : 'false'}">
+                        ${sanitize(size.label)}
+                    </button>
+                `).join('')}
+            </div>
+        </div>
+    `;
 
     el.querySelectorAll('.theme-option').forEach(btn => {
         btn.addEventListener('click', () => {
             applyTheme(btn.dataset.theme);
-            el.querySelectorAll('.theme-option').forEach(option => {
-                const isActive = option.dataset.theme === btn.dataset.theme;
-                option.classList.toggle('active', isActive);
-                option.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-            });
+        });
+    });
+
+    el.querySelectorAll('[data-theme-mode]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (typeof setThemeMode === 'function') setThemeMode(btn.dataset.themeMode);
+        });
+    });
+
+    el.querySelectorAll('[data-text-size]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (typeof setTextSize === 'function') setTextSize(btn.dataset.textSize);
         });
     });
 }
 
-function updateThemeEditorState(themeId) {
+function updateThemeEditorState(themeId, modeId = '') {
     const el = document.getElementById('themeEditor');
     if (!el) return;
 
@@ -250,6 +301,91 @@ function updateThemeEditorState(themeId) {
         option.classList.toggle('active', isActive);
         option.setAttribute('aria-pressed', isActive ? 'true' : 'false');
     });
+
+    el.querySelectorAll('[data-theme-mode]').forEach(option => {
+        const isActive = option.dataset.themeMode === modeId;
+        option.classList.toggle('active', isActive);
+        option.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+}
+
+function updateTextSizeEditorState(sizeId) {
+    const el = document.getElementById('themeEditor');
+    if (!el) return;
+
+    el.querySelectorAll('[data-text-size]').forEach(option => {
+        const isActive = option.dataset.textSize === sizeId;
+        option.classList.toggle('active', isActive);
+        option.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+}
+
+function renderColorVisionEditor() {
+    const el = document.getElementById('colorVisionEditor');
+    if (!el || typeof ALEPH_COLOR_VISION_MODES === 'undefined') return;
+
+    const settings = typeof getAccessibilitySettings === 'function' ? getAccessibilitySettings() : {};
+    el.innerHTML = ALEPH_COLOR_VISION_MODES.map(mode => `
+        <button
+            type="button"
+            class="settings-option ${mode.id === settings.colorVision ? 'active' : ''}"
+            data-color-vision="${sanitize(mode.id)}"
+            aria-pressed="${mode.id === settings.colorVision ? 'true' : 'false'}">
+            ${sanitize(mode.label)}
+        </button>
+    `).join('');
+
+    el.querySelectorAll('[data-color-vision]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (typeof setColorVisionMode === 'function') setColorVisionMode(btn.dataset.colorVision);
+        });
+    });
+}
+
+function updateColorVisionEditorState(modeId) {
+    const el = document.getElementById('colorVisionEditor');
+    if (!el) return;
+
+    el.querySelectorAll('[data-color-vision]').forEach(option => {
+        const isActive = option.dataset.colorVision === modeId;
+        option.classList.toggle('active', isActive);
+        option.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+}
+
+function renderAccessibilityEditor() {
+    const el = document.getElementById('accessibilityEditor');
+    if (!el || typeof ALEPH_ACCESSIBILITY_OPTIONS === 'undefined') return;
+
+    const settings = typeof getAccessibilitySettings === 'function' ? getAccessibilitySettings() : {};
+    el.innerHTML = ALEPH_ACCESSIBILITY_OPTIONS.map(option => `
+        <label class="settings-toggle">
+            <span>${sanitize(option.label)}</span>
+            <input
+                type="checkbox"
+                data-accessibility="${sanitize(option.id)}"
+                ${settings[option.id] ? 'checked' : ''}>
+        </label>
+    `).join('');
+
+    el.querySelectorAll('input[type="checkbox"]').forEach(input => {
+        input.addEventListener('change', () => {
+            if (typeof setAccessibilityOption === 'function') {
+                setAccessibilityOption(input.dataset.accessibility, input.checked);
+            }
+        });
+    });
+}
+
+function updateAccessibilityEditorState(settings) {
+    const el = document.getElementById('accessibilityEditor');
+    if (!el) return;
+
+    el.querySelectorAll('input[type="checkbox"]').forEach(input => {
+        input.checked = Boolean(settings[input.dataset.accessibility]);
+    });
+    updateTextSizeEditorState(settings.textSize);
+    updateColorVisionEditorState(settings.colorVision);
 }
 
 function toggleMobileNav() {
@@ -268,7 +404,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     renderAvatar(user);
     renderThemeEditor();
-    document.addEventListener('aleph:themechange', event => updateThemeEditorState(event.detail.theme));
+    renderColorVisionEditor();
+    renderAccessibilityEditor();
+    document.addEventListener('aleph:themechange', event => updateThemeEditorState(event.detail.theme, event.detail.mode));
+    document.addEventListener('aleph:thememodechange', event => updateThemeEditorState(getStoredTheme(), event.detail.mode));
+    document.addEventListener('aleph:accessibilitychange', event => updateAccessibilityEditorState(event.detail.settings));
 
     await Promise.all([
         renderGreeting(user),
