@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultados del quiz — AlephOne</title>
+    <title>Resultados del quiz — AlephProject</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         body {
@@ -433,12 +433,141 @@
                 grid-template-columns: 1fr;
             }
         }
+        /* Gráfico de barras para encuesta y escala */
+        .encuesta-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .encuesta-bar-row {
+            display: grid;
+            grid-template-columns: 28px 1fr 44px;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .encuesta-bar-label {
+            font-family: var(--font-display);
+            font-size: 0.72em;
+            font-weight: 800;
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+        }
+
+        .encuesta-bar-track {
+            height: 22px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .encuesta-bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            background: linear-gradient(90deg, var(--teal), var(--accent));
+            transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+            display: flex;
+            align-items: center;
+            padding-left: 8px;
+            min-width: 0;
+        }
+
+        .encuesta-bar-text {
+            font-size: 0.7em;
+            font-weight: 700;
+            color: #0a0a0a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .encuesta-bar-pct {
+            font-family: var(--font-display);
+            font-size: 0.72em;
+            font-weight: 800;
+            color: var(--teal);
+            text-align: right;
+        }
+
+        /* Escala */
+        .escala-resumen {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 10px 14px;
+            background: rgba(38,212,199,0.06);
+            border: 1px solid rgba(38,212,199,0.14);
+            border-radius: var(--radius);
+            margin-bottom: 10px;
+        }
+
+        .escala-promedio-val {
+            font-family: var(--font-display);
+            font-size: 2em;
+            font-weight: 800;
+            color: var(--teal);
+            line-height: 1;
+        }
+
+        .escala-promedio-label {
+            font-size: 0.72em;
+            color: rgba(255,255,255,0.38);
+            font-family: var(--font-display);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .escala-bars {
+            display: flex;
+            gap: 6px;
+            align-items: flex-end;
+            height: 60px;
+        }
+
+        .escala-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            flex: 1;
+        }
+
+        .escala-col-bar {
+            width: 100%;
+            background: linear-gradient(180deg, var(--teal), var(--accent));
+            border-radius: 4px 4px 0 0;
+            min-height: 4px;
+            transition: height 0.5s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        .escala-col-num {
+            font-family: var(--font-display);
+            font-size: 0.65em;
+            font-weight: 700;
+            color: rgba(255,255,255,0.4);
+        }
+
+        /* Stat card sin respuestas */
+        .stat-card-opinion {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
 <div class="resultados-shell">
     <header class="resultados-topbar">
-        <span class="resultados-logo">ℵ AlephOne · Quizzit</span>
+        <span class="resultados-logo">ℵ AlephProject · Quizzit</span>
         <div class="resultados-topbar-meta">
             <span>Resultados finales</span>
             <span id="topbarSalaCode">Sala —</span>
@@ -571,12 +700,132 @@
                 <div class="empty-state-dark">
                     <div class="empty-icon">📝</div>
                     <p>Este quiz no tiene preguntas cargadas todavia.</p>
-                </div>
-            `;
+                </div>`;
             return;
         }
 
-        container.innerHTML = stats.map((stat, index) => `
+        container.innerHTML = stats.map((stat, index) => {
+            const tipo = stat.pregunta.tipo;
+
+            // ── Encuesta ──────────────────────────────────────────
+            if (tipo === 'encuesta') {
+                const opts = (() => {
+                    try {
+                        return typeof stat.pregunta.opciones === 'string'
+                            ? JSON.parse(stat.pregunta.opciones)
+                            : (stat.pregunta.opciones || []);
+                    } catch { return []; }
+                })();
+
+                const LETRAS = ['A','B','C','D'];
+                const conteo = {};
+                LETRAS.forEach(l => { conteo[l] = 0; });
+                stat.respuestasRaw.forEach(r => {
+                    if (conteo[r.respuesta] !== undefined) conteo[r.respuesta]++;
+                });
+
+                const total = stat.total || 1;
+                const barsHTML = opts.map((op, i) => {
+                    if (!op?.trim()) return '';
+                    const letra = LETRAS[i];
+                    const votos = conteo[letra] || 0;
+                    const pct = Math.round((votos / total) * 100);
+                    return `
+                    <div class="encuesta-bar-row">
+                        <div class="encuesta-bar-label">${letra}</div>
+                        <div class="encuesta-bar-track">
+                            <div class="encuesta-bar-fill" style="width:${pct}%">
+                                <span class="encuesta-bar-text">${sanitize(op)}</span>
+                            </div>
+                        </div>
+                        <div class="encuesta-bar-pct">${pct}%</div>
+                    </div>`;
+                }).join('');
+
+                return `
+                <div class="stat-card-opinion">
+                    <div class="stat-top">
+                        <div>
+                            <div class="stat-question-index">Pregunta ${index + 1} · Encuesta</div>
+                            <div class="stat-question-text">${truncateText(stat.pregunta.enunciado)}</div>
+                        </div>
+                        <div class="stat-total">
+                            <strong>${total}</strong>
+                            <span>votos</span>
+                        </div>
+                    </div>
+                    <div class="encuesta-bars">${barsHTML}</div>
+                </div>`;
+            }
+
+            // ── Escala ────────────────────────────────────────────
+            if (tipo === 'escala') {
+                const opcMeta = (() => {
+                    try {
+                        return typeof stat.pregunta.opciones === 'string'
+                            ? JSON.parse(stat.pregunta.opciones)
+                            : (stat.pregunta.opciones || {});
+                    } catch { return {}; }
+                })();
+
+                const min = Number(opcMeta.min ?? 1);
+                const max = Number(opcMeta.max ?? 5);
+                const labelIzq = opcMeta.left_label || '';
+                const labelDer = opcMeta.right_label || '';
+
+                const valores = stat.respuestasRaw.map(r => Number(r.respuesta)).filter(v => !isNaN(v));
+                const total = valores.length || 1;
+                const promedio = valores.length
+                    ? (valores.reduce((a, b) => a + b, 0) / valores.length).toFixed(1)
+                    : '—';
+
+                // Conteo por valor
+                const conteo = {};
+                for (let v = min; v <= max; v++) conteo[v] = 0;
+                valores.forEach(v => { if (conteo[v] !== undefined) conteo[v]++; });
+
+                const maxConteo = Math.max(...Object.values(conteo), 1);
+
+                const colsHTML = Object.entries(conteo).map(([val, cnt]) => {
+                    const pct = Math.round((cnt / maxConteo) * 100);
+                    return `
+                    <div class="escala-col">
+                        <div class="escala-col-bar" style="height:${Math.max(pct * 0.56, 4)}px;"></div>
+                        <div class="escala-col-num">${val}</div>
+                    </div>`;
+                }).join('');
+
+                return `
+                <div class="stat-card-opinion">
+                    <div class="stat-top">
+                        <div>
+                            <div class="stat-question-index">Pregunta ${index + 1} · Escala</div>
+                            <div class="stat-question-text">${truncateText(stat.pregunta.enunciado)}</div>
+                        </div>
+                        <div class="stat-total">
+                            <strong>${total}</strong>
+                            <span>respuestas</span>
+                        </div>
+                    </div>
+                    <div class="escala-resumen">
+                        <div>
+                            <div class="escala-promedio-val">${promedio}</div>
+                            <div class="escala-promedio-label">Promedio</div>
+                        </div>
+                        <div style="flex:1;">
+                            ${labelIzq || labelDer ? `
+                            <div style="display:flex; justify-content:space-between; font-size:0.7em; color:rgba(255,255,255,0.3); margin-bottom:4px;">
+                                <span>${sanitize(labelIzq)}</span>
+                                <span>${sanitize(labelDer)}</span>
+                            </div>` : ''}
+                            <div class="escala-bars">${colsHTML}</div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            // ── Pregunta normal (aciertos/errores) ────────────────
+            return `
             <div class="stat-card">
                 <div class="stat-top">
                     <div>
@@ -606,8 +855,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            </div>`;
+        }).join('');
     }
 
     async function loadResultados() {
@@ -623,8 +872,7 @@
                 <div class="empty-state-dark">
                     <div class="empty-icon">🧭</div>
                     <p>Falta el parametro de sala en la URL.</p>
-                </div>
-            `;
+                </div>`;
             document.getElementById('statsList').innerHTML = '';
             return;
         }
@@ -637,15 +885,16 @@
                 <div class="empty-state-dark">
                     <div class="empty-icon">⚠️</div>
                     <p>${salaResult.error || 'La sala no existe o ya no esta disponible.'}</p>
-                </div>
-            `;
+                </div>`;
             document.getElementById('statsList').innerHTML = '';
             return;
         }
 
         const sala = salaResult.sala;
         const quiz = sala.quizzes || {};
-        const preguntas = Array.isArray(quiz.preguntas) ? [...quiz.preguntas].sort((a, b) => (a.orden || 0) - (b.orden || 0)) : [];
+        const preguntas = Array.isArray(quiz.preguntas)
+            ? [...quiz.preguntas].sort((a, b) => (a.orden || 0) - (b.orden || 0))
+            : [];
         const participantes = await AlephAPI.Sala.getParticipantes(salaId);
 
         document.getElementById('quizTitulo').textContent = quiz.titulo || 'Resultados del quiz';
@@ -659,17 +908,18 @@
         renderRanking(participantes);
 
         const stats = await Promise.all(preguntas.map(async (pregunta) => {
-            const respuestas = await AlephAPI.Sala.getRespuestasDePregunta(salaId, pregunta.id);
-            const correct = respuestas.filter(r => r.es_correcta).length;
-            const total = respuestas.length;
-            const wrong = Math.max(total - correct, 0);
+            const respuestasRaw = await AlephAPI.Sala.getRespuestasDePregunta(salaId, pregunta.id);
+            const correct = respuestasRaw.filter(r => r.es_correcta).length;
+            const total   = respuestasRaw.length;
+            const wrong   = Math.max(total - correct, 0);
             return {
                 pregunta,
+                respuestasRaw,   // <-- nuevo: pasamos las respuestas crudas
                 total,
                 correct,
                 wrong,
                 correctPct: percent(correct, total),
-                wrongPct: percent(wrong, total)
+                wrongPct:   percent(wrong,   total)
             };
         }));
 
