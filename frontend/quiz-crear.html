@@ -769,7 +769,7 @@
                 renderLista();
                 renderEditor();
                 showToast('Borrador restaurado ✓', 'info');
-            } catch { localStorage.removeItem('aleph_quiz_borrador'); }
+            } catch (err) { localStorage.removeItem('aleph_quiz_borrador'); }
         }
 
         function limpiarEstadoLocal() {
