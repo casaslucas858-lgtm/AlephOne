@@ -1394,6 +1394,7 @@
 
         function eliminarPregunta(e, i) {
             e.stopPropagation();
+            if (guardandoQuiz) { showToast('Esperá a que termine de guardar', 'warning'); return; }
             if (!confirm('¿Eliminar esta pregunta?')) return;
             preguntas.splice(i, 1);
             if (activaIdx >= preguntas.length) activaIdx = preguntas.length - 1;
@@ -1430,104 +1431,66 @@
             const publicarBtn = document.querySelector('.editor-footer button[onclick="publicarQuiz()"]');
 
             guardandoQuiz = true;
-            if (guardarBtn) guardarBtn.disabled = true;
-            if (publicarBtn) publicarBtn.disabled = true;
-            if (guardarBtn) guardarBtn.textContent = 'Guardando...';
-            if (publicarBtn) publicarBtn.textContent = 'Guardando...';
+            if (guardarBtn) { guardarBtn.disabled = true; guardarBtn.textContent = 'Guardando...'; }
+            if (publicarBtn) { publicarBtn.disabled = true; publicarBtn.textContent = 'Guardando...'; }
+
+            // Timeout global — 45s máximo
+            let timeoutDisparado = false;
+            const timeoutId = setTimeout(() => {
+                timeoutDisparado = true;
+                guardandoQuiz = false;
+                if (guardarBtn) { guardarBtn.disabled = false; guardarBtn.textContent = 'Guardar borrador'; }
+                if (publicarBtn) { publicarBtn.disabled = false; publicarBtn.textContent = 'Publicar quiz →'; }
+                showToast('El guardado tardó demasiado. Intentá de nuevo.', 'error');
+            }, 45000);
 
             try {
+                if (timeoutDisparado) return;
+
                 for (let i = 0; i < preguntas.length; i++) {
                     const validationError = _validarPregunta(preguntas[i], i);
-                    if (validationError) {
-                        showToast(validationError, 'warning');
-                        return;
-                    }
+                    if (validationError) { showToast(validationError, 'warning'); return; }
                 }
 
                 const resQuiz = await AlephAPI.Quiz.crear({ titulo, descripcion: '', curso });
-                if (!resQuiz.ok) {
-                    showToast('Error guardando quiz: ' + resQuiz.error, 'error');
-                    return;
-                }
+                if (!resQuiz.ok) { showToast('Error guardando quiz: ' + resQuiz.error, 'error'); return; }
                 const quizId = resQuiz.quiz.id;
 
                 for (let i = 0; i < preguntas.length; i++) {
+                    if (timeoutDisparado) return;
                     const p = preguntas[i];
 
-                    // Cada tipo define: opc (jsonb, puede ser null) y resp (string, NUNCA null)
-                    let opc = null;
-                    let resp = '';
-
+                    let opc = null, resp = '';
                     switch (p.tipo) {
                         case 'slide':
-                            opc = JSON.stringify({
-                                slide_titulo: p.slide_titulo || '',
-                                imagen_url: p.imagen_url || null,
-                                imagen_path: p.imagen_path || null,
-                                imagen_bucket: p.imagen_bucket || null,
-                                imagen_nombre: p.imagen_nombre || null
-                            });
-                            resp = '';
-                            break;
+                            opc = JSON.stringify({ slide_titulo: p.slide_titulo || '', imagen_url: p.imagen_url || null, imagen_path: p.imagen_path || null, imagen_bucket: p.imagen_bucket || null, imagen_nombre: p.imagen_nombre || null });
+                            resp = ''; break;
                         case 'encuesta':
-                            opc = p.opciones || [];
-                            resp = '';
-                            break;
+                            opc = p.opciones || []; resp = ''; break;
                         case 'escala':
-                            opc = JSON.stringify({
-                                min: Number(p.escala_min ?? 1),
-                                max: Number(p.escala_max ?? 5),
-                                left_label: p.escala_label_izq || '',
-                                right_label: p.escala_label_der || ''
-                            });
-                            resp = '';
-                            break;
+                            opc = JSON.stringify({ min: Number(p.escala_min ?? 1), max: Number(p.escala_max ?? 5), left_label: p.escala_label_izq || '', right_label: p.escala_label_der || '' });
+                            resp = ''; break;
                         case 'multiple_choice':
-                            opc = p.opciones || [];
-                            resp = p.respuesta_correcta || '';
-                            break;
+                            opc = p.opciones || []; resp = p.respuesta_correcta || ''; break;
                         case 'seleccion_multiple':
-                            opc = p.opciones || [];
-                            resp = JSON.stringify(Array.isArray(p.respuesta_correcta) ? p.respuesta_correcta : []);
-                            break;
+                            opc = p.opciones || []; resp = JSON.stringify(Array.isArray(p.respuesta_correcta) ? p.respuesta_correcta : []); break;
                         case 'verdadero_falso':
-                            resp = p.respuesta_correcta || '';
-                            break;
+                            resp = p.respuesta_correcta || ''; break;
                         case 'numerica':
-                            resp = String(p.respuesta_correcta ?? '');
-                            break;
+                            resp = String(p.respuesta_correcta ?? ''); break;
                         case 'respuesta_corta':
                         case 'completar_espacio':
-                            resp = p.respuesta_correcta || '';
-                            break;
+                            resp = p.respuesta_correcta || ''; break;
                         case 'ordenar':
-                            opc = p.opciones || [];
-                            resp = JSON.stringify(p.opciones || []);
-                            break;
+                            opc = p.opciones || []; resp = JSON.stringify(p.opciones || []); break;
                         case 'relacionar_columnas':
-                            opc = p.opciones || [];
-                            resp = JSON.stringify((p.opciones || []).map((_, idx) => ({ izqId: idx, derId: idx })));
-                            break;
+                            opc = p.opciones || []; resp = JSON.stringify((p.opciones || []).map((_, idx) => ({ izqId: idx, derId: idx }))); break;
                         case 'imagen_click':
-                            opc = p.imagen_url ? JSON.stringify({
-                                imagen_url: p.imagen_url.trim(),
-                                imagen_path: p.imagen_path || null,
-                                imagen_bucket: p.imagen_bucket || null,
-                                imagen_nombre: p.imagen_nombre || null
-                            }) : null;
-                            resp = p.respuesta_correcta
-                                ? (typeof p.respuesta_correcta === 'object' ? JSON.stringify(p.respuesta_correcta) : String(p.respuesta_correcta))
-                                : '';
-                            break;
+                            opc = p.imagen_url ? JSON.stringify({ imagen_url: p.imagen_url.trim(), imagen_path: p.imagen_path || null, imagen_bucket: p.imagen_bucket || null, imagen_nombre: p.imagen_nombre || null }) : null;
+                            resp = p.respuesta_correcta ? (typeof p.respuesta_correcta === 'object' ? JSON.stringify(p.respuesta_correcta) : String(p.respuesta_correcta)) : ''; break;
                         case 'libre_imagen':
-                            opc = p.imagen_url ? JSON.stringify({
-                                imagen_url: p.imagen_url.trim(),
-                                imagen_path: p.imagen_path || null,
-                                imagen_bucket: p.imagen_bucket || null,
-                                imagen_nombre: p.imagen_nombre || null
-                            }) : null;
-                            resp = p.respuesta_correcta || '';
-                            break;
+                            opc = p.imagen_url ? JSON.stringify({ imagen_url: p.imagen_url.trim(), imagen_path: p.imagen_path || null, imagen_bucket: p.imagen_bucket || null, imagen_nombre: p.imagen_nombre || null }) : null;
+                            resp = p.respuesta_correcta || ''; break;
                         default:
                             resp = String(p.respuesta_correcta || '');
                     }
@@ -1550,18 +1513,16 @@
 
                 showToast('Quiz guardado ✓', 'success');
                 if (redirigir) setTimeout(() => window.location.href = 'quizzit.html', 1000);
+
             } catch (err) {
                 console.error('[GUARDAR] Error:', err);
                 showToast('Error al guardar: ' + (err.message || err), 'error');
             } finally {
-                guardandoQuiz = false;
-                if (guardarBtn) {
-                    guardarBtn.disabled = false;
-                    guardarBtn.textContent = 'Guardar borrador';
-                }
-                if (publicarBtn) {
-                    publicarBtn.disabled = false;
-                    publicarBtn.textContent = 'Publicar quiz →';
+                clearTimeout(timeoutId);
+                if (!timeoutDisparado) {
+                    guardandoQuiz = false;
+                    if (guardarBtn) { guardarBtn.disabled = false; guardarBtn.textContent = 'Guardar borrador'; }
+                    if (publicarBtn) { publicarBtn.disabled = false; publicarBtn.textContent = 'Publicar quiz →'; }
                 }
             }
         }
