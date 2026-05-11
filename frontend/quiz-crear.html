@@ -738,6 +738,7 @@
     <script src="js/api.js"></script>
     <script src="js/app.js"></script>
     <script>
+        const BACKEND_URL = 'https://alephone-backend-production.up.railway.app';
         // ── Estado local ──────────────────────────────────────────
         let preguntas = [];
         let activaIdx = -1;
@@ -1434,7 +1435,7 @@
             if (guardarBtn) { guardarBtn.disabled = true; guardarBtn.textContent = 'Guardando...'; }
             if (publicarBtn) { publicarBtn.disabled = true; publicarBtn.textContent = 'Guardando...'; }
 
-            // Timeout global — 45s máximo
+            // Timeout global — 30s máximo
             let timeoutDisparado = false;
             const timeoutId = setTimeout(() => {
                 timeoutDisparado = true;
@@ -1442,25 +1443,19 @@
                 if (guardarBtn) { guardarBtn.disabled = false; guardarBtn.textContent = 'Guardar borrador'; }
                 if (publicarBtn) { publicarBtn.disabled = false; publicarBtn.textContent = 'Publicar quiz →'; }
                 showToast('El guardado tardó demasiado. Intentá de nuevo.', 'error');
-            }, 45000);
+            }, 30000);
 
             try {
-                if (timeoutDisparado) return;
-
+                // Validar todas las preguntas primero
                 for (let i = 0; i < preguntas.length; i++) {
                     const validationError = _validarPregunta(preguntas[i], i);
                     if (validationError) { showToast(validationError, 'warning'); return; }
                 }
 
-                const resQuiz = await AlephAPI.Quiz.crear({ titulo, descripcion: '', curso });
-                if (!resQuiz.ok) { showToast('Error guardando quiz: ' + resQuiz.error, 'error'); return; }
-                const quizId = resQuiz.quiz.id;
-
-                for (let i = 0; i < preguntas.length; i++) {
-                    if (timeoutDisparado) return;
-                    const p = preguntas[i];
-
+                // Armar payload de preguntas
+                const preguntasPayload = preguntas.map((p, i) => {
                     let opc = null, resp = '';
+
                     switch (p.tipo) {
                         case 'slide':
                             opc = JSON.stringify({ slide_titulo: p.slide_titulo || '', imagen_url: p.imagen_url || null, imagen_path: p.imagen_path || null, imagen_bucket: p.imagen_bucket || null, imagen_nombre: p.imagen_nombre || null });
@@ -1495,20 +1490,35 @@
                             resp = String(p.respuesta_correcta || '');
                     }
 
-                    console.log(`[GUARDAR] P${i+1} tipo=${p.tipo}`, { opc, resp });
-
-                    const resPregunta = await AlephAPI.Preguntas.crear({
-                        quizId, orden: i, tipo: p.tipo,
-                        enunciado: p.enunciado, opciones: opc,
+                    return {
+                        tipo: p.tipo,
+                        enunciado: p.enunciado,
+                        opciones: opc,
                         respuestaCorrecta: resp,
-                        tiempoSegundos: p.tiempo_segundos, puntos: p.puntos
-                    });
+                        tiempoSegundos: p.tiempo_segundos,
+                        puntos: p.puntos
+                    };
+                });
 
-                    if (!resPregunta.ok) {
-                        await AlephAPI.Quiz.eliminar(quizId);
-                        showToast(`Error en pregunta ${i + 1}: ${resPregunta.error}`, 'error');
-                        return;
-                    }
+                // Llamar al backend
+                const res = await fetch(`${BACKEND_URL}/save-quiz`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        titulo,
+                        descripcion: '',
+                        curso,
+                        autorId: currentUser.id,
+                        autorUsername: currentUser.username,
+                        preguntas: preguntasPayload
+                    })
+                });
+
+                const data = await res.json();
+
+                if (!data.ok) {
+                    showToast('Error guardando quiz: ' + (data.error || 'Error desconocido'), 'error');
+                    return;
                 }
 
                 showToast('Quiz guardado ✓', 'success');
