@@ -5,6 +5,7 @@
 const SUPABASE_URL = 'https://ikxvbmsvzmsiztxvzdtz.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_cN4exqC8p4r9Hg3ZQYWcWg_gLwcRdui';
 const QUIZ_IMAGE_BUCKET = 'quiz-images';
+const BACKEND_URL = 'https://alephone-backend-production.up.railway.app';
 
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let _authInitPromise = null;
@@ -519,63 +520,27 @@ const AlephAPI = (() => {
         }
     };
 
-    // --- STORAGE ---------------------------------------------
     const Storage = {
-        async subirImagenQuiz(file, { timeoutMs = 15000, reintentos = 2 } = {}) {
+        async subirImagenQuiz(file) {
             const user = Auth.getCurrentUser();
             if (!user) return { ok: false, error: 'Tenés que iniciar sesión.' };
             if (!file)  return { ok: false, error: 'No se seleccionó ningún archivo.' };
 
-            // Obtener token de sesión actual — con timeout propio
-            let token;
             try {
-                const sessionResult = await Promise.race([
-                    _sb.auth.getSession(),
-                    new Promise((_, r) => setTimeout(() => r(new Error('session_timeout')), 5000))
-                ]);
-                token = sessionResult?.data?.session?.access_token;
-            } catch {
-                return { ok: false, error: 'No se pudo obtener la sesión. Intentá recargar la página.' };
-            }
+                const formData = new FormData();
+                formData.append('file', file);
 
-            if (!token) return { ok: false, error: 'Sesión expirada. Volvé a ingresar.' };
+                const res = await fetch(`${BACKEND_URL}/upload-image`, {
+                    method: 'POST',
+                    body: formData
+                });
 
-            const safeExt  = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
-            const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${safeExt}`;
-            const path     = `${user.id}/${safeName}`;
-            const url      = `${SUPABASE_URL}/storage/v1/object/${QUIZ_IMAGE_BUCKET}/${path}`;
+                const data = await res.json();
+                if (!data.ok) return { ok: false, error: data.error || 'Error al subir imagen.' };
+                return { ok: true, file: data.file };
 
-            for (let intento = 0; intento <= reintentos; intento++) {
-                try {
-                    const res = await Promise.race([
-                        fetch(url, {
-                            method: 'POST',
-                            headers: {
-                                'apikey': SUPABASE_KEY,
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': file.type || 'application/octet-stream',
-                                'x-upsert': 'false'
-                            },
-                            body: file
-                        }),
-                        new Promise((_, r) => setTimeout(() => r(new Error('timeout')), timeoutMs))
-                    ]);
-
-                    if (!res.ok) {
-                        const body = await res.json().catch(() => ({}));
-                        console.warn(`[Storage] Intento ${intento + 1} — HTTP ${res.status}:`, body);
-                        if (intento < reintentos) { await new Promise(r => setTimeout(r, 800)); continue; }
-                        return { ok: false, error: body?.message || `Error HTTP ${res.status}` };
-                    }
-
-                    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${QUIZ_IMAGE_BUCKET}/${path}`;
-                    return { ok: true, file: { bucket: QUIZ_IMAGE_BUCKET, path, publicUrl } };
-
-                } catch (err) {
-                    console.warn(`[Storage] Intento ${intento + 1} — ${err.message}`);
-                    if (intento < reintentos) { await new Promise(r => setTimeout(r, 800)); continue; }
-                    return { ok: false, error: err.message === 'timeout' ? 'La subida tardó demasiado. Intentá de nuevo.' : (err.message || 'Error inesperado.') };
-                }
+            } catch (err) {
+                return { ok: false, error: err.message || 'Error inesperado al subir imagen.' };
             }
         }
     };
