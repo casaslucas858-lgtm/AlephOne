@@ -523,81 +523,60 @@ const AlephAPI = (() => {
     const Storage = {
         async subirImagenQuiz(file, { timeoutMs = 15000, reintentos = 2 } = {}) {
             const user = Auth.getCurrentUser();
-            if (!user) return { ok: false, error: 'Tenés que iniciar sesión para subir imágenes.' };
+            if (!user) return { ok: false, error: 'Tenés que iniciar sesión.' };
             if (!file)  return { ok: false, error: 'No se seleccionó ningún archivo.' };
+
+            // Obtener token de sesión actual — con timeout propio
+            let token;
+            try {
+                const sessionResult = await Promise.race([
+                    _sb.auth.getSession(),
+                    new Promise((_, r) => setTimeout(() => r(new Error('session_timeout')), 5000))
+                ]);
+                token = sessionResult?.data?.session?.access_token;
+            } catch {
+                return { ok: false, error: 'No se pudo obtener la sesión. Intentá recargar la página.' };
+            }
+
+            if (!token) return { ok: false, error: 'Sesión expirada. Volvé a ingresar.' };
 
             const safeExt  = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
             const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${safeExt}`;
             const path     = `${user.id}/${safeName}`;
-
-            // Intenta el upload con timeout. Si no responde en timeoutMs, rechaza.
-            async function _intentar() {
-                const uploadPromise = _sb.storage
-                    .from(QUIZ_IMAGE_BUCKET)
-                    .upload(path, file, {
-                        cacheControl: '3600',
-                        upsert: false,
-                        contentType: file.type || 'image/png'
-                    });
-
-                const timeoutPromise = new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('timeout')), timeoutMs)
-                );
-
-                return Promise.race([uploadPromise, timeoutPromise]);
-            }
-
-            let ultimoError = null;
+            const url      = `${SUPABASE_URL}/storage/v1/object/${QUIZ_IMAGE_BUCKET}/${path}`;
 
             for (let intento = 0; intento <= reintentos; intento++) {
                 try {
-                    const { error } = await _intentar();
+                    const res = await Promise.race([
+                        fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'apikey': SUPABASE_KEY,
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': file.type || 'application/octet-stream',
+                                'x-upsert': 'false'
+                            },
+                            body: file
+                        }),
+                        new Promise((_, r) => setTimeout(() => r(new Error('timeout')), timeoutMs))
+                    ]);
 
-                    if (error) {
-                        ultimoError = error;
-                        // Error de bucket — no tiene sentido reintentar
-                        if (error.message?.toLowerCase().includes('bucket')) {
-                            return {
-                                ok: false,
-                                error: `No se pudo subir la imagen. Verificá que exista el bucket "${QUIZ_IMAGE_BUCKET}" en Supabase Storage.`
-                            };
-                        }
-                        // Cualquier otro error de Supabase — reintenta
-                        console.warn(`[Storage] Intento ${intento + 1} falló:`, error.message);
-                        continue;
+                    if (!res.ok) {
+                        const body = await res.json().catch(() => ({}));
+                        console.warn(`[Storage] Intento ${intento + 1} — HTTP ${res.status}:`, body);
+                        if (intento < reintentos) { await new Promise(r => setTimeout(r, 800)); continue; }
+                        return { ok: false, error: body?.message || `Error HTTP ${res.status}` };
                     }
 
-                    // Upload exitoso — obtener URL pública
-                    const { data } = _sb.storage.from(QUIZ_IMAGE_BUCKET).getPublicUrl(path);
-                    return {
-                        ok: true,
-                        file: {
-                            bucket:    QUIZ_IMAGE_BUCKET,
-                            path,
-                            publicUrl: data?.publicUrl || ''
-                        }
-                    };
+                    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${QUIZ_IMAGE_BUCKET}/${path}`;
+                    return { ok: true, file: { bucket: QUIZ_IMAGE_BUCKET, path, publicUrl } };
 
                 } catch (err) {
-                    ultimoError = err;
-                    if (err.message === 'timeout') {
-                        console.warn(`[Storage] Intento ${intento + 1} — timeout después de ${timeoutMs}ms`);
-                    } else {
-                        console.error(`[Storage] Intento ${intento + 1} — error inesperado:`, err);
-                    }
-                    // Pequeña pausa antes del reintento
-                    if (intento < reintentos) await new Promise(r => setTimeout(r, 800));
+                    console.warn(`[Storage] Intento ${intento + 1} — ${err.message}`);
+                    if (intento < reintentos) { await new Promise(r => setTimeout(r, 800)); continue; }
+                    return { ok: false, error: err.message === 'timeout' ? 'La subida tardó demasiado. Intentá de nuevo.' : (err.message || 'Error inesperado.') };
                 }
             }
-
-            // Agotó los reintentos
-            const esTimeout = ultimoError?.message === 'timeout';
-            return {
-                ok: false,
-                error: esTimeout
-                    ? `La subida tardó demasiado (${timeoutMs / 1000}s). Revisá tu conexión y volvé a intentarlo.`
-                    : (ultimoError?.message || 'La subida falló. Intentá de nuevo.')
-            };
         }
     };
 
