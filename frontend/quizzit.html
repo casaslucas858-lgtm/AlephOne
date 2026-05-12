@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quizzit — AlephOne</title>
+    <title>Quizzit — AlephProject</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         /* ── QUIZ CARDS ── */
@@ -181,7 +181,7 @@
     <header class="topbar">
         <div style="display:flex;align-items:center;gap:10px;">
             <button class="mobile-nav-btn" onclick="toggleMobileNav()">☰</button>
-            <span class="topbar-logo">ℵ AlephOne</span>
+            <span class="topbar-logo">ℵ AlephProject</span>
         </div>
         <div class="topbar-right">
             <button class="dark-mode-toggle" id="darkModeBtn">🌙</button>
@@ -276,6 +276,10 @@ async function renderDocente() {
     const quizzes = await AlephAPI.Quiz.getDelDocente(currentUser.username);
     const lista = document.getElementById('quizzesList');
 
+    // Caché local para evitar pasar JSONs pesados por atributos HTML
+    window._quizzesCache = {};
+    quizzes.forEach(q => { window._quizzesCache[q.id] = q; });
+
     if (!quizzes.length) {
         lista.innerHTML = `<div class="empty-state">
             <div class="empty-icon">🧪</div>
@@ -305,7 +309,7 @@ async function renderDocente() {
                         ▶ Lanzar en vivo
                     </button>
                     <button class="btn btn-secondary btn-sm"
-                            onclick="abrirAsignar('${q.id}', '${sanitize(q.titulo)}', ${JSON.stringify(q.preguntas || []).replace(/"/g, '&quot;')})">
+                            onclick="abrirAsignar('${q.id}')">
                         📋 Asignar como tarea
                     </button>
                     <a href="quiz-crear.html?edit=${q.id}" class="btn btn-ghost btn-sm">Editar</a>
@@ -414,12 +418,14 @@ async function entrarSala() {
 }
 
 // ── ASIGNAR COMO TAREA ────────────────────────────────────
-function abrirAsignar(quizId, titulo, preguntas) {
+function abrirAsignar(quizId) {
+    const q = window._quizzesCache[quizId];
+    if (!q) return;
+    
     quizAsignarId = quizId;
-    try { quizAsignarPreguntas = typeof preguntas === 'string' ? JSON.parse(preguntas) : preguntas; }
-    catch { quizAsignarPreguntas = []; }
+    quizAsignarPreguntas = q.preguntas || [];
 
-    document.getElementById('asignarQuizNombre').textContent = titulo;
+    document.getElementById('asignarQuizNombre').textContent = q.titulo;
 
     const tiempoTotal = quizAsignarPreguntas.reduce((a, p) => a + (p.tiempo_segundos || 30), 0);
     document.getElementById('timerTotal').textContent = `${Math.ceil(tiempoTotal / 60)} min`;
