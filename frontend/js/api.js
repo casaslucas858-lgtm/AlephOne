@@ -159,20 +159,17 @@ const AlephAPI = (() => {
             let email = usernameOrEmail;
 
             if (!usernameOrEmail.includes('@')) {
-                const { data: profile, error: pError } = await _sb
-                    .from('profiles')
-                    .select('email_real')
-                    .eq('username', usernameOrEmail)
-                    .maybeSingle();
+                const { data: emailData, error: pError } = await _sb
+                    .rpc('get_email_by_username', { p_username: usernameOrEmail });
 
-                if (pError && !_isNoRowsError(pError)) {
-                    return { ok: false, error: 'No se pudo verificar el usuario. Revisa la configuracion de perfiles.' };
+                if (pError) {
+                    return { ok: false, error: 'No se pudo verificar el usuario.' };
                 }
-                if (!profile?.email_real) {
+                if (!emailData) {
                     return { ok: false, error: 'Usuario no encontrado' };
                 }
 
-                email = profile.email_real;
+                email = emailData;
             }
 
             const { data, error } = await _sb.auth.signInWithPassword({ email, password });
