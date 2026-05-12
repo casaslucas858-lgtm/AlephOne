@@ -1130,108 +1130,33 @@
 
             const tiempoMs = Date.now() - (tiempoInicio || Date.now());
 
-            // Verificar si es correcta de base
-            let correcto = verificarRespuesta(p, valorRaw);
-
-            // Calcular puntos base máximos según tiempo
-            const tiempoTotal = (p.tiempo_segundos || 30) * 1000;
-            const factor = Math.max(0.2, 1 - (tiempoMs / tiempoTotal) * 0.8);
-            const ptsBaseMaximos = Math.round((p.puntos || 100) * factor);
-            let puntosGanados = correcto ? ptsBaseMaximos : 0;
-
-            if (p.tipo === 'encuesta' || p.tipo === 'escala' || p.tipo === 'slide') {
-                correcto = true;
-                puntosGanados = 0;
-            }
-
-            // Para imagen_click, el puntaje decae con la distancia
-            if (p.tipo === 'imagen_click') {
-                try {
-                    const marca = JSON.parse(valorRaw);
-                    const corr = typeof p.respuesta_correcta === 'string' ? JSON.parse(p.respuesta_correcta) : p.respuesta_correcta;
-                    if (marca && corr) {
-                        const dx = marca.x - corr.x;
-                        const dy = marca.y - corr.y;
-                        const dist = Math.sqrt(dx*dx + dy*dy);
-                        
-                        if (dist <= 3) {
-                            puntosGanados = ptsBaseMaximos;
-                            correcto = true;
-                        } else if (dist <= 20) {
-                            puntosGanados = Math.round(ptsBaseMaximos * ((20 - dist) / 17));
-                            correcto = puntosGanados > 0;
-                        } else {
-                            puntosGanados = 0;
-                            correcto = false;
-                        }
-                    }
-                } catch(e) {}
-            }
-
-            // Guardar en Supabase
-            await AlephAPI.Sala.responder({
-                salaId: sala.id,
-                preguntaId: p.id,
-                respuesta: valorRaw,
-                esCorrecta: correcto,
-                tiempoMs,
-                puntosGanados
-            });
-
-            // Actualizar puntaje
-            if (puntosGanados > 0) {
-                await AlephAPI.Sala.actualizarPuntaje({
-                    salaId: sala.id,
-                    userId: currentUser.id,
-                    puntosExtra: puntosGanados
+            try {
+                const res = await fetch('https://alephone-backend-production.up.railway.app/responder-pregunta', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        salaId: sala.id,
+                        preguntaId: p.id,
+                        userId: currentUser.id,
+                        username: currentUser.username,
+                        respuesta: valorRaw,
+                        tiempoMs
+                    })
                 });
-            }
 
-            renderEsperando(correcto, puntosGanados);
-        }
+                const data = await res.json();
+                if (!data.ok) {
+                    console.error('Error al responder:', data.error);
+                    renderEsperando(false, 0);
+                    return;
+                }
 
-        function verificarRespuesta(p, valor) {
-            if (p.tipo === 'slide') return true;
-            if (p.tipo === 'encuesta' || p.tipo === 'escala') return true;
-            const correcta = typeof p.respuesta_correcta === 'string'
-                ? p.respuesta_correcta
-                : JSON.stringify(p.respuesta_correcta);
+                renderEsperando(data.esCorrecta, data.puntosGanados);
 
-            if (p.tipo === 'multiple_choice') return valor === correcta;
-            if (p.tipo === 'seleccion_multiple') {
-                const corrArr = Array.isArray(p.respuesta_correcta) ? p.respuesta_correcta : [];
-                return valor === JSON.stringify(corrArr.sort());
+            } catch (err) {
+                console.error('Error de red al responder:', err);
+                renderEsperando(false, 0);
             }
-            if (p.tipo === 'ordenar') {
-                const correctaArr = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : p.opciones;
-                return valor === JSON.stringify(correctaArr);
-            }
-            if (p.tipo === 'relacionar_columnas') {
-                try {
-                    const pares = JSON.parse(valor);
-                    const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : p.opciones;
-                    if (pares.length !== opts.length) return false;
-                    return pares.every(par => par.izqId === par.derId);
-                } catch (e) { return false; }
-            }
-            if (p.tipo === 'imagen_click') {
-                try {
-                    const marca = JSON.parse(valor); // {x, y}
-                    const corr = typeof p.respuesta_correcta === 'string' ? JSON.parse(p.respuesta_correcta) : p.respuesta_correcta; // {x, y, r}
-                    if (!marca || !corr) return false;
-
-                    // Calculate distance in percentage space
-                    const dx = marca.x - corr.x;
-                    const dy = marca.y - corr.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    return dist <= corr.r;
-                } catch (e) { return false; }
-            }
-            if (p.tipo === 'verdadero_falso') return valor === correcta;
-            if (p.tipo === 'numerica') return parseFloat(valor) === parseFloat(correcta);
-            if (p.tipo === 'respuesta_corta' || p.tipo === 'completar_espacio' || p.tipo === 'libre_imagen')
-                return valor.trim().toLowerCase() === correcta.trim().toLowerCase();
-            return false;
         }
 
         // ── RENDER: Esperando resultado ───────────────────────────
