@@ -5,7 +5,6 @@
 const SUPABASE_URL = 'https://ikxvbmsvzmsiztxvzdtz.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_cN4exqC8p4r9Hg3ZQYWcWg_gLwcRdui';
 const QUIZ_IMAGE_BUCKET = 'quiz-images';
-const BACKEND_URL = 'https://alephone-backend-production.up.railway.app';
 
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let _authInitPromise = null;
