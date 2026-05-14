@@ -747,6 +747,162 @@ const AlephAPI = (() => {
         }
     };
 
-    return { Auth, Comunicacion, Tareas, Horario, Promedios, Calendario, Quiz, Preguntas, Sala, Asignacion, Storage };
+    // --- SCHOOLS ---------------------------------------------
+    const Schools = {
+        async buscar(query) {
+            const { data, error } = await _sb
+                .from('schools')
+                .select('id, name, code')
+                .ilike('name', `%${query}%`)
+                .limit(10);
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, schools: data || [] };
+        },
+
+        async getByCode(code) {
+            const { data, error } = await _sb
+                .from('schools')
+                .select('id, name, code')
+                .eq('code', code.toUpperCase())
+                .maybeSingle();
+            if (error && !_isNoRowsError(error)) return { ok: false, error: error.message };
+            return { ok: true, school: data || null };
+        },
+
+        async unirse(schoolId) {
+            const user = Auth.getCurrentUser();
+            if (!user) return { ok: false, error: 'No autenticado' };
+
+            // Verificar si ya existe membresía
+            const { data: existing } = await _sb
+                .from('school_members')
+                .select('id, status')
+                .eq('school_id', schoolId)
+                .eq('user_id', user.id)
+                .maybeSingle();
+
+            if (existing) {
+                const msgs = {
+                    active: 'Ya sos miembro de esta escuela',
+                    pending: 'Tu solicitud ya está pendiente',
+                    rejected: 'Tu solicitud fue rechazada anteriormente'
+                };
+                return { ok: false, error: msgs[existing.status] || 'Ya tenés una solicitud' };
+            }
+
+            const { data, error } = await _sb
+                .from('school_members')
+                .insert({
+                    school_id: schoolId,
+                    user_id: user.id,
+                    role: user.role,
+                    status: 'pending'
+                })
+                .select()
+                .single();
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, member: data };
+        },
+
+        async getMisSchools() {
+            const user = Auth.getCurrentUser();
+            if (!user) return { ok: false, error: 'No autenticado' };
+
+            const { data, error } = await _sb
+                .from('school_members')
+                .select('*, schools(id, name, code)')
+                .eq('user_id', user.id)
+                .eq('status', 'active');
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, schools: (data || []).map(m => ({ ...m.schools, role: m.role })) };
+        },
+
+        async getMiembros(schoolId, status = 'pending') {
+            const { data, error } = await _sb
+                .from('school_members')
+                .select('*, profiles(username, role)')
+                .eq('school_id', schoolId)
+                .eq('status', status);
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, members: data || [] };
+        },
+
+        async aprobar(memberId) {
+            const { data, error } = await _sb
+                .from('school_members')
+                .update({ status: 'active' })
+                .eq('id', memberId)
+                .select()
+                .single();
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, member: data };
+        },
+
+        async rechazar(memberId) {
+            const { data, error } = await _sb
+                .from('school_members')
+                .update({ status: 'rejected' })
+                .eq('id', memberId)
+                .select()
+                .single();
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, member: data };
+        },
+
+        async getGrados(schoolId) {
+            const { data, error } = await _sb
+                .from('school_grades')
+                .select('*, grade_members(count)')
+                .eq('school_id', schoolId)
+                .order('name', { ascending: true });
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, grades: data || [] };
+        },
+
+        async asignarGrado(userId, gradeId, role = 'student') {
+            const { data: existing } = await _sb
+                .from('grade_members')
+                .select('id')
+                .eq('grade_id', gradeId)
+                .eq('user_id', userId)
+                .maybeSingle();
+
+            if (existing) {
+                return { ok: false, error: 'El usuario ya está en este grado' };
+            }
+
+            const { data, error } = await _sb
+                .from('grade_members')
+                .insert({ grade_id: gradeId, user_id: userId, role })
+                .select()
+                .single();
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, member: data };
+        },
+
+        async removerDeGrado(userId, gradeId) {
+            const { error } = await _sb
+                .from('grade_members')
+                .delete()
+                .eq('grade_id', gradeId)
+                .eq('user_id', userId);
+            return error ? { ok: false, error: error.message } : { ok: true };
+        },
+
+        async getMisGrados(schoolId) {
+            const user = Auth.getCurrentUser();
+            if (!user) return { ok: false, error: 'No autenticado' };
+
+            const { data, error } = await _sb
+                .from('grade_members')
+                .select('*, school_grades(id, name, school_id)')
+                .eq('user_id', user.id)
+                .eq('school_grades.school_id', schoolId);
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, grades: (data || []).map(m => m.school_grades).filter(Boolean) };
+        }
+    };
+
+    return { Auth, Comunicacion, Tareas, Horario, Promedios, Calendario, Quiz, Preguntas, Sala, Asignacion, Storage, Schools };
 
 })();
