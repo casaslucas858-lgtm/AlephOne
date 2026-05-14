@@ -308,7 +308,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Páginas protegidas
-    const protectedPages = ['dashboard', 'tareas', 'horario', 'promedios', 'comunicacion', 'ai-chat'];
+    const protectedPages = ['dashboard', 'tareas', 'horario', 'promedios', 'comunicacion', 'ai-chat', 'schools'];
     const isProtected = protectedPages.some(p => window.location.pathname.includes(p));
     
     if (isProtected) {
