@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escuelas — AlephOne</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- SVG filtros de visión de color -->
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
+    <defs>
+        <filter id="filter-deuteranopia" color-interpolation-filters="linearRGB">
+            <feColorMatrix type="matrix" values="0.367 0.861 -0.228 0 0  0.280 0.673 0.047 0 0  -0.012 0.043 0.969 0 0  0 0 0 1 0"/>
+        </filter>
+        <filter id="filter-protanopia" color-interpolation-filters="linearRGB">
+            <feColorMatrix type="matrix" values="0.152 1.053 -0.205 0 0  0.115 0.786 0.099 0 0  -0.004 -0.048 1.052 0 0  0 0 0 1 0"/>
+        </filter>
+        <filter id="filter-tritanopia" color-interpolation-filters="linearRGB">
+            <feColorMatrix type="matrix" values="1.256 -0.077 -0.179 0 0  -0.078 0.931 0.148 0 0  0.005 0.691 0.304 0 0  0 0 0 1 0"/>
+        </filter>
+    </defs>
+</svg>
+
+<div class="app-shell">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="mobile-nav-btn" id="mobileNavBtn" onclick="toggleMobileNav()">☰</button>
+            <span class="topbar-logo">ℵ AlephOne</span>
+        </div>
+        <div class="topbar-right">
+            <button class="dark-mode-toggle" id="darkModeBtn" title="Cambiar tema">🌙</button>
+            <div class="user-pill">
+                <div class="user-avatar" id="userAvatar">?</div>
+                <span id="username">—</span>
+                <span class="role-badge" id="userRole">—</span>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+        </div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+        <span class="nav-section-label">Principal</span>
+        <a href="dashboard.html" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="comunicacion.html" class="nav-link"><span class="nav-icon">📢</span> Comunicación</a>
+        <a href="tareas.html" class="nav-link"><span class="nav-icon">📋</span> Tareas</a>
+        <span class="nav-section-label">Académico</span>
+        <a href="horario.html" class="nav-link"><span class="nav-icon">🗓️</span> Horario</a>
+        <a href="promedios.html" class="nav-link"><span class="nav-icon">📊</span> Promedios</a>
+        <span class="nav-section-label">Herramientas</span>
+        <a href="quizzit.html" class="nav-link"><span class="nav-icon">🧪</span> Quizzit</a>
+        <a href="ai-chat.html" class="nav-link"><span class="nav-icon">🤖</span> Fractal AI</a>
+        <span class="nav-section-label">Escuelas</span>
+        <a href="schools.html" class="nav-link active"><span class="nav-icon">🏫</span> Mis Escuelas</a>
+        <div class="sidebar-footer">
+            <button class="btn btn-ghost btn-sm" onclick="logout()" style="width:100%;">← Cerrar sesión</button>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+        <!-- Cargando -->
+        <div id="loadingState" style="display:flex;align-items:center;justify-content:center;min-height:300px">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Sin escuelas -->
+        <div id="noSchoolView" style="display:none">
+
+            <div class="day-greeting fade-up" style="margin-bottom:28px">
+                <div class="greeting-label">ESCUELAS</div>
+                <h2>Encontrá tu institución</h2>
+                <div class="greeting-date">Buscá por nombre o ingresá el código que te dio tu docente</div>
+            </div>
+
+            <!-- Solicitudes pendientes -->
+            <div id="pendingSection" style="display:none;margin-bottom:24px">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">🕐 Solicitudes pendientes</span>
+                    </div>
+                    <div id="pendingList" class="item-list"></div>
+                </div>
+            </div>
+
+            <!-- Búsqueda -->
+            <div class="card fade-up">
+                <div class="card-header">
+                    <span class="card-title">Buscar escuela</span>
+                </div>
+                <div class="auth-tabs" style="margin-bottom:18px">
+                    <button class="auth-tab active" id="tabNombre" onclick="switchTab('nombre')">Por nombre</button>
+                    <button class="auth-tab" id="tabCodigo" onclick="switchTab('codigo')">Por código</button>
+                </div>
+
+                <div id="searchNombrePanel">
+                    <div style="display:flex;gap:8px">
+                        <input type="text" class="form-input" id="searchNombreInput"
+                            placeholder="Ej: Instituto San Martín..."
+                            style="flex:1"
+                            oninput="handleSearchInput(this.value)">
+                        <button class="btn btn-primary" onclick="buscarPorNombre()">Buscar</button>
+                    </div>
+                </div>
+
+                <div id="searchCodigoPanel" style="display:none">
+                    <div style="display:flex;gap:8px">
+                        <input type="text" class="form-input" id="searchCodigoInput"
+                            placeholder="Ej: ALF-2024"
+                            style="flex:1;font-family:var(--font-mono);letter-spacing:1px;text-transform:uppercase"
+                            oninput="this.value=this.value.toUpperCase()"
+                            onkeydown="if(event.key==='Enter')buscarPorCodigo()">
+                        <button class="btn btn-primary" onclick="buscarPorCodigo()">Buscar</button>
+                    </div>
+                </div>
+
+                <div id="searchResults" style="margin-top:16px"></div>
+            </div>
+
+            <div class="alert alert-info" style="margin-top:16px">
+                <span>ℹ️</span>
+                <div>
+                    <div class="alert-title">¿No tenés código?</div>
+                    Pedíselo a tu docente o director. También podés buscar por nombre y solicitar unirte.
+                </div>
+            </div>
+        </div>
+
+        <!-- Con escuelas activas -->
+        <div id="mySchoolsView" style="display:none">
+            <div class="page-header">
+                <h2>Mis Escuelas</h2>
+                <p>Instituciones a las que pertenecés</p>
+            </div>
+
+            <div id="mySchoolsList" class="item-list" style="margin-bottom:24px"></div>
+
+            <button class="btn btn-secondary" onclick="showJoinFlow()">➕ Unirme a otra escuela</button>
+
+            <div id="joinFlowPanel" style="display:none;margin-top:20px">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Buscar escuela</span>
+                        <button class="btn btn-ghost btn-sm" onclick="hideJoinFlow()">✕</button>
+                    </div>
+                    <div class="auth-tabs" style="margin-bottom:18px">
+                        <button class="auth-tab active" id="tabNombre2" onclick="switchTab2('nombre')">Por nombre</button>
+                        <button class="auth-tab" id="tabCodigo2" onclick="switchTab2('codigo')">Por código</button>
+                    </div>
+                    <div id="searchNombrePanel2">
+                        <div style="display:flex;gap:8px">
+                            <input type="text" class="form-input" id="searchNombreInput2"
+                                placeholder="Ej: Instituto San Martín..."
+                                style="flex:1"
+                                oninput="handleSearchInput2(this.value)">
+                            <button class="btn btn-primary" onclick="buscarPorNombre2()">Buscar</button>
+                        </div>
+                    </div>
+                    <div id="searchCodigoPanel2" style="display:none">
+                        <div style="display:flex;gap:8px">
+                            <input type="text" class="form-input" id="searchCodigoInput2"
+                                placeholder="Ej: ALF-2024"
+                                style="flex:1;font-family:var(--font-mono);letter-spacing:1px;text-transform:uppercase"
+                                oninput="this.value=this.value.toUpperCase()"
+                                onkeydown="if(event.key==='Enter')buscarPorCodigo2()">
+                            <button class="btn btn-primary" onclick="buscarPorCodigo2()">Buscar</button>
+                        </div>
+                    </div>
+                    <div id="searchResults2" style="margin-top:16px"></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" id="bottomNav">
+    <a href="dashboard.html" class="bn-item"><span class="bn-icon">🏠</span><span class="bn-label">Inicio</span></a>
+    <a href="comunicacion.html" class="bn-item"><span class="bn-icon">📢</span><span class="bn-label">Mensajes</span></a>
+    <a href="tareas.html" class="bn-item"><span class="bn-icon">📋</span><span class="bn-label">Tareas</span></a>
+    <button type="button" class="bn-item" onclick="toggleMasSheet()"><span class="bn-icon">⋯</span><span class="bn-label">Más</span></button>
+</nav>
+
+<div class="mas-overlay" id="masOverlay" onclick="toggleMasSheet()"></div>
+<div class="mas-sheet" id="masSheet">
+    <div class="mas-handle"></div>
+    <a href="horario.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🗓️</span><span>Horario</span></a>
+    <a href="promedios.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">📊</span><span>Promedios</span></a>
+    <a href="quizzit.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🧪</span><span>Quizzit</span></a>
+    <a href="schools.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🏫</span><span>Escuelas</span></a>
+    <a href="ai-chat.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🤖</span><span>Fractal AI</span></a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script>
+// ── MOBILE NAV ────────────────────────────────────────────
+function toggleMobileNav() {
+    document.getElementById('sidebar').classList.toggle('open');
+}
+function toggleMasSheet() {
+    document.getElementById('masSheet').classList.toggle('open');
+    document.getElementById('masOverlay').classList.toggle('open');
+}
+
+// ── TABS ──────────────────────────────────────────────────
+function switchTab(tab) {
+    document.getElementById('tabNombre').classList.toggle('active', tab === 'nombre');
+    document.getElementById('tabCodigo').classList.toggle('active', tab === 'codigo');
+    document.getElementById('searchNombrePanel').style.display = tab === 'nombre' ? '' : 'none';
+    document.getElementById('searchCodigoPanel').style.display = tab === 'codigo' ? '' : 'none';
+    document.getElementById('searchResults').innerHTML = '';
+}
+
+function switchTab2(tab) {
+    document.getElementById('tabNombre2').classList.toggle('active', tab === 'nombre');
+    document.getElementById('tabCodigo2').classList.toggle('active', tab === 'codigo');
+    document.getElementById('searchNombrePanel2').style.display = tab === 'nombre' ? '' : 'none';
+    document.getElementById('searchCodigoPanel2').style.display = tab === 'codigo' ? '' : 'none';
+    document.getElementById('searchResults2').innerHTML = '';
+}
+
+// ── BÚSQUEDA ──────────────────────────────────────────────
+let _searchTimer = null;
+
+function handleSearchInput(val) {
+    clearTimeout(_searchTimer);
+    if (val.length < 2) { document.getElementById('searchResults').innerHTML = ''; return; }
+    _searchTimer = setTimeout(() => buscarPorNombre(), 400);
+}
+
+function handleSearchInput2(val) {
+    clearTimeout(_searchTimer);
+    if (val.length < 2) { document.getElementById('searchResults2').innerHTML = ''; return; }
+    _searchTimer = setTimeout(() => buscarPorNombre2(), 400);
+}
+
+async function buscarPorNombre() {
+    const q = document.getElementById('searchNombreInput').value.trim();
+    if (q) await _runSearch(q, 'searchResults');
+}
+async function buscarPorNombre2() {
+    const q = document.getElementById('searchNombreInput2').value.trim();
+    if (q) await _runSearch(q, 'searchResults2');
+}
+
+async function buscarPorCodigo() {
+    const code = document.getElementById('searchCodigoInput').value.trim();
+    if (!code) return;
+    const res = await AlephAPI.Schools.getByCode(code);
+    if (!res.ok || !res.school) {
+        document.getElementById('searchResults').innerHTML =
+            `<div class="empty-state"><div class="empty-icon">🔍</div><p>No se encontró ninguna escuela con ese código.</p></div>`;
+        return;
+    }
+    renderSearchResults([res.school], 'searchResults');
+}
+
+async function buscarPorCodigo2() {
+    const code = document.getElementById('searchCodigoInput2').value.trim();
+    if (!code) return;
+    const res = await AlephAPI.Schools.getByCode(code);
+    if (!res.ok || !res.school) {
+        document.getElementById('searchResults2').innerHTML =
+            `<div class="empty-state"><div class="empty-icon">🔍</div><p>No se encontró ninguna escuela con ese código.</p></div>`;
+        return;
+    }
+    renderSearchResults([res.school], 'searchResults2');
+}
+
+async function _runSearch(query, containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = `<div style="display:flex;justify-content:center;padding:16px"><div class="spinner"></div></div>`;
+    const res = await AlephAPI.Schools.buscar(query);
+    if (!res.ok) {
+        container.innerHTML = `<div class="alert alert-danger"><span>⚠️</span> ${sanitize(res.error)}</div>`;
+        return;
+    }
+    if (!res.schools.length) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><p>No se encontraron escuelas con ese nombre.</p></div>`;
+        return;
+    }
+    renderSearchResults(res.schools, containerId);
+}
+
+function renderSearchResults(schools, containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    const myIds      = new Set(window._mySchoolIds || []);
+    const pendingIds = new Set(window._pendingIds  || []);
+
+    schools.forEach(school => {
+        const isActive  = myIds.has(school.id);
+        const isPending = pendingIds.has(school.id);
+
+        let actionBtn = '';
+        if (isActive)       actionBtn = `<span class="tag tag-success">✓ Miembro</span>`;
+        else if (isPending) actionBtn = `<span class="tag tag-warning">⏳ Pendiente</span>`;
+        else                actionBtn = `<button class="btn btn-primary btn-sm" onclick="solicitarUnirse('${school.id}','${sanitize(school.name).replace(/'/g,"\\'")}',this)">Unirse</button>`;
+
+        const item = document.createElement('div');
+        item.className = 'item fade-up';
+        item.style.marginBottom = '6px';
+        item.innerHTML = `
+            <div class="item-icon teal">🏫</div>
+            <div class="item-body">
+                <div class="item-title">${sanitize(school.name)}</div>
+                <div class="item-meta"><span class="mono" style="font-size:.85em;opacity:.65">${sanitize(school.code)}</span></div>
+            </div>
+            <div class="item-right">${actionBtn}</div>
+        `;
+        container.appendChild(item);
+    });
+}
+
+// ── SOLICITAR UNIRSE ──────────────────────────────────────
+async function solicitarUnirse(schoolId, schoolName, btn) {
+    btn.disabled = true;
+    btn.textContent = '...';
+
+    const res = await AlephAPI.Schools.unirse(schoolId);
+    if (!res.ok) {
+        showToast(res.error, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Unirse';
+        return;
+    }
+
+    window._pendingIds = window._pendingIds || [];
+    window._pendingIds.push(schoolId);
+    btn.closest('.item').querySelector('.item-right').innerHTML = `<span class="tag tag-warning">⏳ Pendiente</span>`;
+    addPendingItem(schoolId, schoolName);
+    showToast(`Solicitud enviada a ${schoolName}`, 'success');
+}
+
+function addPendingItem(schoolId, schoolName) {
+    document.getElementById('pendingSection').style.display = '';
+    const list = document.getElementById('pendingList');
+    const item = document.createElement('div');
+    item.className = 'item fade-up';
+    item.innerHTML = `
+        <div class="item-icon warning">🕐</div>
+        <div class="item-body">
+            <div class="item-title">${sanitize(schoolName)}</div>
+            <div class="item-meta">Esperando aprobación del director</div>
+        </div>
+        <div class="item-right"><span class="tag tag-warning">Pendiente</span></div>
+    `;
+    list.appendChild(item);
+}
+
+// ── JOIN FLOW ─────────────────────────────────────────────
+function showJoinFlow() {
+    const panel = document.getElementById('joinFlowPanel');
+    panel.style.display = '';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function hideJoinFlow() {
+    document.getElementById('joinFlowPanel').style.display = 'none';
+}
+
+// ── RENDER MIS ESCUELAS ───────────────────────────────────
+function renderMySchools(schools) {
+    const list = document.getElementById('mySchoolsList');
+    list.innerHTML = '';
+    const roleLabel = { student: 'Estudiante', teacher: 'Docente', director: 'Director' };
+    const roleClass = { student: 'tag-teal', teacher: 'tag-accent', director: 'tag-blue' };
+
+    schools.forEach(school => {
+        const item = document.createElement('div');
+        item.className = 'item fade-up';
+        item.style.cursor = 'pointer';
+        item.onclick = () => {
+            const user = AlephAPI.Auth.getCurrentUser();
+            const dest = user?.role === 'director' ? 'school-director.html' : 'school-dash.html';
+            location.href = `${dest}?id=${school.id}`;
+        };
+        item.innerHTML = `
+            <div class="item-icon teal" style="font-size:1.2em">🏫</div>
+            <div class="item-body">
+                <div class="item-title">${sanitize(school.name)}</div>
+                <div class="item-meta"><span class="mono" style="font-size:.85em;opacity:.65">${sanitize(school.code)}</span></div>
+            </div>
+            <div class="item-right" style="display:flex;align-items:center;gap:8px">
+                <span class="tag ${roleClass[school.role] || 'tag-teal'}">${roleLabel[school.role] || school.role}</span>
+                <span style="color:var(--text-faint)">›</span>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+}
+
+// ── INIT ──────────────────────────────────────────────────
+// app.js ya corrió Auth.init() y applyTheme() en su propio DOMContentLoaded.
+// Nos enganchamos con un segundo listener que corre después.
+document.addEventListener('DOMContentLoaded', async () => {
+    const user = AlephAPI.Auth.getCurrentUser();
+    if (!user) { location.href = './index.html'; return; }
+
+    // Header — app.js solo llena #username / #userRole en protectedPages hardcodeadas.
+    // Lo rellenamos acá por si schools no está en esa lista.
+    const roles = { student: 'Estudiante', teacher: 'Docente', director: 'Director', superadmin: 'Admin' };
+    const usernameEl = document.getElementById('username');
+    const roleEl     = document.getElementById('userRole');
+    const avatarEl   = document.getElementById('userAvatar');
+    if (usernameEl && usernameEl.textContent === '—') usernameEl.textContent = user.username;
+    if (avatarEl)   avatarEl.textContent = (user.username || '?')[0].toUpperCase();
+    if (roleEl && roleEl.textContent === '—') {
+        roleEl.textContent = roles[user.role] || user.role;
+        roleEl.className   = `role-badge ${user.role}`;
+    }
+
+    // Mis escuelas activas
+    const res = await AlephAPI.Schools.getMisSchools();
+    document.getElementById('loadingState').style.display = 'none';
+
+    if (!res.ok) {
+        showToast('Error cargando escuelas', 'error');
+        document.getElementById('noSchoolView').style.display = '';
+        return;
+    }
+
+    window._mySchoolIds = res.schools.map(s => s.id);
+    window._pendingIds  = [];
+
+    // Pendientes — fetch directo al cliente Supabase que api.js ya instanció como _sb
+    // Pero _sb es privado dentro del IIFE. Usamos una query pública a través de AlephAPI.
+    // Por ahora dejamos _pendingIds vacío; se actualiza en sesión al hacer Unirse.
+    // TODO: exponer Schools.getMisSolicitudesPendientes() si se necesita persistencia entre sesiones.
+
+    if (res.schools.length === 0) {
+        document.getElementById('noSchoolView').style.display = '';
+    } else {
+        document.getElementById('mySchoolsView').style.display = '';
+        renderMySchools(res.schools);
+    }
+});
+</script>
+</body>
+</html>
