@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Director — AlephOne</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .school-header {
+            background: #13131A;
+            border-radius: var(--radius-xl);
+            padding: 22px 26px;
+            margin-bottom: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(var(--primary-rgb), 0.12);
+        }
+        .school-header::before {
+            content: '';
+            position: absolute;
+            width: 400px; height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(var(--primary-rgb),0.1) 0%, transparent 65%);
+            right: -80px; bottom: -120px;
+            pointer-events: none;
+        }
+        .school-header::after {
+            content: 'ℵ';
+            position: absolute;
+            font-family: var(--font-display);
+            font-size: 10em; font-weight: 800;
+            color: rgba(255,255,255,0.02);
+            right: -0.05em; top: -0.2em;
+            pointer-events: none; user-select: none;
+        }
+        .school-header-inner { position: relative; z-index: 1; }
+        .school-name {
+            font-family: var(--font-display);
+            font-size: 1.5em; font-weight: 800;
+            color: white; margin-bottom: 2px;
+        }
+        .school-meta { display: flex; gap: 10px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+        .school-badge {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.75);
+            padding: 3px 12px; border-radius: 999px;
+            font-size: 0.76em; font-weight: 600;
+            font-family: var(--font-display);
+        }
+        .school-code { font-family: var(--font-mono); font-size: 0.75em; color: rgba(255,255,255,0.3); }
+
+        /* Tabs */
+        .dash-tabs {
+            display: flex; gap: 4px;
+            background: var(--bg-subtle);
+            padding: 4px; border-radius: var(--radius-lg);
+            margin-bottom: 20px;
+            overflow-x: auto; scrollbar-width: none;
+        }
+        .dash-tabs::-webkit-scrollbar { display: none; }
+        .dash-tab {
+            flex: 1; min-width: 80px;
+            padding: 8px 12px; border-radius: var(--radius);
+            font-size: 0.82em; font-weight: 600;
+            color: var(--text-muted); background: transparent;
+            border: none; cursor: pointer;
+            transition: all var(--t);
+            font-family: var(--font-display);
+            white-space: nowrap; text-align: center;
+        }
+        .dash-tab:hover { color: var(--text); }
+        .dash-tab.active {
+            background: var(--bg-card); color: var(--text);
+            box-shadow: var(--shadow-sm);
+        }
+        .dash-tab .tab-badge {
+            display: inline-block;
+            background: #dc3545; color: white;
+            font-size: 0.68em; font-weight: 800;
+            padding: 1px 5px; border-radius: 999px;
+            margin-left: 4px; vertical-align: middle;
+        }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Member cards */
+        .member-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 14px 16px;
+            display: flex; align-items: center; gap: 12px;
+            transition: all var(--t);
+            margin-bottom: 8px;
+        }
+        .member-card:hover { box-shadow: var(--shadow-sm); }
+        .member-avatar {
+            width: 38px; height: 38px;
+            border-radius: var(--radius);
+            background: linear-gradient(135deg, var(--teal), var(--blue));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9em; font-weight: 800;
+            color: white; flex-shrink: 0;
+            font-family: var(--font-display);
+        }
+        .member-avatar.teacher { background: linear-gradient(135deg, var(--accent), var(--secondary)); }
+        .member-info { flex: 1; min-width: 0; }
+        .member-name { font-weight: 600; font-size: 0.875em; }
+        .member-sub { font-size: 0.74em; color: var(--text-muted); margin-top: 1px; }
+        .member-actions { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+
+        /* Grade pills */
+        .grade-select {
+            padding: 4px 8px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.78em; color: var(--text);
+            font-family: var(--font-body);
+            max-width: 120px;
+        }
+        .grade-select:focus { border-color: var(--teal); outline: none; }
+
+        /* Stats row */
+        .director-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px; margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
+    <defs>
+        <filter id="filter-deuteranopia" color-interpolation-filters="linearRGB">
+            <feColorMatrix type="matrix" values="0.367 0.861 -0.228 0 0  0.280 0.673 0.047 0 0  -0.012 0.043 0.969 0 0  0 0 0 1 0"/>
+        </filter>
+        <filter id="filter-protanopia" color-interpolation-filters="linearRGB">
+            <feColorMatrix type="matrix" values="0.152 1.053 -0.205 0 0  0.115 0.786 0.099 0 0  -0.004 -0.048 1.052 0 0  0 0 0 1 0"/>
+        </filter>
+        <filter id="filter-tritanopia" color-interpolation-filters="linearRGB">
+            <feColorMatrix type="matrix" values="1.256 -0.077 -0.179 0 0  -0.078 0.931 0.148 0 0  0.005 0.691 0.304 0 0  0 0 0 1 0"/>
+        </filter>
+    </defs>
+</svg>
+
+<div class="app-shell">
+
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="mobile-nav-btn" onclick="toggleMobileNav()">☰</button>
+            <span class="topbar-logo">ℵ AlephOne</span>
+        </div>
+        <div class="topbar-right">
+            <button class="dark-mode-toggle" id="darkModeBtn" title="Cambiar tema">🌙</button>
+            <div class="user-pill">
+                <div class="user-avatar" id="userAvatar">?</div>
+                <span id="username">—</span>
+                <span class="role-badge" id="userRole">—</span>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+        </div>
+    </header>
+
+    <nav class="sidebar" id="sidebar">
+        <span class="nav-section-label">Principal</span>
+        <a href="dashboard.html" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="comunicacion.html" class="nav-link"><span class="nav-icon">📢</span> Comunicación</a>
+        <a href="tareas.html" class="nav-link"><span class="nav-icon">📋</span> Tareas</a>
+        <span class="nav-section-label">Académico</span>
+        <a href="horario.html" class="nav-link"><span class="nav-icon">🗓️</span> Horario</a>
+        <a href="promedios.html" class="nav-link"><span class="nav-icon">📊</span> Promedios</a>
+        <span class="nav-section-label">Herramientas</span>
+        <a href="quizzit.html" class="nav-link"><span class="nav-icon">🧪</span> Quizzit</a>
+        <a href="ai-chat.html" class="nav-link"><span class="nav-icon">🤖</span> Fractal AI</a>
+        <span class="nav-section-label">Escuelas</span>
+        <a href="schools.html" class="nav-link"><span class="nav-icon">🏫</span> Mis Escuelas</a>
+        <div class="sidebar-footer">
+            <button class="btn btn-ghost btn-sm" onclick="logout()" style="width:100%;">← Cerrar sesión</button>
+        </div>
+    </nav>
+
+    <main class="main-content" id="mainContent">
+
+        <div id="loadingState" style="display:flex;align-items:center;justify-content:center;min-height:300px">
+            <div class="spinner"></div>
+        </div>
+
+        <div id="directorContent" style="display:none">
+
+            <!-- Header escuela -->
+            <div class="school-header">
+                <div class="school-header-inner">
+                    <div class="school-name" id="schoolName">—</div>
+                    <div class="school-code" id="schoolCode"></div>
+                    <div class="school-meta">
+                        <span class="school-badge">👑 Director</span>
+                        <span class="school-badge" id="schoolMemberCount">— miembros</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="director-stats" id="directorStats">
+                <div class="stat-card fade-up">
+                    <div class="stat-label">Pendientes</div>
+                    <div class="stat-value" id="statPending">—</div>
+                    <div class="stat-sub">por aprobar</div>
+                </div>
+                <div class="stat-card fade-up">
+                    <div class="stat-label">Miembros activos</div>
+                    <div class="stat-value" id="statActive">—</div>
+                    <div class="stat-sub">en la escuela</div>
+                </div>
+                <div class="stat-card fade-up">
+                    <div class="stat-label">Grados</div>
+                    <div class="stat-value" id="statGrades">—</div>
+                    <div class="stat-sub">creados</div>
+                </div>
+                <div class="stat-card fade-up">
+                    <div class="stat-label">Docentes</div>
+                    <div class="stat-value" id="statTeachers">—</div>
+                    <div class="stat-sub">activos</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="dash-tabs">
+                <button class="dash-tab active" onclick="switchTab('miembros')" id="tab-miembros">
+                    👥 Miembros
+                    <span class="tab-badge" id="pendingBadge" style="display:none">0</span>
+                </button>
+                <button class="dash-tab" onclick="switchTab('grados')" id="tab-grados">🎓 Grados</button>
+                <button class="dash-tab" onclick="switchTab('anuncios')" id="tab-anuncios">📢 Anuncios</button>
+                <button class="dash-tab" onclick="switchTab('eventos')" id="tab-eventos">📅 Eventos</button>
+            </div>
+
+            <!-- ── TAB: MIEMBROS ───────────────────────── -->
+            <div class="tab-panel active" id="panel-miembros">
+
+                <!-- Pendientes -->
+                <div id="pendingSection" style="margin-bottom:20px">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">🕐 Solicitudes pendientes</span>
+                            <span class="tag tag-warning" id="pendingCount" style="display:none">0</span>
+                        </div>
+                        <div id="pendingList">
+                            <div style="padding:16px;text-align:center"><div class="spinner"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activos -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">✓ Miembros activos</span>
+                        <div style="display:flex;gap:6px">
+                            <button class="filter-chip active" onclick="filterMembers('all', this)">Todos</button>
+                            <button class="filter-chip" onclick="filterMembers('student', this)">Alumnos</button>
+                            <button class="filter-chip" onclick="filterMembers('teacher', this)">Docentes</button>
+                        </div>
+                    </div>
+                    <div id="activeList">
+                        <div style="padding:16px;text-align:center"><div class="spinner"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── TAB: GRADOS ─────────────────────────── -->
+            <div class="tab-panel" id="panel-grados">
+
+                <!-- Crear grado -->
+                <div class="card" style="margin-bottom:16px">
+                    <div class="card-header">
+                        <span class="card-title">➕ Nuevo grado</span>
+                    </div>
+                    <div style="display:flex;gap:8px;margin-top:4px">
+                        <input type="text" class="form-input" id="nuevoGradoNombre"
+                            placeholder="Ej: 3° A, 1° Año..."
+                            style="flex:1"
+                            onkeydown="if(event.key==='Enter')crearGrado()">
+                        <button class="btn btn-primary" onclick="crearGrado()">Crear</button>
+                    </div>
+                </div>
+
+                <!-- Lista de grados -->
+                <div id="gradesList">
+                    <div style="padding:24px;text-align:center"><div class="spinner"></div></div>
+                </div>
+            </div>
+
+            <!-- ── TAB: ANUNCIOS ───────────────────────── -->
+            <div class="tab-panel" id="panel-anuncios">
+                <div class="card" style="margin-bottom:16px">
+                    <div class="card-header">
+                        <span class="card-title">📢 Nuevo anuncio</span>
+                    </div>
+                    <div style="margin-top:4px;display:flex;flex-direction:column;gap:10px">
+                        <div class="form-group" style="margin:0">
+                            <label class="form-label">Título</label>
+                            <input type="text" class="form-input" id="anuncioTitulo" placeholder="Título del anuncio">
+                        </div>
+                        <div class="form-group" style="margin:0">
+                            <label class="form-label">Contenido</label>
+                            <textarea class="form-textarea" id="anuncioContenido" placeholder="Escribí el mensaje..." style="min-height:90px"></textarea>
+                        </div>
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <select class="form-input" id="anuncioTipo" style="width:auto">
+                                <option value="anuncio">📣 Anuncio</option>
+                                <option value="urgente">🚨 Urgente</option>
+                                <option value="recordatorio">🔔 Recordatorio</option>
+                            </select>
+                            <button class="btn btn-primary" style="margin-left:auto" onclick="publicarAnuncio()">Publicar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Anuncios recientes -->
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Anuncios recientes</span></div>
+                    <div id="anunciosList">
+                        <div style="padding:16px;text-align:center"><div class="spinner"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── TAB: EVENTOS ────────────────────────── -->
+            <div class="tab-panel" id="panel-eventos">
+                <div class="card" style="margin-bottom:16px">
+                    <div class="card-header">
+                        <span class="card-title">📅 Nuevo evento</span>
+                    </div>
+                    <div style="margin-top:4px;display:flex;flex-direction:column;gap:10px">
+                        <div class="grid-2">
+                            <div class="form-group" style="margin:0">
+                                <label class="form-label">Título</label>
+                                <input type="text" class="form-input" id="eventoTitulo" placeholder="Ej: Reunión de padres">
+                            </div>
+                            <div class="form-group" style="margin:0">
+                                <label class="form-label">Fecha</label>
+                                <input type="date" class="form-input" id="eventoFecha">
+                            </div>
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group" style="margin:0">
+                                <label class="form-label">Tipo</label>
+                                <select class="form-input" id="eventoTipo">
+                                    <option value="evento">🎉 Evento</option>
+                                    <option value="examen">📝 Examen</option>
+                                    <option value="entrega">📤 Entrega</option>
+                                    <option value="feriado">🏖️ Feriado</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin:0">
+                                <label class="form-label">Grado (opcional)</label>
+                                <select class="form-input" id="eventoGrado">
+                                    <option value="todos">Todos los grados</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin:0">
+                            <label class="form-label">Descripción</label>
+                            <input type="text" class="form-input" id="eventoDesc" placeholder="Descripción breve...">
+                        </div>
+                        <div style="display:flex;justify-content:flex-end">
+                            <button class="btn btn-primary" onclick="crearEvento()">Crear evento</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Eventos próximos -->
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Próximos eventos</span></div>
+                    <div id="eventosList">
+                        <div style="padding:16px;text-align:center"><div class="spinner"></div></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" id="bottomNav">
+    <a href="dashboard.html" class="bn-item"><span class="bn-icon">🏠</span><span class="bn-label">Inicio</span></a>
+    <a href="schools.html" class="bn-item"><span class="bn-icon">🏫</span><span class="bn-label">Escuelas</span></a>
+    <button type="button" class="bn-item active"><span class="bn-icon">👑</span><span class="bn-label">Director</span></button>
+    <button type="button" class="bn-item" onclick="toggleMasSheet()"><span class="bn-icon">⋯</span><span class="bn-label">Más</span></button>
+</nav>
+
+<div class="mas-overlay" id="masOverlay" onclick="toggleMasSheet()"></div>
+<div class="mas-sheet" id="masSheet">
+    <div class="mas-handle"></div>
+    <a href="comunicacion.html" class="mas-item"><span class="mas-icon">📢</span><span>Comunicación</span></a>
+    <a href="horario.html" class="mas-item"><span class="mas-icon">🗓️</span><span>Horario</span></a>
+    <a href="promedios.html" class="mas-item"><span class="mas-icon">📊</span><span>Promedios</span></a>
+    <a href="quizzit.html" class="mas-item"><span class="mas-icon">🧪</span><span>Quizzit</span></a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/themes.js"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script>
+// ── ESTADO ─────────────────────────────────────────────────
+let _schoolId   = null;
+let _school     = null;
+let _grades     = [];
+let _pending    = [];
+let _active     = [];
+let _currentUser = null;
+let _activeFilter = 'all';
+
+const MESES_ES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+// ── UTILS ──────────────────────────────────────────────────
+function getParam(k) { return new URLSearchParams(location.search).get(k); }
+function toggleMobileNav() { document.getElementById('sidebar').classList.toggle('open'); }
+function toggleMasSheet() {
+    document.getElementById('masSheet').classList.toggle('open');
+    document.getElementById('masOverlay').classList.toggle('open');
+}
+
+// ── TABS ───────────────────────────────────────────────────
+function switchTab(tab) {
+    document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tab)?.classList.add('active');
+    document.getElementById('panel-' + tab)?.classList.add('active');
+}
+
+// ── MIEMBROS ───────────────────────────────────────────────
+async function loadPending() {
+    const list  = document.getElementById('pendingList');
+    const res   = await AlephAPI.Schools.getMiembros(_schoolId, 'pending');
+
+    if (!res.ok || !res.members.length) {
+        list.innerHTML = `<div class="empty-state" style="padding:16px 0">
+            <div class="empty-icon">✅</div><p>Sin solicitudes pendientes</p></div>`;
+        document.getElementById('pendingBadge').style.display = 'none';
+        document.getElementById('pendingCount').style.display = 'none';
+        return;
+    }
+
+    _pending = res.members;
+    const count = res.members.length;
+    document.getElementById('pendingBadge').textContent = count;
+    document.getElementById('pendingBadge').style.display = '';
+    document.getElementById('pendingCount').textContent = count;
+    document.getElementById('pendingCount').style.display = '';
+    document.getElementById('statPending').textContent = count;
+
+    list.innerHTML = '';
+    res.members.forEach(m => {
+        const username = m.profiles?.username || 'Usuario';
+        const role     = m.role;
+        const card     = document.createElement('div');
+        card.className = 'member-card fade-up';
+        card.id = `pending-${m.id}`;
+        card.innerHTML = `
+            <div class="member-avatar ${role === 'teacher' ? 'teacher' : ''}">${username[0].toUpperCase()}</div>
+            <div class="member-info">
+                <div class="member-name">${sanitize(username)}</div>
+                <div class="member-sub">
+                    <span class="tag ${role === 'teacher' ? 'tag-accent' : 'tag-teal'}">${role === 'teacher' ? 'Docente' : 'Estudiante'}</span>
+                </div>
+            </div>
+            <div class="member-actions">
+                <button class="btn btn-primary btn-sm" onclick="aprobar('${m.id}', '${sanitize(username)}', this)">✓ Aprobar</button>
+                <button class="btn btn-danger btn-sm" onclick="rechazar('${m.id}', this)">✗ Rechazar</button>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
+
+async function loadActive() {
+    const list = document.getElementById('activeList');
+    const res  = await AlephAPI.Schools.getMiembros(_schoolId, 'active');
+
+    if (!res.ok) { list.innerHTML = `<div class="alert alert-danger">Error cargando miembros</div>`; return; }
+
+    _active = res.members;
+    const teachers = res.members.filter(m => m.role === 'teacher').length;
+    document.getElementById('statActive').textContent   = res.members.length;
+    document.getElementById('statTeachers').textContent = teachers;
+    document.getElementById('schoolMemberCount').textContent = `${res.members.length} miembros`;
+
+    renderActiveList(_activeFilter);
+}
+
+function renderActiveList(filter) {
+    const list = document.getElementById('activeList');
+    const shown = filter === 'all' ? _active : _active.filter(m => m.role === filter);
+
+    if (!shown.length) {
+        list.innerHTML = `<div class="empty-state" style="padding:16px 0">
+            <div class="empty-icon">👥</div><p>Sin miembros en esta categoría</p></div>`;
+        return;
+    }
+
+    list.innerHTML = '';
+    shown.forEach(m => {
+        const username = m.profiles?.username || 'Usuario';
+        const role     = m.role;
+        const card     = document.createElement('div');
+        card.className = 'member-card fade-up';
+
+        // Select de grado
+        const gradeOptions = _grades.map(g =>
+            `<option value="${g.id}">${sanitize(g.name)}</option>`
+        ).join('');
+
+        card.innerHTML = `
+            <div class="member-avatar ${role === 'teacher' ? 'teacher' : ''}">${username[0].toUpperCase()}</div>
+            <div class="member-info">
+                <div class="member-name">${sanitize(username)}</div>
+                <div class="member-sub">
+                    <span class="tag ${role === 'teacher' ? 'tag-accent' : 'tag-teal'}">${role === 'teacher' ? 'Docente' : 'Estudiante'}</span>
+                </div>
+            </div>
+            <div class="member-actions">
+                ${_grades.length > 0 ? `
+                <select class="grade-select" id="grade-select-${m.user_id}">
+                    <option value="">Asignar grado...</option>
+                    ${gradeOptions}
+                </select>
+                <button class="btn btn-secondary btn-sm" onclick="asignarGrado('${m.user_id}', '${role}', this)">Asignar</button>
+                ` : '<span class="text-faint" style="font-size:.78em">Creá un grado primero</span>'}
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
+
+function filterMembers(filter, btn) {
+    _activeFilter = filter;
+    document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderActiveList(filter);
+}
+
+async function aprobar(memberId, username, btn) {
+    btn.disabled = true;
+    const res = await AlephAPI.Schools.aprobar(memberId);
+    if (!res.ok) { showToast(res.error, 'error'); btn.disabled = false; return; }
+    document.getElementById(`pending-${memberId}`)?.remove();
+    showToast(`${username} aprobado`, 'success');
+    await loadPending();
+    await loadActive();
+}
+
+async function rechazar(memberId, btn) {
+    btn.disabled = true;
+    const res = await AlephAPI.Schools.rechazar(memberId);
+    if (!res.ok) { showToast(res.error, 'error'); btn.disabled = false; return; }
+    document.getElementById(`pending-${memberId}`)?.remove();
+    showToast('Solicitud rechazada', 'info');
+    await loadPending();
+}
+
+async function asignarGrado(userId, role, btn) {
+    const select = document.getElementById(`grade-select-${userId}`);
+    const gradeId = select?.value;
+    if (!gradeId) { showToast('Seleccioná un grado', 'warning'); return; }
+
+    btn.disabled = true;
+    const memberRole = role === 'teacher' ? 'teacher' : 'student';
+    const res = await AlephAPI.Schools.asignarGrado(userId, gradeId, memberRole);
+    if (!res.ok) { showToast(res.error, 'error'); btn.disabled = false; return; }
+    showToast('Grado asignado', 'success');
+    btn.disabled = false;
+    select.value = '';
+}
+
+// ── GRADOS ─────────────────────────────────────────────────
+async function loadGrades() {
+    const list = document.getElementById('gradesList');
+    const res  = await AlephAPI.Schools.getGrados(_schoolId);
+
+    if (!res.ok) { list.innerHTML = `<div class="alert alert-danger">Error cargando grados</div>`; return; }
+
+    _grades = res.grades;
+    document.getElementById('statGrades').textContent = res.grades.length;
+
+    // Actualizar select de eventos
+    const eventoGrado = document.getElementById('eventoGrado');
+    eventoGrado.innerHTML = '<option value="todos">Todos los grados</option>';
+    res.grades.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g.name;
+        opt.textContent = g.name;
+        eventoGrado.appendChild(opt);
+    });
+
+    if (!res.grades.length) {
+        list.innerHTML = `<div class="empty-state"><div class="empty-icon">🎓</div>
+            <p>No hay grados. Creá el primero.</p></div>`;
+        return;
+    }
+
+    list.innerHTML = '';
+    res.grades.forEach(g => {
+        const memberCount = g.grade_members?.[0]?.count || 0;
+        const card = document.createElement('div');
+        card.className = 'card fade-up';
+        card.style.marginBottom = '10px';
+        card.innerHTML = `
+            <div class="card-header">
+                <span class="card-title">🎓 ${sanitize(g.name)}</span>
+                <span class="tag tag-teal">${memberCount} miembro${memberCount !== 1 ? 's' : ''}</span>
+            </div>
+            <div style="font-size:.78em;color:var(--text-faint);font-family:var(--font-mono)">${sanitize(g.id.slice(0,8))}…</div>
+        `;
+        list.appendChild(card);
+    });
+
+    // Re-render active list con grados cargados
+    renderActiveList(_activeFilter);
+}
+
+async function crearGrado() {
+    const nombre = document.getElementById('nuevoGradoNombre').value.trim();
+    if (!nombre) { showToast('Ingresá un nombre', 'warning'); return; }
+
+    const { data, error } = await supabaseClient
+        .from('school_grades')
+        .insert({ school_id: _schoolId, name: nombre })
+        .select().single();
+
+    if (error) { showToast('Error creando grado', 'error'); return; }
+
+    document.getElementById('nuevoGradoNombre').value = '';
+    showToast(`Grado "${nombre}" creado`, 'success');
+    await loadGrades();
+}
+
+// ── ANUNCIOS ───────────────────────────────────────────────
+async function loadAnuncios() {
+    const list = document.getElementById('anunciosList');
+    // Usamos Comunicacion.getParaUsuario con curso = schoolId como namespace
+    const msgs = await AlephAPI.Comunicacion.getParaUsuario(_currentUser.username, _schoolId);
+
+    if (!msgs.length) {
+        list.innerHTML = `<div class="empty-state" style="padding:16px 0">
+            <div class="empty-icon">📭</div><p>Sin anuncios publicados</p></div>`;
+        return;
+    }
+
+    list.innerHTML = msgs.slice(0, 10).map(m => `
+        <div class="msg-card ${sanitize(m.tipo)} no-leido" style="cursor:default">
+            <div class="msg-header">
+                <div class="msg-title-row">
+                    <span class="msg-title">${sanitize(m.titulo)}</span>
+                    <span class="tag tipo-${sanitize(m.tipo)}">${sanitize(m.tipo)}</span>
+                </div>
+                <span class="msg-meta">${formatFechaHora(m.created_at || m.fechaCreacion)}</span>
+            </div>
+            <div class="msg-body">${sanitize(m.contenido)}</div>
+        </div>
+    `).join('');
+}
+
+async function publicarAnuncio() {
+    const titulo    = document.getElementById('anuncioTitulo').value.trim();
+    const contenido = document.getElementById('anuncioContenido').value.trim();
+    const tipo      = document.getElementById('anuncioTipo').value;
+
+    if (!titulo || !contenido) { showToast('Completá título y contenido', 'warning'); return; }
+
+    const res = await AlephAPI.Comunicacion.crear({
+        titulo, contenido, tipo,
+        autor: _currentUser.username,
+        curso: _schoolId,   // usamos schoolId como namespace de curso
+        materia: 'General'
+    });
+
+    if (!res.ok) { showToast(res.error || 'Error al publicar', 'error'); return; }
+
+    document.getElementById('anuncioTitulo').value   = '';
+    document.getElementById('anuncioContenido').value = '';
+    showToast('Anuncio publicado', 'success');
+    await loadAnuncios();
+}
+
+// ── EVENTOS ────────────────────────────────────────────────
+async function loadEventos() {
+    const list   = document.getElementById('eventosList');
+    const eventos = await AlephAPI.Calendario.getProximos(_schoolId, 60);
+
+    if (!eventos.length) {
+        list.innerHTML = `<div class="empty-state" style="padding:16px 0">
+            <div class="empty-icon">📅</div><p>Sin eventos próximos</p></div>`;
+        return;
+    }
+
+    const iconos = { examen: '📝', entrega: '📤', evento: '🎉', feriado: '🏖️' };
+    list.innerHTML = eventos.map(e => {
+        const fecha = new Date(e.fecha);
+        return `
+            <div class="evento-item">
+                <div class="evento-fecha-box">
+                    <span class="evento-dia">${fecha.getDate()}</span>
+                    <span class="evento-mes">${MESES_ES[fecha.getMonth()]}</span>
+                </div>
+                <div class="evento-info">
+                    <div class="evento-titulo">${iconos[e.tipo] || '📌'} ${sanitize(e.titulo)}</div>
+                    <div class="evento-tipo-tag">${sanitize(e.descripcion || e.tipo)}</div>
+                </div>
+            </div>`;
+    }).join('');
+}
+
+async function crearEvento() {
+    const titulo = document.getElementById('eventoTitulo').value.trim();
+    const fecha  = document.getElementById('eventoFecha').value;
+    const tipo   = document.getElementById('eventoTipo').value;
+    const curso  = document.getElementById('eventoGrado').value;
+    const desc   = document.getElementById('eventoDesc').value.trim();
+
+    if (!titulo || !fecha) { showToast('Completá título y fecha', 'warning'); return; }
+
+    const res = await AlephAPI.Calendario.agregar({
+        titulo, fecha, tipo,
+        curso: curso || _schoolId,
+        descripcion: desc
+    });
+
+    if (!res.ok) { showToast('Error al crear evento', 'error'); return; }
+
+    ['eventoTitulo','eventoFecha','eventoDesc'].forEach(id => document.getElementById(id).value = '');
+    showToast('Evento creado', 'success');
+    await loadEventos();
+}
+
+// ── INIT ───────────────────────────────────────────────────
+const supabaseClient = supabase.createClient(
+    'https://ikxvbmsvzmsiztxvzdtz.supabase.co',
+    'sb_publishable_cN4exqC8p4r9Hg3ZQYWcWg_gLwcRdui'
+);
+
+document.addEventListener('DOMContentLoaded', async () => {
+    _schoolId = getParam('id');
+    if (!_schoolId) { location.href = 'schools.html'; return; }
+
+    const user = AlephAPI.Auth.getCurrentUser();
+    if (!user) { location.href = './index.html'; return; }
+    _currentUser = user;
+
+    // Solo director puede entrar acá
+    if (user.role !== 'director' && user.role !== 'superadmin') {
+        location.href = `school-dash.html?id=${_schoolId}`;
+        return;
+    }
+
+    // Header
+    const usernameEl = document.getElementById('username');
+    const roleEl     = document.getElementById('userRole');
+    const avatarEl   = document.getElementById('userAvatar');
+    if (usernameEl && usernameEl.textContent === '—') usernameEl.textContent = user.username;
+    if (avatarEl)   avatarEl.textContent = (user.username || '?')[0].toUpperCase();
+    if (roleEl && roleEl.textContent === '—') {
+        roleEl.textContent = 'Director';
+        roleEl.className   = 'role-badge director';
+    }
+
+    // Cargar school
+    const { data: schoolData } = await supabaseClient
+        .from('schools').select('*').eq('id', _schoolId).maybeSingle();
+
+    if (!schoolData) { location.href = 'schools.html'; return; }
+    _school = schoolData;
+
+    document.getElementById('schoolName').textContent = schoolData.name;
+    document.getElementById('schoolCode').textContent = schoolData.code;
+    document.getElementById('eventoFecha').value = new Date().toISOString().slice(0,10);
+
+    document.getElementById('loadingState').style.display  = 'none';
+    document.getElementById('directorContent').style.display = '';
+
+    // Cargar todo
+    await Promise.all([
+        loadPending(),
+        loadGrades(),
+    ]);
+    await loadActive(); // después de grados para tener _grades listo
+    await Promise.all([
+        loadAnuncios(),
+        loadEventos()
+    ]);
+});
+</script>
+</body>
+</html>
