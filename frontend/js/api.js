@@ -896,10 +896,26 @@ const AlephAPI = (() => {
             const { data, error } = await _sb
                 .from('grade_members')
                 .select('*, school_grades(id, name, school_id)')
-                .eq('user_id', user.id)
-                .eq('school_grades.school_id', schoolId);
+                .eq('user_id', user.id);
             if (error) return { ok: false, error: error.message };
-            return { ok: true, grades: (data || []).map(m => m.school_grades).filter(Boolean) };
+
+            const grades = (data || [])
+                .map(m => m.school_grades)
+                .filter(g => g && g.school_id === schoolId);
+            return { ok: true, grades };
+        },
+
+        async getMisSolicitudesPendientes() {
+            const user = Auth.getCurrentUser();
+            if (!user) return { ok: false, error: 'No autenticado' };
+
+            const { data, error } = await _sb
+                .from('school_members')
+                .select('*, schools(id, name, code)')
+                .eq('user_id', user.id)
+                .eq('status', 'pending');
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, solicitudes: (data || []).map(m => ({ ...m.schools, memberId: m.id })) };
         }
     };
 
