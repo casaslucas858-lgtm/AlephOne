@@ -122,6 +122,10 @@
                 <div id="searchResults" style="margin-top:16px"></div>
             </div>
 
+            <div class="adminOnly" style="display:none;margin-top:16px">
+                <button class="btn btn-primary" style="width:100%" onclick="toggleCrearEscuela()">🏢 Crear Mi Primera Escuela</button>
+            </div>
+
             <div class="alert alert-info" style="margin-top:16px">
                 <span>ℹ️</span>
                 <div>
@@ -140,7 +144,33 @@
 
             <div id="mySchoolsList" class="item-list" style="margin-bottom:24px"></div>
 
-            <button class="btn btn-secondary" onclick="showJoinFlow()">➕ Unirme a otra escuela</button>
+            <div id="adminCreatePanel" style="display:none;margin-bottom:24px">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">🏢 Nueva Escuela</span>
+                    </div>
+                    <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+                        <div class="form-group">
+                            <label class="form-label">Nombre de la escuela</label>
+                            <input type="text" class="form-input" id="newSchoolName" placeholder="Ej: Instituto San Martín">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Código (Opcional)</label>
+                            <input type="text" class="form-input" id="newSchoolCode" placeholder="Ej: SAN-2024" style="text-transform:uppercase">
+                            <small style="color:var(--text-faint)">Si se deja vacío, se generará uno automáticamente.</small>
+                        </div>
+                        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+                            <button class="btn btn-ghost btn-sm" onclick="toggleCrearEscuela()">Cancelar</button>
+                            <button class="btn btn-primary btn-sm" onclick="crearEscuela()">Crear Escuela</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+                <button class="btn btn-secondary" onclick="showJoinFlow()">➕ Unirme a otra escuela</button>
+                <button class="btn btn-primary adminOnly" style="display:none" onclick="toggleCrearEscuela()">🏢 Crear Nueva Escuela</button>
+            </div>
 
             <div id="joinFlowPanel" style="display:none;margin-top:20px">
                 <div class="card">
@@ -444,7 +474,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('mySchoolsView').style.display = '';
         renderMySchools(res.schools);
     }
+
+    // Si es superadmin, mostrar elementos de admin
+    if (user.role === 'superadmin') {
+        document.querySelectorAll('.adminOnly').forEach(el => el.style.display = '');
+    }
 });
+
+function toggleCrearEscuela() {
+    const p = document.getElementById('adminCreatePanel');
+    p.style.display = p.style.display === 'none' ? '' : 'none';
+}
+
+async function crearEscuela() {
+    const name = document.getElementById('newSchoolName').value.trim();
+    const code = document.getElementById('newSchoolCode').value.trim();
+    if (!name) { showToast('El nombre es obligatorio', 'warning'); return; }
+
+    const res = await AlephAPI.Schools.crearEscuela(name, code);
+    if (!res.ok) {
+        showToast(res.error, 'error');
+        return;
+    }
+    showToast('Escuela creada correctamente', 'success');
+    location.reload();
+}
 </script>
 </body>
 </html>
