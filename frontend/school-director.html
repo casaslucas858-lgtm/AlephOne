@@ -129,6 +129,46 @@
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 10px; margin-bottom: 20px;
         }
+
+        /* Nota card */
+        .nota-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            transition: all var(--t);
+        }
+        .nota-card:hover { box-shadow: var(--shadow-sm); }
+        .nota-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .nota-valor {
+            font-size: 1.4em; font-weight: 800;
+            font-family: var(--font-display);
+            min-width: 45px; text-align: center;
+            padding: 4px 8px; border-radius: var(--radius);
+        }
+        .nota-valor.alta  { background: rgba(34,197,94,0.12); color: #16a34a; }
+        .nota-valor.media { background: rgba(245,158,11,0.12); color: #b45309; }
+        .nota-valor.baja  { background: rgba(220,53,69,0.12); color: #dc3545; }
+        .nota-img { max-width: 100%; border-radius: var(--radius); margin-top: 8px; cursor: pointer; }
+        .nota-img:hover { opacity: 0.85; }
+
+        /* Grade expand */
+        .grade-members-list { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+        .grade-member-row {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 0; font-size: 0.84em;
+        }
+        .grade-member-row .member-avatar { width: 26px; height: 26px; font-size: 0.7em; }
+
+        /* Admin panel */
+        .admin-banner {
+            background: linear-gradient(135deg, rgba(var(--accent-rgb),0.08), rgba(var(--primary-rgb),0.06));
+            border: 1px solid rgba(var(--accent-rgb),0.15);
+            border-radius: var(--radius-lg);
+            padding: 14px 18px;
+            margin-bottom: 16px;
+        }
     </style>
 </head>
 <body>
@@ -227,6 +267,26 @@
                 </div>
             </div>
 
+            <!-- Admin: crear escuela (solo superadmin) -->
+            <div id="adminPanel" style="display:none">
+                <div class="admin-banner">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                        <span style="font-size:1.1em">⚙️</span>
+                        <span style="font-weight:700;font-family:var(--font-display);font-size:.88em">Panel Admin</span>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        <button class="btn btn-primary btn-sm" onclick="toggleCrearEscuela()">➕ Crear escuela</button>
+                    </div>
+                    <div id="crearEscuelaForm" style="display:none;margin-top:12px">
+                        <div style="display:flex;gap:8px">
+                            <input type="text" class="form-input" id="nuevaEscuelaNombre" placeholder="Nombre de la escuela" style="flex:1">
+                            <input type="text" class="form-input" id="nuevaEscuelaCodigo" placeholder="Código (ej: ISM-2025)" style="width:140px;font-family:var(--font-mono);text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+                            <button class="btn btn-primary btn-sm" onclick="crearEscuela()">Crear</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Tabs -->
             <div class="dash-tabs">
                 <button class="dash-tab active" onclick="switchTab('miembros')" id="tab-miembros">
@@ -234,6 +294,7 @@
                     <span class="tab-badge" id="pendingBadge" style="display:none">0</span>
                 </button>
                 <button class="dash-tab" onclick="switchTab('grados')" id="tab-grados">🎓 Grados</button>
+                <button class="dash-tab" onclick="switchTab('notas')" id="tab-notas">📝 Notas</button>
                 <button class="dash-tab" onclick="switchTab('anuncios')" id="tab-anuncios">📢 Anuncios</button>
                 <button class="dash-tab" onclick="switchTab('eventos')" id="tab-eventos">📅 Eventos</button>
             </div>
@@ -262,6 +323,7 @@
                             <button class="filter-chip active" onclick="filterMembers('all', this)">Todos</button>
                             <button class="filter-chip" onclick="filterMembers('student', this)">Alumnos</button>
                             <button class="filter-chip" onclick="filterMembers('teacher', this)">Docentes</button>
+                            <button class="filter-chip" onclick="filterMembers('director', this)">Directores</button>
                         </div>
                     </div>
                     <div id="activeList">
@@ -290,6 +352,63 @@
                 <!-- Lista de grados -->
                 <div id="gradesList">
                     <div style="padding:24px;text-align:center"><div class="spinner"></div></div>
+                </div>
+            </div>
+
+            <!-- ── TAB: NOTAS ──────────────────────────── -->
+            <div class="tab-panel" id="panel-notas">
+                <div class="card" style="margin-bottom:16px">
+                    <div class="card-header">
+                        <span class="card-title">📝 Poner nota</span>
+                    </div>
+                    <div style="margin-top:8px;display:flex;flex-direction:column;gap:10px">
+                        <div class="grid-2">
+                            <div class="form-group" style="margin:0">
+                                <label class="form-label">Grado</label>
+                                <select class="form-input" id="notaGrado" onchange="loadAlumnosGrado()">
+                                    <option value="">Seleccionar grado...</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin:0">
+                                <label class="form-label">Alumno</label>
+                                <select class="form-input" id="notaAlumno">
+                                    <option value="">Seleccionar alumno...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group" style="margin:0">
+                                <label class="form-label">Materia</label>
+                                <input type="text" class="form-input" id="notaMateria" placeholder="Ej: Matemática">
+                            </div>
+                            <div class="form-group" style="margin:0">
+                                <label class="form-label">Nota (1-10)</label>
+                                <input type="number" class="form-input" id="notaValor" min="1" max="10" step="0.5" placeholder="7">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin:0">
+                            <label class="form-label">Comentario (opcional)</label>
+                            <input type="text" class="form-input" id="notaComentario" placeholder="Buen trabajo, mejorar en...">
+                        </div>
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <label class="btn btn-secondary btn-sm" style="cursor:pointer">
+                                📷 Adjuntar imagen
+                                <input type="file" id="notaImagen" accept="image/*" style="display:none" onchange="previewNotaImg(this)">
+                            </label>
+                            <span id="notaImgName" style="font-size:.78em;color:var(--text-faint)"></span>
+                            <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="guardarNota()">Guardar nota</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notas recientes del grado -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Notas recientes</span>
+                    </div>
+                    <div id="notasList">
+                        <div class="empty-state" style="padding:16px 0"><div class="empty-icon">📝</div><p>Seleccioná un grado para ver las notas</p></div>
+                    </div>
                 </div>
             </div>
 
@@ -496,6 +615,7 @@ async function loadActive() {
 function renderActiveList(filter) {
     const list = document.getElementById('activeList');
     const shown = filter === 'all' ? _active : _active.filter(m => m.role === filter);
+    const isSuperadmin = _currentUser?.role === 'superadmin';
 
     if (!shown.length) {
         list.innerHTML = `<div class="empty-state" style="padding:16px 0">
@@ -507,6 +627,7 @@ function renderActiveList(filter) {
     shown.forEach(m => {
         const username = m.profiles?.username || 'Usuario';
         const role     = m.role;
+        const isMe     = m.user_id === _currentUser?.id;
         const card     = document.createElement('div');
         card.className = 'member-card fade-up';
 
@@ -515,22 +636,39 @@ function renderActiveList(filter) {
             `<option value="${g.id}">${sanitize(g.name)}</option>`
         ).join('');
 
+        // Role tag
+        const roleLabels = { student: 'Estudiante', teacher: 'Docente', director: 'Director' };
+        const roleClass  = { student: 'tag-teal', teacher: 'tag-accent', director: 'tag-blue' };
+
+        // Admin buttons
+        let adminBtns = '';
+        if (isSuperadmin && !isMe) {
+            if (role === 'director') {
+                adminBtns = `<button class="btn btn-ghost btn-sm" style="font-size:.75em" onclick="quitarDirector('${m.user_id}', this)">👑→ Quitar director</button>`;
+            } else {
+                adminBtns = `<button class="btn btn-ghost btn-sm" style="font-size:.75em" onclick="hacerDirector('${m.user_id}', this)">👑 Hacer director</button>`;
+            }
+        }
+
         card.innerHTML = `
-            <div class="member-avatar ${role === 'teacher' ? 'teacher' : ''}">${username[0].toUpperCase()}</div>
+            <div class="member-avatar ${role === 'teacher' ? 'teacher' : ''} ${role === 'director' ? 'teacher' : ''}">${username[0].toUpperCase()}</div>
             <div class="member-info">
                 <div class="member-name">${sanitize(username)}</div>
                 <div class="member-sub">
-                    <span class="tag ${role === 'teacher' ? 'tag-accent' : 'tag-teal'}">${role === 'teacher' ? 'Docente' : 'Estudiante'}</span>
+                    <span class="tag ${roleClass[role] || 'tag-teal'}">${roleLabels[role] || role}</span>
+                    ${isMe ? '<span class="tag" style="opacity:.5">Yo</span>' : ''}
                 </div>
             </div>
             <div class="member-actions">
-                ${_grades.length > 0 ? `
+                ${_grades.length > 0 && role !== 'director' ? `
                 <select class="grade-select" id="grade-select-${m.user_id}">
                     <option value="">Asignar grado...</option>
                     ${gradeOptions}
                 </select>
                 <button class="btn btn-secondary btn-sm" onclick="asignarGrado('${m.user_id}', '${role}', this)">Asignar</button>
-                ` : '<span class="text-faint" style="font-size:.78em">Creá un grado primero</span>'}
+                ` : ''}
+                ${adminBtns}
+                ${!isMe ? `<button class="btn btn-danger btn-sm" onclick="expulsarMiembro('${m.id}', '${sanitize(username)}', this)">🚫</button>` : ''}
             </div>
         `;
         list.appendChild(card);
@@ -581,160 +719,183 @@ async function asignarGrado(userId, role, btn) {
 async function loadGrades() {
     const list = document.getElementById('gradesList');
     const res  = await AlephAPI.Schools.getGrados(_schoolId);
-
     if (!res.ok) { list.innerHTML = `<div class="alert alert-danger">Error cargando grados</div>`; return; }
-
     _grades = res.grades;
     document.getElementById('statGrades').textContent = res.grades.length;
 
-    // Actualizar select de eventos
+    // Actualizar selects
     const eventoGrado = document.getElementById('eventoGrado');
     eventoGrado.innerHTML = '<option value="todos">Todos los grados</option>';
+    const notaGrado = document.getElementById('notaGrado');
+    if (notaGrado) notaGrado.innerHTML = '<option value="">Seleccionar grado...</option>';
     res.grades.forEach(g => {
-        const opt = document.createElement('option');
-        opt.value = g.name;
-        opt.textContent = g.name;
-        eventoGrado.appendChild(opt);
+        eventoGrado.innerHTML += `<option value="${g.name}">${sanitize(g.name)}</option>`;
+        if (notaGrado) notaGrado.innerHTML += `<option value="${g.id}">${sanitize(g.name)}</option>`;
     });
 
     if (!res.grades.length) {
-        list.innerHTML = `<div class="empty-state"><div class="empty-icon">🎓</div>
-            <p>No hay grados. Creá el primero.</p></div>`;
+        list.innerHTML = `<div class="empty-state"><div class="empty-icon">🎓</div><p>No hay grados. Creá el primero.</p></div>`;
         return;
     }
 
     list.innerHTML = '';
-    res.grades.forEach(g => {
-        const memberCount = g.grade_members?.[0]?.count || 0;
+    for (const g of res.grades) {
+        const membersRes = await AlephAPI.Schools.getMiembrosGrado(g.id);
+        const members = membersRes.ok ? membersRes.members : [];
+        const docentes = members.filter(m => m.role === 'teacher');
+        const alumnos  = members.filter(m => m.role === 'student');
+
+        let membersHtml = '';
+        if (members.length > 0) {
+            membersHtml = `<div class="grade-members-list">`;
+            if (docentes.length) {
+                membersHtml += `<div style="font-size:.72em;font-weight:700;color:var(--text-faint);margin-bottom:4px;text-transform:uppercase">Docentes</div>`;
+                docentes.forEach(m => {
+                    const u = m.profiles?.username || '?';
+                    membersHtml += `<div class="grade-member-row"><div class="member-avatar teacher">${u[0].toUpperCase()}</div><span style="flex:1">${sanitize(u)}</span><button class="btn btn-ghost btn-sm" style="font-size:.7em;color:var(--danger)" onclick="removerDeGrado('${m.user_id}','${g.id}','${sanitize(u)}')">✕</button></div>`;
+                });
+            }
+            if (alumnos.length) {
+                membersHtml += `<div style="font-size:.72em;font-weight:700;color:var(--text-faint);margin:8px 0 4px;text-transform:uppercase">Alumnos (${alumnos.length})</div>`;
+                alumnos.forEach(m => {
+                    const u = m.profiles?.username || '?';
+                    membersHtml += `<div class="grade-member-row"><div class="member-avatar">${u[0].toUpperCase()}</div><span style="flex:1">${sanitize(u)}</span><button class="btn btn-ghost btn-sm" style="font-size:.7em;color:var(--danger)" onclick="removerDeGrado('${m.user_id}','${g.id}','${sanitize(u)}')">✕</button></div>`;
+                });
+            }
+            membersHtml += `</div>`;
+        }
+
         const card = document.createElement('div');
         card.className = 'card fade-up';
         card.style.marginBottom = '10px';
-        card.innerHTML = `
-            <div class="card-header">
-                <span class="card-title">🎓 ${sanitize(g.name)}</span>
-                <span class="tag tag-teal">${memberCount} miembro${memberCount !== 1 ? 's' : ''}</span>
-            </div>
-            <div style="font-size:.78em;color:var(--text-faint);font-family:var(--font-mono)">${sanitize(g.id.slice(0,8))}…</div>
-        `;
+        card.innerHTML = `<div class="card-header"><span class="card-title">🎓 ${sanitize(g.name)}</span><div style="display:flex;gap:6px"><span class="tag tag-accent">${docentes.length} prof</span><span class="tag tag-teal">${alumnos.length} alum</span></div></div>${membersHtml || '<div style="font-size:.78em;color:var(--text-faint);padding:8px 0">Sin miembros asignados</div>'}`;
         list.appendChild(card);
-    });
-
-    // Re-render active list con grados cargados
+    }
     renderActiveList(_activeFilter);
 }
 
 async function crearGrado() {
     const nombre = document.getElementById('nuevoGradoNombre').value.trim();
     if (!nombre) { showToast('Ingresá un nombre', 'warning'); return; }
-
-    const { data, error } = await supabaseClient
-        .from('school_grades')
-        .insert({ school_id: _schoolId, name: nombre })
-        .select().single();
-
+    const { error } = await supabaseClient.from('school_grades').insert({ school_id: _schoolId, name: nombre }).select().single();
     if (error) { showToast('Error creando grado', 'error'); return; }
-
     document.getElementById('nuevoGradoNombre').value = '';
     showToast(`Grado "${nombre}" creado`, 'success');
     await loadGrades();
 }
 
-// ── ANUNCIOS ───────────────────────────────────────────────
-async function loadAnuncios() {
-    const list = document.getElementById('anunciosList');
-    // Usamos Comunicacion.getParaUsuario con curso = schoolId como namespace
-    const msgs = await AlephAPI.Comunicacion.getParaUsuario(_currentUser.username, _schoolId);
+async function removerDeGrado(userId, gradeId, username) {
+    if (!confirm(`¿Remover a ${username} del grado?`)) return;
+    const res = await AlephAPI.Schools.removerDeGrado(userId, gradeId);
+    if (!res.ok) { showToast(res.error, 'error'); return; }
+    showToast(`${username} removido`, 'info');
+    await loadGrades();
+}
 
-    if (!msgs.length) {
-        list.innerHTML = `<div class="empty-state" style="padding:16px 0">
-            <div class="empty-icon">📭</div><p>Sin anuncios publicados</p></div>`;
+// ── EXPULSAR ───────────────────────────────────────────────
+async function expulsarMiembro(memberId, username, btn) {
+    if (!confirm(`¿Expulsar a ${username}? No se puede deshacer.`)) return;
+    btn.disabled = true;
+    const res = await AlephAPI.Schools.expulsarMiembro(memberId);
+    if (!res.ok) { showToast(res.error, 'error'); btn.disabled = false; return; }
+    showToast(`${username} expulsado`, 'info');
+    await loadActive();
+}
+
+// ── DIRECTOR MGMT (superadmin) ─────────────────────────────
+async function hacerDirector(userId, btn) {
+    btn.disabled = true;
+    const res = await AlephAPI.Schools.setDirector(_schoolId, userId);
+    if (!res.ok) { showToast(res.error, 'error'); btn.disabled = false; return; }
+    showToast('Director asignado', 'success');
+    await loadActive();
+}
+async function quitarDirector(userId, btn) {
+    btn.disabled = true;
+    const res = await AlephAPI.Schools.removeDirector(_schoolId, userId);
+    if (!res.ok) { showToast(res.error, 'error'); btn.disabled = false; return; }
+    showToast('Director removido', 'info');
+    await loadActive();
+}
+
+// ── ADMIN: CREAR ESCUELA ───────────────────────────────────
+function toggleCrearEscuela() {
+    const f = document.getElementById('crearEscuelaForm');
+    f.style.display = f.style.display === 'none' ? '' : 'none';
+}
+async function crearEscuela() {
+    const name = document.getElementById('nuevaEscuelaNombre').value.trim();
+    const code = document.getElementById('nuevaEscuelaCodigo').value.trim();
+    if (!name || !code) { showToast('Completá nombre y código', 'warning'); return; }
+    const res = await AlephAPI.Schools.crearEscuela({ name, code });
+    if (!res.ok) { showToast(res.error, 'error'); return; }
+    document.getElementById('nuevaEscuelaNombre').value = '';
+    document.getElementById('nuevaEscuelaCodigo').value = '';
+    showToast(`Escuela "${name}" creada`, 'success');
+    toggleCrearEscuela();
+}
+
+// ── NOTAS ──────────────────────────────────────────────────
+let _notaImgFile = null;
+
+async function loadAlumnosGrado() {
+    const gradeId = document.getElementById('notaGrado').value;
+    const select  = document.getElementById('notaAlumno');
+    select.innerHTML = '<option value="">Seleccionar alumno...</option>';
+    if (!gradeId) return;
+    const res = await AlephAPI.Schools.getMiembrosGrado(gradeId);
+    if (!res.ok) return;
+    res.members.filter(m => m.role === 'student').forEach(m => {
+        const u = m.profiles?.username || '?';
+        select.innerHTML += `<option value="${m.user_id}">${sanitize(u)}</option>`;
+    });
+    await loadNotasGrado(gradeId);
+}
+
+async function loadNotasGrado(gradeId) {
+    const list = document.getElementById('notasList');
+    list.innerHTML = '<div style="padding:16px;text-align:center"><div class="spinner"></div></div>';
+    const res = await AlephAPI.Schools.getNotasGrado(gradeId);
+    if (!res.ok || !res.notas.length) {
+        list.innerHTML = `<div class="empty-state" style="padding:16px 0"><div class="empty-icon">📝</div><p>Sin notas</p></div>`;
         return;
     }
-
-    list.innerHTML = msgs.slice(0, 10).map(m => `
-        <div class="msg-card ${sanitize(m.tipo)} no-leido" style="cursor:default">
-            <div class="msg-header">
-                <div class="msg-title-row">
-                    <span class="msg-title">${sanitize(m.titulo)}</span>
-                    <span class="tag tipo-${sanitize(m.tipo)}">${sanitize(m.tipo)}</span>
-                </div>
-                <span class="msg-meta">${formatFechaHora(m.created_at || m.fechaCreacion)}</span>
-            </div>
-            <div class="msg-body">${sanitize(m.contenido)}</div>
-        </div>
-    `).join('');
-}
-
-async function publicarAnuncio() {
-    const titulo    = document.getElementById('anuncioTitulo').value.trim();
-    const contenido = document.getElementById('anuncioContenido').value.trim();
-    const tipo      = document.getElementById('anuncioTipo').value;
-
-    if (!titulo || !contenido) { showToast('Completá título y contenido', 'warning'); return; }
-
-    const res = await AlephAPI.Comunicacion.crear({
-        titulo, contenido, tipo,
-        autor: _currentUser.username,
-        curso: _schoolId,   // usamos schoolId como namespace de curso
-        materia: 'General'
+    list.innerHTML = '';
+    res.notas.forEach(n => {
+        const cls = n.nota >= 7 ? 'alta' : n.nota >= 4 ? 'media' : 'baja';
+        const username = n.profiles?.username || '—';
+        const card = document.createElement('div');
+        card.className = 'nota-card fade-up';
+        card.innerHTML = `<div class="nota-header"><div class="nota-valor ${cls}">${n.nota}</div><div style="flex:1"><div style="font-weight:700;font-size:.88em">${sanitize(username)}</div><div style="font-size:.78em;color:var(--text-faint)">${sanitize(n.materia)} · ${new Date(n.created_at).toLocaleDateString('es-AR')}</div></div></div>${n.comentario ? `<div style="font-size:.82em;color:var(--text-muted)">${sanitize(n.comentario)}</div>` : ''}${n.imagen_url ? `<img src="${n.imagen_url}" class="nota-img" onclick="window.open(this.src,'_blank')">` : ''}`;
+        list.appendChild(card);
     });
-
-    if (!res.ok) { showToast(res.error || 'Error al publicar', 'error'); return; }
-
-    document.getElementById('anuncioTitulo').value   = '';
-    document.getElementById('anuncioContenido').value = '';
-    showToast('Anuncio publicado', 'success');
-    await loadAnuncios();
 }
 
-// ── EVENTOS ────────────────────────────────────────────────
-async function loadEventos() {
-    const list   = document.getElementById('eventosList');
-    const eventos = await AlephAPI.Calendario.getProximos(_schoolId, 60);
+function previewNotaImg(input) {
+    _notaImgFile = input.files[0] || null;
+    document.getElementById('notaImgName').textContent = _notaImgFile ? _notaImgFile.name : '';
+}
 
-    if (!eventos.length) {
-        list.innerHTML = `<div class="empty-state" style="padding:16px 0">
-            <div class="empty-icon">📅</div><p>Sin eventos próximos</p></div>`;
-        return;
+async function guardarNota() {
+    const gradeId = document.getElementById('notaGrado').value;
+    const studentId = document.getElementById('notaAlumno').value;
+    const materia = document.getElementById('notaMateria').value.trim();
+    const nota = parseFloat(document.getElementById('notaValor').value);
+    const comentario = document.getElementById('notaComentario').value.trim();
+    if (!gradeId || !studentId || !materia || isNaN(nota)) { showToast('Completá grado, alumno, materia y nota', 'warning'); return; }
+    let imagenUrl = null;
+    if (_notaImgFile) {
+        const up = await AlephAPI.Storage.subirImagenQuiz(_notaImgFile);
+        if (up.ok) imagenUrl = up.file?.url || up.file?.publicUrl || null;
     }
-
-    const iconos = { examen: '📝', entrega: '📤', evento: '🎉', feriado: '🏖️' };
-    list.innerHTML = eventos.map(e => {
-        const fecha = new Date(e.fecha);
-        return `
-            <div class="evento-item">
-                <div class="evento-fecha-box">
-                    <span class="evento-dia">${fecha.getDate()}</span>
-                    <span class="evento-mes">${MESES_ES[fecha.getMonth()]}</span>
-                </div>
-                <div class="evento-info">
-                    <div class="evento-titulo">${iconos[e.tipo] || '📌'} ${sanitize(e.titulo)}</div>
-                    <div class="evento-tipo-tag">${sanitize(e.descripcion || e.tipo)}</div>
-                </div>
-            </div>`;
-    }).join('');
-}
-
-async function crearEvento() {
-    const titulo = document.getElementById('eventoTitulo').value.trim();
-    const fecha  = document.getElementById('eventoFecha').value;
-    const tipo   = document.getElementById('eventoTipo').value;
-    const curso  = document.getElementById('eventoGrado').value;
-    const desc   = document.getElementById('eventoDesc').value.trim();
-
-    if (!titulo || !fecha) { showToast('Completá título y fecha', 'warning'); return; }
-
-    const res = await AlephAPI.Calendario.agregar({
-        titulo, fecha, tipo,
-        curso: curso || _schoolId,
-        descripcion: desc
-    });
-
-    if (!res.ok) { showToast('Error al crear evento', 'error'); return; }
-
-    ['eventoTitulo','eventoFecha','eventoDesc'].forEach(id => document.getElementById(id).value = '');
-    showToast('Evento creado', 'success');
-    await loadEventos();
+    const res = await AlephAPI.Schools.crearNota({ schoolId: _schoolId, gradeId, studentUserId: studentId, materia, nota, comentario, imagenUrl });
+    if (!res.ok) { showToast(res.error, 'error'); return; }
+    showToast('Nota guardada', 'success');
+    ['notaMateria','notaValor','notaComentario'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('notaImagen').value = '';
+    document.getElementById('notaImgName').textContent = '';
+    _notaImgFile = null;
+    await loadNotasGrado(gradeId);
 }
 
 // ── INIT ───────────────────────────────────────────────────
@@ -783,6 +944,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('loadingState').style.display  = 'none';
     document.getElementById('directorContent').style.display = '';
+
+    // Mostrar panel admin solo para superadmin
+    if (user.role === 'superadmin') {
+        document.getElementById('adminPanel').style.display = '';
+    }
 
     // Cargar todo
     await Promise.all([
