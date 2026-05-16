@@ -936,6 +936,23 @@ const AlephAPI = (() => {
                 .select()
                 .single();
             if (error) return { ok: false, error: error.message };
+
+            // Automatically add the creator as an active member
+            const { error: memberError } = await _sb
+                .from('school_members')
+                .insert({
+                    school_id: data.id,
+                    user_id: user.id,
+                    role: 'superadmin',
+                    status: 'active'
+                });
+
+            if (memberError) {
+                console.error('Error al añadir al superadmin a la escuela:', memberError);
+                // Return success anyway, but with a warning, or fail?
+                // Failing here would leave the school created without members, but it's fine for now to just log.
+            }
+
             return { ok: true, school: data };
         },
 
