@@ -342,7 +342,7 @@ function renderHeader(user) {
     const roleEl = document.getElementById('userRole');
     if (usernameEl) usernameEl.textContent = user.username;
     if (roleEl) {
-        const roles = { student: 'Estudiante', teacher: 'Docente', director: 'Director' };
+        const roles = { student: 'Estudiante', teacher: 'Docente', director: 'Director', superadmin: 'Admin' };
         roleEl.textContent = roles[user.role] || user.role;
     }
 }
