@@ -491,7 +491,7 @@ async function crearEscuela() {
     const code = document.getElementById('newSchoolCode').value.trim();
     if (!name) { showToast('El nombre es obligatorio', 'warning'); return; }
 
-    const res = await AlephAPI.Schools.crearEscuela(name, code);
+    const res = await AlephAPI.Schools.crearEscuela({ name, code });
     if (!res.ok) {
         showToast(res.error, 'error');
         return;
