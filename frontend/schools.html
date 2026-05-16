@@ -398,12 +398,14 @@ function renderMySchools(schools) {
 }
 
 // ── INIT ──────────────────────────────────────────────────
-// app.js ya corrió Auth.init() y applyTheme() en su propio DOMContentLoaded.
-// Nos enganchamos con un segundo listener que corre después.
+// app.js ya corrió Auth.init() en su DOMContentLoaded y redirige si no hay sesión.
+// Acá sólo esperamos a que esa misma promise termine (es singleton).
 document.addEventListener('DOMContentLoaded', async () => {
+    // Esperamos exactamente la misma promise que ya inició app.js
     await AlephAPI.Auth.init();
     const user = AlephAPI.Auth.getCurrentUser();
-    if (!user) { location.href = './index.html'; return; }
+    // Si app.js no redirigió es porque hay usuario; aun así por las dudas:
+    if (!user) return; // app.js ya maneja la redirección
 
     // Header — app.js solo llena #username / #userRole en protectedPages hardcodeadas.
     // Lo rellenamos acá por si schools no está en esa lista.
