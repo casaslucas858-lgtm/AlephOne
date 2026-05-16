@@ -1179,9 +1179,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     _schoolId = getParam('id');
     if (!_schoolId) { location.href = 'schools.html'; return; }
 
-    // app.js ya corrió Auth.init()
+    // app.js ya garantizó que hay sesión; si por alguna razón no hay usuario, abortamos
     const user = AlephAPI.Auth.getCurrentUser();
-    if (!user) { location.href = './index.html'; return; }
+    if (!user) return;
     _currentUser = user;
 
     // Header
