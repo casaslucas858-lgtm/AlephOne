@@ -928,9 +928,11 @@ const AlephAPI = (() => {
             const user = Auth.getCurrentUser();
             if (!user || user.role !== 'superadmin') return { ok: false, error: 'Sin permisos' };
 
+            const finalCode = (code || ('ALF-' + Math.floor(1000 + Math.random() * 9000))).toUpperCase();
+
             const { data, error } = await _sb
                 .from('schools')
-                .insert({ name, code: code.toUpperCase(), created_by: user.id })
+                .insert({ name, code: finalCode, created_by: user.id })
                 .select()
                 .single();
             if (error) return { ok: false, error: error.message };
