@@ -409,7 +409,7 @@ function renderMySchools(schools) {
         item.style.cursor = 'pointer';
         item.onclick = () => {
             const user = AlephAPI.Auth.getCurrentUser();
-            const dest = user?.role === 'director' ? 'school-director.html' : 'school-dash.html';
+            const dest = (school.role === 'director' || school.role === 'superadmin') ? 'school-director.html' : 'school-dash.html';
             location.href = `${dest}?id=${school.id}`;
         };
         item.innerHTML = `
