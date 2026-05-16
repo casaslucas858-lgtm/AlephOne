@@ -419,7 +419,6 @@ async function logout() {
 
 // ─── INIT GLOBAL ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-    // Init Supabase auth PRIMERO
     await AlephAPI.Auth.init();
 
     // Selector de temas siempre
@@ -445,7 +444,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Páginas protegidas
-    const protectedPages = ['dashboard', 'tareas', 'horario', 'promedios', 'comunicacion', 'ai-chat', 'schools'];
+    const protectedPages = ['dashboard', 'tareas', 'horario', 'promedios', 'comunicacion', 'ai-chat', 'schools', 'school-dash', 'school-director'];
     const isProtected = protectedPages.some(p => window.location.pathname.includes(p));
     
     if (isProtected) {
