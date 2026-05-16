@@ -749,7 +749,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!_schoolId) { location.href = 'schools.html'; return; }
 
     const user = AlephAPI.Auth.getCurrentUser();
-    if (!user) { location.href = './index.html'; return; }
+    // app.js ya garantizó que hay sesión; si por alguna razón no hay usuario, abortamos
+    if (!user) return;
     _currentUser = user;
 
     // Solo director puede entrar acá
