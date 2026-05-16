@@ -401,6 +401,7 @@ function renderMySchools(schools) {
 // app.js ya corrió Auth.init() y applyTheme() en su propio DOMContentLoaded.
 // Nos enganchamos con un segundo listener que corre después.
 document.addEventListener('DOMContentLoaded', async () => {
+    await AlephAPI.Auth.init();
     const user = AlephAPI.Auth.getCurrentUser();
     if (!user) { location.href = './index.html'; return; }
 
