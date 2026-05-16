@@ -916,6 +916,109 @@ const AlephAPI = (() => {
                 .eq('status', 'pending');
             if (error) return { ok: false, error: error.message };
             return { ok: true, solicitudes: (data || []).map(m => ({ ...m.schools, memberId: m.id })) };
+        },
+
+        // ── ADMIN: crear escuela ────────────────────────────
+        async crearEscuela({ name, code }) {
+            const user = Auth.getCurrentUser();
+            if (!user || user.role !== 'superadmin') return { ok: false, error: 'Sin permisos' };
+
+            const { data, error } = await _sb
+                .from('schools')
+                .insert({ name, code: code.toUpperCase(), created_by: user.id })
+                .select()
+                .single();
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, school: data };
+        },
+
+        // ── ADMIN/DIRECTOR: expulsar miembro ────────────────
+        async expulsarMiembro(memberId) {
+            const { error } = await _sb
+                .from('school_members')
+                .delete()
+                .eq('id', memberId);
+            return error ? { ok: false, error: error.message } : { ok: true };
+        },
+
+        // ── ADMIN: asignar director ─────────────────────────
+        async setDirector(schoolId, userId) {
+            // Actualizar role en school_members
+            const { data, error } = await _sb
+                .from('school_members')
+                .update({ role: 'director' })
+                .eq('school_id', schoolId)
+                .eq('user_id', userId)
+                .select()
+                .single();
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, member: data };
+        },
+
+        async removeDirector(schoolId, userId) {
+            const { data, error } = await _sb
+                .from('school_members')
+                .update({ role: 'teacher' })
+                .eq('school_id', schoolId)
+                .eq('user_id', userId)
+                .select()
+                .single();
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, member: data };
+        },
+
+        // ── NOTAS con imagen ────────────────────────────────
+        async crearNota({ schoolId, gradeId, studentUserId, materia, nota, comentario, imagenUrl }) {
+            const user = Auth.getCurrentUser();
+            if (!user) return { ok: false, error: 'No autenticado' };
+
+            const { data, error } = await _sb
+                .from('school_notes')
+                .insert({
+                    school_id: schoolId,
+                    grade_id: gradeId,
+                    student_user_id: studentUserId,
+                    teacher_user_id: user.id,
+                    materia,
+                    nota,
+                    comentario: comentario || null,
+                    imagen_url: imagenUrl || null
+                })
+                .select()
+                .single();
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, nota: data };
+        },
+
+        async getNotasGrado(gradeId) {
+            const { data, error } = await _sb
+                .from('school_notes')
+                .select('*, profiles!school_notes_student_user_id_fkey(username)')
+                .eq('grade_id', gradeId)
+                .order('created_at', { ascending: false });
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, notas: data || [] };
+        },
+
+        async getNotasAlumno(studentUserId, schoolId) {
+            const { data, error } = await _sb
+                .from('school_notes')
+                .select('*')
+                .eq('student_user_id', studentUserId)
+                .eq('school_id', schoolId)
+                .order('created_at', { ascending: false });
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, notas: data || [] };
+        },
+
+        // ── Miembros de grado con perfil ────────────────────
+        async getMiembrosGrado(gradeId) {
+            const { data, error } = await _sb
+                .from('grade_members')
+                .select('*, profiles(username, role)')
+                .eq('grade_id', gradeId);
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, members: data || [] };
         }
     };
 
