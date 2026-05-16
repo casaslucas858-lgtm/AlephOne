@@ -50,7 +50,7 @@ async function renderStats(user) {
         promGeneral = (notas.reduce((a, n) => a + Number(n.valor), 0) / notas.length).toFixed(1);
     }
 
-    const statsData = user.role === 'student'
+    const statsData = (user.role === 'student')
         ? [
             { label: 'Tareas pendientes', value: pendientes.length, sub: 'sin entregar' },
             { label: 'Mensajes sin leer',  value: noLeidos.length,  sub: 'nuevos' },
@@ -61,7 +61,7 @@ async function renderStats(user) {
             { label: 'Tareas creadas',    value: (await AlephAPI.Tareas.getDelDocente(user.username)).length, sub: 'en total' },
             { label: 'Mensajes enviados', value: mensajes.filter(m => m.autor === user.username).length, sub: 'comunicados' },
             { label: 'Próximos eventos',  value: eventos.length, sub: 'esta semana' },
-            { label: 'Alumnos activos',   value: '—', sub: 'próximamente' }
+            { label: 'Gestión',           value: user.role === 'superadmin' ? 'Total' : 'Escolar', sub: user.role === 'superadmin' ? 'Superadmin' : 'Director' }
           ];
 
     document.getElementById('statsGrid').innerHTML = statsData.map(s => `
@@ -397,7 +397,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const user = requireAuth();
     if (!user) return;
 
-    if (user.role === 'teacher' || user.role === 'director') {
+    if (user.role === 'teacher' || user.role === 'director' || user.role === 'superadmin') {
         const panel = document.getElementById('teacherPanel');
         if (panel) panel.style.display = 'block';
     }
