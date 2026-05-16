@@ -75,7 +75,70 @@ const ALEPH_THEMES = [
     { id: 'green',     label: 'Green',     dark: false }
 ];
 
+const ALEPH_THEME_MODES = [
+    { id: 'light', label: 'Claro' },
+    { id: 'dark',  label: 'Oscuro' },
+    { id: 'auto',  label: 'Auto' }
+];
+
+const ALEPH_TEXT_SIZES = [
+    { id: '85',   label: '85%',    className: 'a11y-text-85' },
+    { id: '92_5', label: '92.5%',  className: 'a11y-text-92-5' },
+    { id: '100',  label: '100%',   className: 'a11y-text-100' },
+    { id: '107_5', label: '107.5%', className: 'a11y-text-107-5' },
+    { id: '115',  label: '115%',   className: 'a11y-text-115' }
+];
+
+const ALEPH_COLOR_VISION_MODES = [
+    { id: 'normal',      label: 'Normal',      className: '' },
+    { id: 'deuteranopia', label: 'Deuteranopia', className: 'a11y-color-deuteranopia' },
+    { id: 'protanopia',  label: 'Protanopia',  className: 'a11y-color-protanopia' },
+    { id: 'tritanopia',  label: 'Tritanopia',  className: 'a11y-color-tritanopia' },
+    { id: 'grayscale',   label: 'Escala de grises', className: 'a11y-color-grayscale' }
+];
+
+const ALEPH_ACCESSIBILITY_OPTIONS = [
+    { id: 'reducedMotion',       label: 'Reducir movimiento',          className: 'a11y-reduced-motion' },
+    { id: 'reducedTransparency', label: 'Reducir transparencias',      className: 'a11y-reduced-transparency' },
+    { id: 'highContrast',        label: 'Alto contraste',              className: 'a11y-high-contrast' },
+    { id: 'dyslexiaFont',        label: 'Fuente para dislexia',        className: 'a11y-dyslexia-font' },
+    { id: 'letterSpacing',       label: 'Espaciado de letras',         className: 'a11y-letter-spacing' },
+    { id: 'wideLineHeight',      label: 'Interlineado amplio',         className: 'a11y-wide-line-height' },
+    { id: 'underlineLinks',      label: 'Subrayar links',              className: 'a11y-underline-links' },
+    { id: 'enhancedFocus',       label: 'Focus visible mejorado',      className: 'a11y-enhanced-focus' },
+    { id: 'largeTouchTargets',   label: 'Área de toque ampliada',      className: 'a11y-large-touch' }
+];
+
+const ALEPH_ACCESSIBILITY_DEFAULTS = {
+    colorVision: 'normal',
+    textSize: '100',
+    reducedMotion: false,
+    reducedTransparency: false,
+    highContrast: false,
+    dyslexiaFont: false,
+    letterSpacing: false,
+    wideLineHeight: false,
+    underlineLinks: false,
+    enhancedFocus: false,
+    largeTouchTargets: false
+};
+
+function getStoredThemeMode() {
+    const mode = localStorage.getItem('aleph_theme_mode');
+    return ALEPH_THEME_MODES.some(item => item.id === mode) ? mode : '';
+}
+
+function resolveThemeMode(mode) {
+    if (mode === 'auto') {
+        return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return mode === 'light' || mode === 'dark' ? mode : '';
+}
+
 function getStoredTheme() {
+    const modeTheme = resolveThemeMode(getStoredThemeMode());
+    if (modeTheme) return modeTheme;
+
     const savedTheme = localStorage.getItem('aleph_theme');
     if (ALEPH_THEMES.some(theme => theme.id === savedTheme)) return savedTheme;
 
@@ -86,7 +149,7 @@ function getStoredTheme() {
     return 'dark';
 }
 
-function applyTheme(themeId) {
+function applyTheme(themeId, options = {}) {
     const selectedTheme = ALEPH_THEMES.find(theme => theme.id === themeId) || ALEPH_THEMES[0];
 
     ALEPH_THEMES.forEach(theme => {
@@ -98,12 +161,27 @@ function applyTheme(themeId) {
 
     localStorage.setItem('aleph_theme', selectedTheme.id);
     localStorage.setItem('aleph_dark_mode', selectedTheme.dark ? 'true' : 'false');
+    if (!options.fromMode) {
+        localStorage.setItem('aleph_theme_mode',
+            selectedTheme.id === 'light' || selectedTheme.id === 'dark' ? selectedTheme.id : 'custom'
+        );
+    }
 
     const selector = document.getElementById('darkModeBtn') || document.getElementById('themeBtn');
     if (selector) selector.value = selectedTheme.id;
 
     document.dispatchEvent(new CustomEvent('aleph:themechange', {
-        detail: { theme: selectedTheme.id }
+        detail: { theme: selectedTheme.id, mode: getStoredThemeMode() }
+    }));
+}
+
+function setThemeMode(mode) {
+    if (!ALEPH_THEME_MODES.some(item => item.id === mode)) return;
+
+    localStorage.setItem('aleph_theme_mode', mode);
+    applyTheme(resolveThemeMode(mode), { fromMode: true });
+    document.dispatchEvent(new CustomEvent('aleph:thememodechange', {
+        detail: { mode }
     }));
 }
 
@@ -132,13 +210,18 @@ function initThemes() {
     const selector = createThemeSelector(
         document.getElementById('darkModeBtn') || document.getElementById('themeBtn')
     );
+    const storedMode = getStoredThemeMode();
     const selectedTheme = getStoredTheme();
-    applyTheme(selectedTheme);
+    applyTheme(selectedTheme, { fromMode: Boolean(storedMode) });
 
     if (selector) {
         selector.value = selectedTheme;
         selector.addEventListener('change', event => applyTheme(event.target.value));
     }
+
+    window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', () => {
+        if (getStoredThemeMode() === 'auto') setThemeMode('auto');
+    });
 }
 
 function initDarkMode() {
@@ -147,7 +230,60 @@ function initDarkMode() {
 
 function toggleDarkMode() {
     const currentTheme = getStoredTheme();
-    applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    setThemeMode(currentTheme === 'dark' ? 'light' : 'dark');
+}
+
+function getAccessibilitySettings() {
+    try {
+        return {
+            ...ALEPH_ACCESSIBILITY_DEFAULTS,
+            ...JSON.parse(localStorage.getItem('aleph_accessibility') || '{}')
+        };
+    } catch {
+        return { ...ALEPH_ACCESSIBILITY_DEFAULTS };
+    }
+}
+
+function applyAccessibility(settings = getAccessibilitySettings()) {
+    const normalizedSettings = { ...ALEPH_ACCESSIBILITY_DEFAULTS, ...settings };
+
+    ALEPH_ACCESSIBILITY_OPTIONS.forEach(option => {
+        document.body.classList.toggle(option.className, Boolean(normalizedSettings[option.id]));
+    });
+
+    ALEPH_COLOR_VISION_MODES.forEach(mode => {
+        if (mode.className) document.body.classList.remove(mode.className);
+    });
+    const colorVision = ALEPH_COLOR_VISION_MODES.find(mode => mode.id === normalizedSettings.colorVision) || ALEPH_COLOR_VISION_MODES[0];
+    if (colorVision.className) document.body.classList.add(colorVision.className);
+
+    ALEPH_TEXT_SIZES.forEach(size => document.body.classList.remove(size.className));
+    const textSize = ALEPH_TEXT_SIZES.find(size => size.id === normalizedSettings.textSize) || ALEPH_TEXT_SIZES[2];
+    document.body.classList.add(textSize.className);
+
+    localStorage.setItem('aleph_accessibility', JSON.stringify(normalizedSettings));
+
+    document.dispatchEvent(new CustomEvent('aleph:accessibilitychange', {
+        detail: { settings: normalizedSettings }
+    }));
+}
+
+function setAccessibilityOption(optionId, enabled) {
+    const settings = getAccessibilitySettings();
+    settings[optionId] = Boolean(enabled);
+    applyAccessibility(settings);
+}
+
+function setColorVisionMode(modeId) {
+    const settings = getAccessibilitySettings();
+    settings.colorVision = ALEPH_COLOR_VISION_MODES.some(mode => mode.id === modeId) ? modeId : 'normal';
+    applyAccessibility(settings);
+}
+
+function setTextSize(sizeId) {
+    const settings = getAccessibilitySettings();
+    settings.textSize = ALEPH_TEXT_SIZES.some(size => size.id === sizeId) ? sizeId : '100';
+    applyAccessibility(settings);
 }
 
 // ─── NAVBAR ACTIVA ───────────────────────────────────────────
@@ -288,6 +424,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Selector de temas siempre
     initDarkMode();
+    applyAccessibility();
 
     // Nav activa
     setActiveNav();
@@ -308,7 +445,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Páginas protegidas
-    const protectedPages = ['dashboard', 'tareas', 'horario', 'promedios', 'comunicacion', 'ai-chat', 'schools', 'school-dash', 'school-director'];
+    const protectedPages = ['dashboard', 'tareas', 'horario', 'promedios', 'comunicacion', 'ai-chat', 'schools'];
     const isProtected = protectedPages.some(p => window.location.pathname.includes(p));
     
     if (isProtected) {
