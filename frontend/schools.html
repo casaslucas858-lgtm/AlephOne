@@ -400,8 +400,8 @@ function hideJoinFlow() {
 function renderMySchools(schools) {
     const list = document.getElementById('mySchoolsList');
     list.innerHTML = '';
-    const roleLabel = { student: 'Estudiante', teacher: 'Docente', director: 'Director' };
-    const roleClass = { student: 'tag-teal', teacher: 'tag-accent', director: 'tag-blue' };
+    const roleLabel = { student: 'Estudiante', teacher: 'Docente', director: 'Director', superadmin: 'Admin' };
+    const roleClass = { student: 'tag-teal', teacher: 'tag-accent', director: 'tag-blue', superadmin: 'tag-primary' };
 
     schools.forEach(school => {
         const item = document.createElement('div');
