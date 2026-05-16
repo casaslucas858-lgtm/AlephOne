@@ -1219,7 +1219,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('xpBarWrap').style.display = '';
         document.getElementById('tab-notas').style.display = '';
     }
-    if (user.role === 'teacher' || user.role === 'director') {
+    if (user.role === 'teacher' || user.role === 'director' || user.role === 'superadmin') {
         document.getElementById('teacherTareasPanel').style.display = '';
         document.getElementById('saveAttendanceBtn').style.display = '';
         document.getElementById('quizSendBtn').style.display = '';
