@@ -552,6 +552,9 @@
                 <button class="dash-tab" onclick="switchDashTab('attendance')" id="tab-attendance">
                     ✅ Asistencia
                 </button>
+                <button class="dash-tab" onclick="switchDashTab('notas')" id="tab-notas" style="display:none">
+                    📝 Notas
+                </button>
             </div>
 
             <!-- ── TAB: CHAT ───────────────────────────── -->
@@ -580,6 +583,7 @@
                             </div>
                         </div>
                         <div class="chat-input-row">
+                            <button class="chat-send-btn" id="quizSendBtn" onclick="toggleQuizPicker()" style="display:none;background:var(--accent)" title="Enviar quiz">🧪</button>
                             <textarea
                                 class="chat-input-field"
                                 id="chatInput"
@@ -668,6 +672,18 @@
                     <div style="padding:24px;text-align:center"><div class="spinner"></div></div>
                 </div>
 
+            </div>
+
+            <!-- ── TAB: NOTAS (solo estudiantes) ───────── -->
+            <div class="tab-panel" id="panel-notas">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">📝 Mis notas</span>
+                    </div>
+                    <div id="misNotasList">
+                        <div style="padding:24px;text-align:center"><div class="spinner"></div></div>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -1201,10 +1217,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Ocultar tab attendance para estudiantes (solo ven placeholder)
         // La dejamos pero sin privilegios
         document.getElementById('xpBarWrap').style.display = '';
+        document.getElementById('tab-notas').style.display = '';
     }
     if (user.role === 'teacher' || user.role === 'director') {
         document.getElementById('teacherTareasPanel').style.display = '';
         document.getElementById('saveAttendanceBtn').style.display = '';
+        document.getElementById('quizSendBtn').style.display = '';
     }
 
     // Fecha hoy en attendance
@@ -1250,12 +1268,98 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('dashContent').style.display = '';
 
     // Cargar todo en paralelo
-    await Promise.all([
-        loadChannels(),
-        loadTareas(),
-        loadAttendance()
-    ]);
+    const tasks = [loadChannels(), loadTareas(), loadAttendance()];
+    if (user.role === 'student') tasks.push(loadMisNotas());
+    await Promise.all(tasks);
 });
+
+// ── QUIZ PICKER (docentes) ─────────────────────────────────
+let _quizPickerOpen = false;
+let _quizzes = [];
+
+async function toggleQuizPicker() {
+    if (_quizPickerOpen) { closeQuizPicker(); return; }
+    _quizPickerOpen = true;
+
+    // Cargar quizzes del docente
+    const quizzes = await AlephAPI.Quiz.getParaCurso(_activeGrade?.name || _currentUser.curso);
+    _quizzes = quizzes;
+
+    // Crear overlay
+    let overlay = document.getElementById('quizPickerOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'quizPickerOverlay';
+        overlay.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:90%;max-width:380px;max-height:300px;overflow-y:auto;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);z-index:999;padding:12px;';
+        document.body.appendChild(overlay);
+    }
+
+    if (!quizzes.length) {
+        overlay.innerHTML = `<div style="text-align:center;padding:16px;font-size:.85em;color:var(--text-faint)">No tenés quizzes guardados.<br><a href="quiz-crear.html" style="color:var(--teal)">Crear uno →</a></div>`;
+        return;
+    }
+
+    overlay.innerHTML = `<div style="font-weight:700;font-size:.82em;margin-bottom:8px;font-family:var(--font-display)">🧪 Enviar quiz al canal</div>` +
+        quizzes.map(q => `
+            <div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:var(--radius);cursor:pointer;transition:all .15s" onmouseenter="this.style.background='var(--bg-hover)'" onmouseleave="this.style.background=''" onclick="enviarQuizAlChat('${q.id}')">
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:600;font-size:.85em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sanitize(q.titulo)}</div>
+                    <div style="font-size:.72em;color:var(--text-faint)">${(q.preguntas || []).length} preguntas · ${sanitize(q.modo || 'clásico')}</div>
+                </div>
+                <span style="font-size:.85em">➤</span>
+            </div>
+        `).join('');
+}
+
+function closeQuizPicker() {
+    _quizPickerOpen = false;
+    document.getElementById('quizPickerOverlay')?.remove();
+}
+
+async function enviarQuizAlChat(quizId) {
+    closeQuizPicker();
+    if (!_activeChannel) return;
+    const q = _quizzes.find(x => x.id === quizId);
+    if (!q) return;
+    const content = `🧪 Quiz: ${q.titulo}\n${(q.preguntas || []).length} preguntas · Modo: ${q.modo || 'clásico'}\n👉 quizzit.html?quiz=${q.id}`;
+    const { error } = await supabaseClient.from('chat_messages').insert({
+        channel_id: _activeChannel.id,
+        user_id: _currentUser.id,
+        username: _currentUser.username,
+        content
+    });
+    if (error) showToast('No se pudo enviar', 'error');
+}
+
+// ── NOTAS (alumnos) ────────────────────────────────────────
+async function loadMisNotas() {
+    const list = document.getElementById('misNotasList');
+    if (!list) return;
+    const res = await AlephAPI.Schools.getNotasAlumno(_currentUser.id, _schoolId);
+    if (!res.ok || !res.notas.length) {
+        list.innerHTML = `<div class="empty-state" style="padding:16px 0"><div class="empty-icon">📝</div><p>No tenés notas cargadas</p></div>`;
+        return;
+    }
+    list.innerHTML = '';
+    res.notas.forEach(n => {
+        const cls = n.nota >= 7 ? 'alta' : n.nota >= 4 ? 'media' : 'baja';
+        const notaStyle = cls === 'alta' ? 'background:rgba(34,197,94,0.12);color:#16a34a' : cls === 'media' ? 'background:rgba(245,158,11,0.12);color:#b45309' : 'background:rgba(220,53,69,0.12);color:#dc3545';
+        const card = document.createElement('div');
+        card.style.cssText = 'background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:8px';
+        card.innerHTML = `
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                <div style="font-size:1.4em;font-weight:800;font-family:var(--font-display);padding:4px 8px;border-radius:var(--radius);${notaStyle}">${n.nota}</div>
+                <div style="flex:1">
+                    <div style="font-weight:700;font-size:.88em">${sanitize(n.materia)}</div>
+                    <div style="font-size:.78em;color:var(--text-faint)">${new Date(n.created_at).toLocaleDateString('es-AR')}</div>
+                </div>
+            </div>
+            ${n.comentario ? `<div style="font-size:.82em;color:var(--text-muted)">${sanitize(n.comentario)}</div>` : ''}
+            ${n.imagen_url ? `<img src="${n.imagen_url}" style="max-width:100%;border-radius:var(--radius);margin-top:8px;cursor:pointer" onclick="window.open(this.src,'_blank')">` : ''}
+        `;
+        list.appendChild(card);
+    });
+}
 </script>
 </body>
 </html>
