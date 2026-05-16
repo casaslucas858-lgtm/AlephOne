@@ -184,6 +184,11 @@ const AlephAPI = (() => {
         },
 
         async register(username, email, password, role = 'student') {
+            // Seguridad: Solo permitimos roles básicos desde el cliente. 
+            // 'superadmin' o 'director' deben asignarse manualmente en la DB.
+            const publicRoles = ['student', 'teacher'];
+            const finalRole = publicRoles.includes(role) ? role : 'student';
+
             const { data: existing, error: existingError } = await _sb
                 .from('profiles')
                 .select('id')
@@ -200,7 +205,7 @@ const AlephAPI = (() => {
             const { data, error } = await _sb.auth.signUp({
                 email,
                 password,
-                options: { data: { username, role, curso: _defaultCurso() } }
+                options: { data: { username, role: finalRole, curso: _defaultCurso() } }
             });
 
             if (error) {
@@ -224,7 +229,7 @@ const AlephAPI = (() => {
 
             const ensured = await Auth._ensureProfile(authUser, {
                 username,
-                role,
+                role: finalRole,
                 email_real: email,
                 curso: _defaultCurso()
             });
