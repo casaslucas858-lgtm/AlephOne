@@ -672,7 +672,8 @@
                         <span class="card-title">📋 Registro de asistencia</span>
                         <div style="display:flex;gap:8px;align-items:center">
                             <input type="date" class="form-input" id="attendanceDate"
-                                style="width:auto;padding:5px 10px;font-size:0.82em">
+                                style="width:auto;padding:5px 10px;font-size:0.82em"
+                                onchange="onAttendanceDateChange(this.value)">
                             <button class="btn btn-primary btn-sm" id="saveAttendanceBtn"
                                 onclick="guardarAsistencia()" style="display:none">
                                 Guardar
@@ -750,6 +751,31 @@ let _currentUser = null;
 const XP_PER_TAREA = 20;
 const XP_PER_LEVEL = 100;
 
+// ── FALLBACKS SEGUROS para funciones de app.js ─────────────
+// FIX: sanitize y formatFecha pueden no estar en window si app.js
+// no las expone. Definimos fallbacks que no rompen el render.
+function _sanitize(str) {
+    if (typeof window.sanitize === 'function') return window.sanitize(str);
+    // Fallback: escapado manual básico para prevenir XSS
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+function _formatFecha(iso) {
+    if (typeof window.formatFecha === 'function') return window.formatFecha(iso);
+    // Fallback: formato dd/mm/aaaa
+    if (!iso) return '—';
+    try {
+        return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    } catch { return iso; }
+}
+// Alias locales — todo el código interno usa estos, no los globales
+const sanitize    = _sanitize;
+const formatFecha = _formatFecha;
+
 // ── UTILS ──────────────────────────────────────────────────
 function getParam(key) {
     return new URLSearchParams(location.search).get(key);
@@ -774,6 +800,20 @@ function autoResize(el) {
     el.style.height = Math.min(el.scrollHeight, 90) + 'px';
 }
 
+// ── CLIENTE SUPABASE ───────────────────────────────────────
+// FIX: AlephAPI._client puede no estar expuesto. Intentamos obtenerlo
+// de distintos lugares antes de fallar con un mensaje claro.
+function resolveSupabaseClient() {
+    // Opción 1: api.js lo expone como AlephAPI._client
+    if (AlephAPI?._client) return AlephAPI._client;
+    // Opción 2: api.js lo expone como AlephAPI.client
+    if (AlephAPI?.client) return AlephAPI.client;
+    // Opción 3: Supabase fue creado globalmente en api.js
+    if (typeof window.supabase !== 'undefined' && window.supabase?.from) return window.supabase;
+    // Sin cliente: no podemos continuar
+    return null;
+}
+
 // ── MOBILE NAV ─────────────────────────────────────────────
 function toggleMobileNav() { document.getElementById('sidebar').classList.toggle('open'); }
 function toggleMasSheet() {
@@ -788,10 +828,12 @@ function switchDashTab(tab) {
     document.getElementById('tab-' + tab)?.classList.add('active');
     document.getElementById('panel-' + tab)?.classList.add('active');
 
-    // Bottom nav sync
+    // FIX: Bottom nav sync solo sobre los items que realmente existen
+    // (chat y tareas). Attendance vive solo en el desktop nav.
     document.querySelectorAll('.bottom-nav .bn-item').forEach(b => b.classList.remove('active'));
-    if (tab === 'chat')    document.querySelectorAll('.bottom-nav .bn-item')[1]?.classList.add('active');
-    if (tab === 'tareas')  document.querySelectorAll('.bottom-nav .bn-item')[2]?.classList.add('active');
+    const bnItems = document.querySelectorAll('.bottom-nav .bn-item');
+    if (tab === 'chat'   && bnItems[1]) bnItems[1].classList.add('active');
+    if (tab === 'tareas' && bnItems[2]) bnItems[2].classList.add('active');
 }
 
 // ── CHANNELS ───────────────────────────────────────────────
@@ -966,8 +1008,12 @@ async function selectChannel(channel) {
     // Cargar mensajes
     await loadMessages(channel.id);
 
-    // Suscribir realtime
-    if (_realtimeSub) supabaseClient.removeChannel(_realtimeSub);
+    // FIX: Limpiar suscripción anterior antes de crear una nueva
+    // para evitar acumulación de canales Realtime
+    if (_realtimeSub) {
+        await supabaseClient.removeChannel(_realtimeSub);
+        _realtimeSub = null;
+    }
     _realtimeSub = supabaseClient
         .channel(`chat:${channel.id}`)
         .on('postgres_changes', {
@@ -1031,7 +1077,6 @@ function buildMsgEl(msg) {
 
     const initial = (msg.username || '?')[0].toUpperCase();
 
-    // Detectar si es docente (simple: buscar en gradeMembers)
     const memberInfo = _gradeMembers.find(m => m.user_id === msg.user_id);
     const isTeacher  = memberInfo?.role === 'teacher';
 
@@ -1053,7 +1098,6 @@ function buildMsgEl(msg) {
 function onNewMessage(msg) {
     const area = document.getElementById('chatMessages');
 
-    // Quitar empty state si existe
     const empty = area.querySelector('.empty-state');
     if (empty) empty.remove();
 
@@ -1075,56 +1119,69 @@ function handleChatKeydown(e) {
 }
 
 async function sendMessage() {
-    const input = document.getElementById('chatInput');
+    const input  = document.getElementById('chatInput');
+    const btn    = document.getElementById('chatSendBtn');
     const content = input.value.trim();
     if (!content || !_activeChannel) return;
 
-    const btn = document.getElementById('chatSendBtn');
-    btn.disabled = true;
-    input.value = '';
+    // FIX: deshabilitar también el textarea durante el envío
+    // para prevenir envíos concurrentes con Enter
+    btn.disabled   = true;
+    input.disabled = true;
+    input.value    = '';
     input.style.height = 'auto';
 
-    const { error } = await supabaseClient
-        .from('chat_messages')
-        .insert({
-            channel_id: _activeChannel.id,
-            user_id: _currentUser.id,
-            username: _currentUser.username,
-            content
-        });
+    try {
+        const { error } = await supabaseClient
+            .from('chat_messages')
+            .insert({
+                channel_id: _activeChannel.id,
+                user_id: _currentUser.id,
+                username: _currentUser.username,
+                content
+            });
 
-    if (error) showToast('No se pudo enviar el mensaje', 'error');
-    btn.disabled = false;
-    input.focus();
+        if (error) showToast('No se pudo enviar el mensaje', 'error');
+    } finally {
+        btn.disabled   = false;
+        input.disabled = false;
+        input.focus();
+    }
 }
 
 // ── TAREAS ─────────────────────────────────────────────────
 async function loadTareas() {
     const list = document.getElementById('tareasList');
+    const badge = document.getElementById('tareasBadge');
     const gradeName = _activeGrade?.name;
+
     if (!gradeName) {
         list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>Sin grado asignado</p></div>`;
+        badge.style.display = 'none'; // FIX: ocultar badge explícitamente
         return;
     }
 
-    // Tareas del grado (usamos el nombre del grado como "curso")
     const tareas = await AlephAPI.Tareas.getParaCurso(gradeName);
     const now = new Date();
 
     if (!tareas.length) {
         list.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><p>No hay tareas en este grado</p></div>`;
+        badge.style.display = 'none'; // FIX: ocultar badge explícitamente
         return;
     }
 
+    // FIX: optional chaining en t.entregas para evitar TypeError si
+    // la API no incluye ese campo en el response
     const pendientes = _currentUser.role === 'student'
         ? tareas.filter(t => !t.entregas?.find(e => e.alumno_username === _currentUser.username))
         : tareas;
 
-    // Badge
-    const badge = document.getElementById('tareasBadge');
+    // FIX: ocultar/mostrar badge correctamente en ambos casos
     if (pendientes.length > 0) {
         badge.textContent = pendientes.length;
         badge.style.display = '';
+    } else {
+        badge.style.display = 'none';
     }
 
     list.innerHTML = pendientes.map(t => {
@@ -1135,7 +1192,8 @@ async function loadTareas() {
         else                { urgClass = 'vence-normal'; badgeClass = 'normal'; badgeText = `${dias}d`; }
 
         const entregasInfo = _currentUser.role === 'teacher'
-            ? `<span style="color:var(--text-faint);font-size:.75em">${t.entregas?.length || 0} entregas</span>` : '';
+            // FIX: optional chaining por consistencia
+            ? `<span style="color:var(--text-faint);font-size:.75em">${t.entregas?.length ?? 0} entregas</span>` : '';
 
         return `
             <div class="tarea-item ${urgClass}" style="cursor:pointer" onclick="window.location.href='tareas.html'">
@@ -1150,6 +1208,7 @@ async function loadTareas() {
 
     // XP (solo students)
     if (_currentUser.role === 'student') {
+        // FIX: optional chaining en .entregas también aquí
         const entregadas = tareas.filter(t => t.entregas?.find(e => e.alumno_username === _currentUser.username)).length;
         updateXP(entregadas * XP_PER_TAREA);
     }
@@ -1186,7 +1245,6 @@ async function crearTarea() {
 
     showToast('Tarea publicada', 'success');
     toggleCrearTarea();
-    // Limpiar form
     ['nuevaTareaTitulo','nuevaTareaMateria','nuevaTareaDesc','nuevaTareaFecha'].forEach(id => {
         document.getElementById(id).value = '';
     });
@@ -1194,12 +1252,28 @@ async function crearTarea() {
 }
 
 // ── ATTENDANCE ─────────────────────────────────────────────
+
+// FIX: clave de localStorage con fallback seguro cuando no hay grado
+function attKey(gradeId, date) {
+    if (!gradeId || !date) return null;
+    return `att_${gradeId}_${date}`;
+}
+
+// FIX: cargar asistencia guardada al cambiar la fecha
+function onAttendanceDateChange(date) {
+    if (!_activeGrade?.id) return;
+    const key = attKey(_activeGrade.id, date);
+    _attendance = key ? JSON.parse(localStorage.getItem(key) || '{}') : {};
+    // Re-renderizar la grilla con los datos cargados
+    renderAttendanceGrid();
+    updateAttendanceSummary();
+}
+
 async function loadAttendance() {
     const content = document.getElementById('attendanceContent');
     const isTeacher = _currentUser.role === 'teacher' || _currentUser.role === 'director';
 
     if (!isTeacher) {
-        // Estudiante: ver su propio historial (placeholder)
         content.innerHTML = `
             <div class="alert alert-info">
                 <span>ℹ️</span>
@@ -1209,7 +1283,6 @@ async function loadAttendance() {
         return;
     }
 
-    // Docente: cargar miembros del grado
     if (!_gradeMembers.length) {
         content.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><p>No hay alumnos en este grado aún</p></div>`;
         return;
@@ -1223,8 +1296,33 @@ async function loadAttendance() {
         return;
     }
 
+    // FIX: cargar asistencia guardada para la fecha actual antes de renderizar
+    const date = document.getElementById('attendanceDate').value;
+    const key  = attKey(_activeGrade?.id, date);
+    if (key) {
+        _attendance = JSON.parse(localStorage.getItem(key) || '{}');
+    }
+
     content.innerHTML = `<div class="attendance-grid" id="attendanceGrid"></div>`;
-    const grid = document.getElementById('attendanceGrid');
+    renderAttendanceGrid();
+    updateAttendanceSummary();
+}
+
+// FIX: extraída como función independiente para poder llamarla
+// tanto desde loadAttendance como desde onAttendanceDateChange
+function renderAttendanceGrid() {
+    const students = _gradeMembers.filter(m => m.role === 'student');
+    let grid = document.getElementById('attendanceGrid');
+
+    // Si la grilla no existe aún en el DOM (ej. primer render),
+    // necesitamos crearla dentro de attendanceContent
+    if (!grid) {
+        const content = document.getElementById('attendanceContent');
+        content.innerHTML = `<div class="attendance-grid" id="attendanceGrid"></div>`;
+        grid = document.getElementById('attendanceGrid');
+    } else {
+        grid.innerHTML = '';
+    }
 
     students.forEach(member => {
         const card = document.createElement('div');
@@ -1251,8 +1349,6 @@ async function loadAttendance() {
         `;
         grid.appendChild(card);
     });
-
-    updateAttendanceSummary();
 }
 
 function statusLabel(s) {
@@ -1262,12 +1358,10 @@ function statusLabel(s) {
 function setAttendance(userId, status, btn) {
     _attendance[userId] = status;
 
-    // UI: actualizar botones de esa tarjeta
     const card = btn.closest('.attendance-card');
     card.querySelectorAll('.att-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 
-    // Actualizar texto
     const statusEl = document.getElementById(`att-status-${userId}`);
     if (statusEl) statusEl.textContent = statusLabel(status);
 
@@ -1282,10 +1376,17 @@ function updateAttendanceSummary() {
 }
 
 async function guardarAsistencia() {
-    // Por ahora: guardar en localStorage con key fecha+gradeId
-    // TODO: tabla attendance en Supabase en próxima iteración
     const date = document.getElementById('attendanceDate').value || new Date().toISOString().slice(0,10);
-    const key = `att_${_activeGrade?.id}_${date}`;
+    // FIX: validar que tengamos un gradeId antes de guardar
+    if (!_activeGrade?.id) {
+        showToast('No hay grado activo para guardar la asistencia', 'warning');
+        return;
+    }
+    const key = attKey(_activeGrade.id, date);
+    if (!key) {
+        showToast('Fecha inválida', 'warning');
+        return;
+    }
     localStorage.setItem(key, JSON.stringify(_attendance));
     showToast('Asistencia guardada localmente', 'success');
 }
@@ -1305,120 +1406,52 @@ function updateXP(totalXP) {
     document.getElementById('xpNumbers').textContent = `${current} / ${XP_PER_LEVEL} XP`;
 }
 
-// ── INIT ───────────────────────────────────────────────────
-// Exponer cliente supabase para usar directamente en chat
-// (api.js lo crea como _sb dentro del IIFE — necesitamos acceso directo)
-const supabaseClient = AlephAPI._client;
-
-Object.assign(window, {
-    selectChannelById,
-    switchDashTab,
-    sendMessage,
-    toggleQuizPicker
-});
-
-document.addEventListener('DOMContentLoaded', async () => {
-    await AlephAPI.Auth.init();
-    _schoolId = getParam('id');
-    if (!_schoolId) { location.href = 'schools.html'; return; }
-
-    // app.js ya garantizó que hay sesión; si por alguna razón no hay usuario, abortamos
-    const user = AlephAPI.Auth.getCurrentUser();
-    if (!user) return;
-    _currentUser = user;
-
-    // Header
-    const roles = { student: 'Estudiante', teacher: 'Docente', director: 'Director', superadmin: 'Admin' };
-    const usernameEl = document.getElementById('username');
-    const roleEl     = document.getElementById('userRole');
-    const avatarEl   = document.getElementById('userAvatar');
-    if (usernameEl && usernameEl.textContent === '—') usernameEl.textContent = user.username;
-    if (avatarEl)   avatarEl.textContent = (user.username || '?')[0].toUpperCase();
-    if (roleEl && roleEl.textContent === '—') {
-        roleEl.textContent = roles[user.role] || user.role;
-        roleEl.className   = `role-badge ${user.role}`;
-    }
-
-    // Tabs según rol
-    if (user.role === 'student') {
-        // Ocultar tab attendance para estudiantes (solo ven placeholder)
-        // La dejamos pero sin privilegios
-        document.getElementById('xpBarWrap').style.display = '';
-        document.getElementById('tab-notas').style.display = '';
-    }
-    if (user.role === 'teacher' || user.role === 'director' || user.role === 'superadmin') {
-        document.getElementById('teacherTareasPanel').style.display = '';
-        document.getElementById('saveAttendanceBtn').style.display = '';
-        document.getElementById('quizSendBtn').style.display = '';
-    }
-
-    // Fecha hoy en attendance
-    document.getElementById('attendanceDate').value = new Date().toISOString().slice(0,10);
-
-    // Cargar school
-    const { data: schoolData } = await supabaseClient
-        .from('schools')
-        .select('*')
-        .eq('id', _schoolId)
-        .maybeSingle();
-
-    if (!schoolData) { location.href = 'schools.html'; return; }
-    _school = schoolData;
-
-    document.getElementById('schoolName').textContent = schoolData.name;
-    document.getElementById('schoolCode').textContent = schoolData.code;
-
-    // Cargar grados del usuario en esta escuela
-    const gradesRes = await AlephAPI.Schools.getMisGrados(_schoolId);
-    if (gradesRes.ok && gradesRes.grades.length > 0) {
-        _myGrades = gradesRes.grades;
-        _activeGrade = gradesRes.grades[0];
-        document.getElementById('gradeBadge').textContent = `📚 ${_activeGrade.name}`;
-    } else {
-        document.getElementById('gradeBadge').textContent = 'Sin grado';
-    }
-
-    const roleLabel = { student: 'Estudiante', teacher: 'Docente', director: 'Director' };
-    document.getElementById('roleBadgeSchool').textContent = roleLabel[user.role] || user.role;
-
-    // Cargar miembros del grado (para chat y attendance)
-    if (_activeGrade) {
-        const { data: members } = await supabaseClient
-            .from('grade_members')
-            .select('*, profiles(username, role)')
-            .eq('grade_id', _activeGrade.id);
-        _gradeMembers = members || [];
-    }
-
-    // Mostrar contenido
-    document.getElementById('loadingState').style.display = 'none';
-    document.getElementById('dashContent').style.display = '';
-
-    // Cargar todo en paralelo
-    const tasks = [loadChannels(), loadTareas(), loadAttendance()];
-    if (user.role === 'student') tasks.push(loadMisNotas());
-    await Promise.all(tasks);
-});
-
 // ── QUIZ PICKER (docentes) ─────────────────────────────────
 let _quizPickerOpen = false;
 let _quizzes = [];
 
+// FIX: toggleQuizPicker se declara antes de Object.assign
+// para garantizar que la referencia exista cuando se registra
 async function toggleQuizPicker() {
     if (_quizPickerOpen) { closeQuizPicker(); return; }
     _quizPickerOpen = true;
 
-    // Cargar quizzes del docente
     const quizzes = await AlephAPI.Quiz.getParaCurso(_activeGrade?.name || _currentUser.curso);
     _quizzes = quizzes;
 
-    // Crear overlay
+    // FIX: usar posición relativa en lugar de position:fixed
+    // para evitar colapso del layout en entornos embebidos
     let overlay = document.getElementById('quizPickerOverlay');
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'quizPickerOverlay';
-        overlay.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:90%;max-width:380px;max-height:300px;overflow-y:auto;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);z-index:999;padding:12px;';
-        document.body.appendChild(overlay);
+        overlay.style.cssText = [
+            'position:absolute',
+            'bottom:60px',
+            'left:50%',
+            'transform:translateX(-50%)',
+            'width:90%',
+            'max-width:380px',
+            'max-height:300px',
+            'overflow-y:auto',
+            'background:var(--bg-card)',
+            'border:1px solid var(--border)',
+            'border-radius:var(--radius-xl)',
+            'box-shadow:var(--shadow-lg)',
+            'z-index:999',
+            'padding:12px',
+        ].join(';');
+
+        // FIX: cerrar al hacer click fuera del overlay
+        document.addEventListener('click', _quizOutsideClickHandler);
+
+        // El overlay debe estar dentro del área de chat para que
+        // position:absolute funcione correctamente
+        const chatShell = document.querySelector('.chat-shell') || document.body;
+        if (chatShell !== document.body) {
+            chatShell.style.position = 'relative';
+        }
+        chatShell.appendChild(overlay);
     }
 
     if (!quizzes.length) {
@@ -1438,8 +1471,18 @@ async function toggleQuizPicker() {
         `).join('');
 }
 
+// FIX: handler nombrado para poder removerlo con removeEventListener
+function _quizOutsideClickHandler(e) {
+    const overlay = document.getElementById('quizPickerOverlay');
+    const btn     = document.getElementById('quizSendBtn');
+    if (overlay && !overlay.contains(e.target) && e.target !== btn) {
+        closeQuizPicker();
+    }
+}
+
 function closeQuizPicker() {
     _quizPickerOpen = false;
+    document.removeEventListener('click', _quizOutsideClickHandler);
     document.getElementById('quizPickerOverlay')?.remove();
 }
 
@@ -1487,6 +1530,121 @@ async function loadMisNotas() {
         list.appendChild(card);
     });
 }
+
+// ── CLEANUP AL SALIR DE PÁGINA ─────────────────────────────
+// FIX: limpiar suscripción Realtime antes de que el usuario navegue
+// para no acumular canales activos en el cliente Supabase
+window.addEventListener('beforeunload', () => {
+    if (_realtimeSub) {
+        supabaseClient.removeChannel(_realtimeSub);
+        _realtimeSub = null;
+    }
+});
+
+// ── INIT ───────────────────────────────────────────────────
+// FIX: declarar supabaseClient como let para poder asignarlo
+// después de resolver el cliente real desde api.js
+let supabaseClient = null;
+
+// FIX: exponer funciones a window DESPUÉS de declararlas
+// (las funciones con 'function' keyword se pueden referenciar
+// en el mismo scope gracias al hoisting, pero hacerlo explícito
+// aquí es más claro y evita problemas con async functions)
+window.selectChannelById = selectChannelById;
+window.switchDashTab     = switchDashTab;
+window.sendMessage       = sendMessage;
+window.toggleQuizPicker  = toggleQuizPicker;
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await AlephAPI.Auth.init();
+    _schoolId = getParam('id');
+    if (!_schoolId) { location.href = 'schools.html'; return; }
+
+    const user = AlephAPI.Auth.getCurrentUser();
+    if (!user) return;
+    _currentUser = user;
+
+    // FIX: resolver el cliente Supabase con fallbacks
+    supabaseClient = resolveSupabaseClient();
+    if (!supabaseClient) {
+        document.getElementById('loadingState').innerHTML = `
+            <div class="alert alert-error" style="max-width:400px;text-align:center">
+                <strong>Error de configuración</strong><br>
+                No se pudo obtener el cliente de base de datos. Revisá que <code>api.js</code> exporte <code>AlephAPI._client</code>.
+            </div>`;
+        return;
+    }
+
+    // Header
+    const roles = { student: 'Estudiante', teacher: 'Docente', director: 'Director', superadmin: 'Admin' };
+    const usernameEl = document.getElementById('username');
+    const roleEl     = document.getElementById('userRole');
+    const avatarEl   = document.getElementById('userAvatar');
+    if (usernameEl && usernameEl.textContent === '—') usernameEl.textContent = user.username;
+    if (avatarEl)   avatarEl.textContent = (user.username || '?')[0].toUpperCase();
+    if (roleEl && roleEl.textContent === '—') {
+        roleEl.textContent = roles[user.role] || user.role;
+        roleEl.className   = `role-badge ${user.role}`;
+    }
+
+    // Tabs según rol
+    if (user.role === 'student') {
+        document.getElementById('xpBarWrap').style.display = '';
+        document.getElementById('tab-notas').style.display = '';
+    }
+    if (user.role === 'teacher' || user.role === 'director' || user.role === 'superadmin') {
+        document.getElementById('teacherTareasPanel').style.display = '';
+        document.getElementById('saveAttendanceBtn').style.display = '';
+        document.getElementById('quizSendBtn').style.display = '';
+    }
+
+    // Fecha hoy en attendance
+    document.getElementById('attendanceDate').value = new Date().toISOString().slice(0,10);
+
+    // Cargar school
+    const { data: schoolData } = await supabaseClient
+        .from('schools')
+        .select('*')
+        .eq('id', _schoolId)
+        .maybeSingle();
+
+    if (!schoolData) { location.href = 'schools.html'; return; }
+    _school = schoolData;
+
+    document.getElementById('schoolName').textContent = schoolData.name;
+    document.getElementById('schoolCode').textContent = schoolData.code;
+
+    // Cargar grados del usuario en esta escuela
+    const gradesRes = await AlephAPI.Schools.getMisGrados(_schoolId);
+    if (gradesRes.ok && gradesRes.grades.length > 0) {
+        _myGrades = gradesRes.grades;
+        _activeGrade = gradesRes.grades[0];
+        document.getElementById('gradeBadge').textContent = `📚 ${_activeGrade.name}`;
+    } else {
+        document.getElementById('gradeBadge').textContent = 'Sin grado';
+    }
+
+    const roleLabel = { student: 'Estudiante', teacher: 'Docente', director: 'Director' };
+    document.getElementById('roleBadgeSchool').textContent = roleLabel[user.role] || user.role;
+
+    // Cargar miembros del grado
+    if (_activeGrade) {
+        const { data: members } = await supabaseClient
+            .from('grade_members')
+            .select('*, profiles(username, role)')
+            .eq('grade_id', _activeGrade.id);
+        _gradeMembers = members || [];
+    }
+
+    // Mostrar contenido
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('dashContent').style.display = '';
+
+    // Cargar todo en paralelo
+    const tasks = [loadChannels(), loadTareas(), loadAttendance()];
+    if (user.role === 'student') tasks.push(loadMisNotas());
+    await Promise.all(tasks);
+});
 </script>
 </body>
 </html>
