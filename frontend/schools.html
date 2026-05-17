@@ -483,6 +483,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function toggleCrearEscuela() {
     const p = document.getElementById('adminCreatePanel');
+    const noSchoolView = document.getElementById('noSchoolView');
+    
+    // Si estamos en noSchoolView, mover el panel ahí si no está
+    if (noSchoolView.style.display !== 'none') {
+        if (!noSchoolView.contains(p)) {
+            noSchoolView.appendChild(p);
+        }
+    }
+    
     p.style.display = p.style.display === 'none' ? '' : 'none';
 }
 
