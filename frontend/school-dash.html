@@ -1185,10 +1185,7 @@ function updateXP(totalXP) {
 // ── INIT ───────────────────────────────────────────────────
 // Exponer cliente supabase para usar directamente en chat
 // (api.js lo crea como _sb dentro del IIFE — necesitamos acceso directo)
-const supabaseClient = supabase.createClient(
-    'https://ikxvbmsvzmsiztxvzdtz.supabase.co',
-    'sb_publishable_cN4exqC8p4r9Hg3ZQYWcWg_gLwcRdui'
-);
+const supabaseClient = AlephAPI._client;
 
 document.addEventListener('DOMContentLoaded', async () => {
     await AlephAPI.Auth.init();
