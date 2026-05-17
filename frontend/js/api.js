@@ -857,7 +857,7 @@ const AlephAPI = (() => {
         async getGrados(schoolId) {
             const { data, error } = await _sb
                 .from('school_grades')
-                .select('*, grade_members(count)')
+                .select('*')
                 .eq('school_id', schoolId)
                 .order('name', { ascending: true });
             if (error) return { ok: false, error: error.message };
