@@ -777,8 +777,14 @@ async function loadGrades() {
 async function crearGrado() {
     const nombre = document.getElementById('nuevoGradoNombre').value.trim();
     if (!nombre) { showToast('Ingresá un nombre', 'warning'); return; }
-    const { error } = await supabaseClient.from('school_grades').insert({ school_id: _schoolId, name: nombre }).select().single();
-    if (error) { showToast('Error creando grado', 'error'); return; }
+
+    const { error } = await supabaseClient
+        .from('school_grades')
+        .insert({ school_id: _schoolId, name: nombre })
+        .select()
+        .single();
+
+    if (error) { showToast(error.message || 'Error creando grado', 'error'); return; }
     document.getElementById('nuevoGradoNombre').value = '';
     showToast(`Grado "${nombre}" creado`, 'success');
     await loadGrades();
@@ -898,6 +904,156 @@ async function guardarNota() {
     await loadNotasGrado(gradeId);
 }
 
+// ── ANUNCIOS ───────────────────────────────────────────────
+async function loadAnuncios() {
+    const list = document.getElementById('anunciosList');
+    if (!list) return;
+
+    list.innerHTML = '<div style="padding:16px;text-align:center"><div class="spinner"></div></div>';
+
+    const { data, error } = await supabaseClient
+        .from('mensajes')
+        .select('*')
+        .eq('materia', _school?.name || 'Escuela')
+        .order('created_at', { ascending: false })
+        .limit(12);
+
+    if (error) {
+        list.innerHTML = `<div class="alert alert-danger">Error cargando anuncios</div>`;
+        return;
+    }
+
+    if (!data?.length) {
+        list.innerHTML = `<div class="empty-state" style="padding:16px 0"><div class="empty-icon">📢</div><p>Sin anuncios publicados</p></div>`;
+        return;
+    }
+
+    list.innerHTML = data.map(m => `
+        <div class="mensaje-item ${sanitize(m.tipo || 'anuncio')}">
+            <div class="mensaje-header">
+                <span class="mensaje-titulo">${sanitize(m.titulo || 'Anuncio')}</span>
+                <span class="mensaje-fecha">${new Date(m.created_at).toLocaleDateString('es-AR')}</span>
+            </div>
+            <div class="mensaje-preview">${sanitize(m.contenido || '')}</div>
+        </div>
+    `).join('');
+}
+
+async function publicarAnuncio() {
+    const titulo = document.getElementById('anuncioTitulo').value.trim();
+    const contenido = document.getElementById('anuncioContenido').value.trim();
+    const tipo = document.getElementById('anuncioTipo').value || 'anuncio';
+
+    if (!titulo || !contenido) {
+        showToast('Completá título y contenido', 'warning');
+        return;
+    }
+
+    const res = await AlephAPI.Comunicacion.crear({
+        titulo,
+        contenido,
+        autor: _currentUser.username,
+        curso: 'todos',
+        materia: _school?.name || 'Escuela',
+        tipo
+    });
+
+    if (!res.ok) { showToast(res.error || 'No se pudo publicar el anuncio', 'error'); return; }
+
+    document.getElementById('anuncioTitulo').value = '';
+    document.getElementById('anuncioContenido').value = '';
+    document.getElementById('anuncioTipo').value = 'anuncio';
+    showToast('Anuncio publicado', 'success');
+    await loadAnuncios();
+}
+
+// ── EVENTOS ────────────────────────────────────────────────
+function _eventCursoValues() {
+    return ['todos', ..._grades.map(g => g.name)].filter(Boolean);
+}
+
+async function loadEventos() {
+    const list = document.getElementById('eventosList');
+    if (!list) return;
+
+    list.innerHTML = '<div style="padding:16px;text-align:center"><div class="spinner"></div></div>';
+
+    const hoy = new Date().toISOString().slice(0, 10);
+    const cursos = _eventCursoValues();
+    let query = supabaseClient
+        .from('eventos')
+        .select('*')
+        .gte('fecha', hoy)
+        .order('fecha', { ascending: true })
+        .limit(20);
+
+    if (cursos.length) {
+        query = query.in('curso', cursos);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        list.innerHTML = `<div class="alert alert-danger">Error cargando eventos</div>`;
+        return;
+    }
+
+    if (!data?.length) {
+        list.innerHTML = `<div class="empty-state" style="padding:16px 0"><div class="empty-icon">📅</div><p>Sin eventos próximos</p></div>`;
+        return;
+    }
+
+    list.innerHTML = data.map(e => {
+        const fecha = new Date(`${e.fecha}T00:00:00`);
+        const dia = fecha.getDate();
+        const mes = MESES_ES[fecha.getMonth()] || '';
+        const curso = e.curso === 'todos' ? 'Todos los grados' : e.curso;
+        return `
+            <div class="evento-item">
+                <div class="evento-fecha-box">
+                    <span class="evento-dia">${dia}</span>
+                    <span class="evento-mes">${mes}</span>
+                </div>
+                <div class="evento-info">
+                    <div class="evento-titulo">${sanitize(e.titulo || 'Evento')}</div>
+                    <div class="evento-tipo-tag">${sanitize(e.tipo || 'evento')} · ${sanitize(curso || '')}</div>
+                    ${e.descripcion ? `<div class="mensaje-preview" style="margin-top:3px">${sanitize(e.descripcion)}</div>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function crearEvento() {
+    const titulo = document.getElementById('eventoTitulo').value.trim();
+    const fecha = document.getElementById('eventoFecha').value;
+    const tipo = document.getElementById('eventoTipo').value || 'evento';
+    const curso = document.getElementById('eventoGrado').value || 'todos';
+    const descripcion = document.getElementById('eventoDesc').value.trim();
+
+    if (!titulo || !fecha) {
+        showToast('Completá título y fecha', 'warning');
+        return;
+    }
+
+    const res = await AlephAPI.Calendario.agregar({
+        titulo,
+        fecha,
+        tipo,
+        curso,
+        descripcion
+    });
+
+    if (!res.ok) { showToast('No se pudo crear el evento', 'error'); return; }
+
+    document.getElementById('eventoTitulo').value = '';
+    document.getElementById('eventoDesc').value = '';
+    document.getElementById('eventoTipo').value = 'evento';
+    document.getElementById('eventoGrado').value = 'todos';
+    showToast('Evento creado', 'success');
+    await loadEventos();
+}
+
 // ── INIT ───────────────────────────────────────────────────
 const supabaseClient = AlephAPI._client;
 
@@ -954,8 +1110,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     ]);
     await loadActive(); // después de grados para tener _grades listo
     await Promise.all([
-        // loadAnuncios(), // TODO: Implementar
-        // loadEventos()   // TODO: Implementar
+        loadAnuncios(),
+        loadEventos()
     ]);
 });
 </script>
