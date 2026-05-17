@@ -772,9 +772,9 @@ function _formatFecha(iso) {
         return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
     } catch { return iso; }
 }
-// Alias locales — todo el código interno usa estos, no los globales
-const sanitize    = _sanitize;
-const formatFecha = _formatFecha;
+// NO se declaran aliases con const — app.js ya declara sanitize y
+// formatFecha en el mismo scope global y causaría SyntaxError.
+// Todo el código interno llama directamente a _sanitize/_formatFecha.
 
 // ── UTILS ──────────────────────────────────────────────────
 function getParam(key) {
@@ -938,7 +938,7 @@ function renderChannelList(channels) {
         item.dataset.id = ch.id;
         item.innerHTML = `
             <span class="channel-icon">${ch.type === 'school' ? '🏫' : '👥'}</span>
-            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sanitize(ch.name)}</span>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_sanitize(ch.name)}</span>
         `;
         item.onclick = () => selectChannel(ch);
         list.appendChild(item);
@@ -950,7 +950,7 @@ function renderMobileChannels(channels) {
     if (!select) return;
 
     select.innerHTML = channels.length
-        ? channels.map(ch => `<option value="${ch.id}">${ch.type === 'school' ? '🏫' : '👥'} ${sanitize(ch.name)}</option>`).join('')
+        ? channels.map(ch => `<option value="${ch.id}">${ch.type === 'school' ? '🏫' : '👥'} ${_sanitize(ch.name)}</option>`).join('')
         : '<option value="">Sin canales</option>';
     select.disabled = !channels.length;
     if (_activeChannel?.id && channels.some(ch => ch.id === _activeChannel.id)) {
@@ -965,7 +965,7 @@ function showChannelError(message) {
     _activeChannel = null;
 
     if (list) {
-        list.innerHTML = `<div class="alert alert-warning" style="margin:12px;font-size:.82em">${sanitize(message)}</div>`;
+        list.innerHTML = `<div class="alert alert-warning" style="margin:12px;font-size:.82em">${_sanitize(message)}</div>`;
     }
     if (mobileSelect) {
         mobileSelect.innerHTML = '<option value="">Sin canales</option>';
@@ -974,7 +974,7 @@ function showChannelError(message) {
 
     document.getElementById('currentChannelName').textContent = 'Sin canales';
     document.getElementById('currentChannelSub').textContent = message;
-    document.getElementById('chatMessages').innerHTML = `<div class="empty-state"><div class="empty-icon">💬</div><p>${sanitize(message)}</p></div>`;
+    document.getElementById('chatMessages').innerHTML = `<div class="empty-state"><div class="empty-icon">💬</div><p>${_sanitize(message)}</p></div>`;
     document.getElementById('chatInput').disabled = true;
     document.getElementById('chatSendBtn').disabled = true;
 }
@@ -1040,7 +1040,7 @@ async function loadMessages(channelId) {
         area.innerHTML = '';
 
         if (error) {
-            area.innerHTML = `<div class="empty-state"><div class="empty-icon">💬</div><p>${sanitize(error.message || 'No se pudieron cargar los mensajes')}</p></div>`;
+            area.innerHTML = `<div class="empty-state"><div class="empty-icon">💬</div><p>${_sanitize(error.message || 'No se pudieron cargar los mensajes')}</p></div>`;
             return;
         }
 
@@ -1065,7 +1065,7 @@ async function loadMessages(channelId) {
         scrollToBottom();
     } catch (error) {
         console.error('Error cargando mensajes:', error);
-        area.innerHTML = `<div class="empty-state"><div class="empty-icon">💬</div><p>${sanitize(error?.message || 'No se pudieron cargar los mensajes')}</p></div>`;
+        area.innerHTML = `<div class="empty-state"><div class="empty-icon">💬</div><p>${_sanitize(error?.message || 'No se pudieron cargar los mensajes')}</p></div>`;
     }
 }
 
@@ -1085,10 +1085,10 @@ function buildMsgEl(msg) {
         <div class="chat-bubble-wrap">
             ${!isOwn ? `
             <div class="chat-bubble-meta">
-                <span class="chat-bubble-username">${sanitize(msg.username)}</span>
+                <span class="chat-bubble-username">${_sanitize(msg.username)}</span>
                 ${isTeacher ? '<span class="chat-bubble-role">Docente</span>' : ''}
             </div>` : ''}
-            <div class="chat-bubble ${isOwn ? 'own' : 'other'}">${sanitize(msg.content)}</div>
+            <div class="chat-bubble ${isOwn ? 'own' : 'other'}">${_sanitize(msg.content)}</div>
             <div class="chat-bubble-time">${formatHora(msg.created_at)}</div>
         </div>
     `;
@@ -1199,8 +1199,8 @@ async function loadTareas() {
             <div class="tarea-item ${urgClass}" style="cursor:pointer" onclick="window.location.href='tareas.html'">
                 <div class="tarea-check"></div>
                 <div class="tarea-info">
-                    <div class="tarea-title">${sanitize(t.titulo)}</div>
-                    <div class="tarea-meta">${sanitize(t.materia || '')} · Cierre: ${formatFecha(t.fechaCierre)} ${entregasInfo}</div>
+                    <div class="tarea-title">${_sanitize(t.titulo)}</div>
+                    <div class="tarea-meta">${_sanitize(t.materia || '')} · Cierre: ${_formatFecha(t.fechaCierre)} ${entregasInfo}</div>
                 </div>
                 <span class="dias-badge ${badgeClass}">${badgeText}</span>
             </div>`;
@@ -1333,7 +1333,7 @@ function renderAttendanceGrid() {
         card.innerHTML = `
             <div class="attendance-avatar">${initial}</div>
             <div style="flex:1;min-width:0">
-                <div class="attendance-name">${sanitize(member.profiles?.username || 'Usuario')}</div>
+                <div class="attendance-name">${_sanitize(member.profiles?.username || 'Usuario')}</div>
                 <div class="attendance-sub" id="att-status-${member.user_id}">
                     ${current ? statusLabel(current) : 'Sin registrar'}
                 </div>
@@ -1463,8 +1463,8 @@ async function toggleQuizPicker() {
         quizzes.map(q => `
             <div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:var(--radius);cursor:pointer;transition:all .15s" onmouseenter="this.style.background='var(--bg-hover)'" onmouseleave="this.style.background=''" onclick="enviarQuizAlChat('${q.id}')">
                 <div style="flex:1;min-width:0">
-                    <div style="font-weight:600;font-size:.85em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sanitize(q.titulo)}</div>
-                    <div style="font-size:.72em;color:var(--text-faint)">${(q.preguntas || []).length} preguntas · ${sanitize(q.modo || 'clásico')}</div>
+                    <div style="font-weight:600;font-size:.85em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_sanitize(q.titulo)}</div>
+                    <div style="font-size:.72em;color:var(--text-faint)">${(q.preguntas || []).length} preguntas · ${_sanitize(q.modo || 'clásico')}</div>
                 </div>
                 <span style="font-size:.85em">➤</span>
             </div>
@@ -1520,11 +1520,11 @@ async function loadMisNotas() {
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
                 <div style="font-size:1.4em;font-weight:800;font-family:var(--font-display);padding:4px 8px;border-radius:var(--radius);${notaStyle}">${n.nota}</div>
                 <div style="flex:1">
-                    <div style="font-weight:700;font-size:.88em">${sanitize(n.materia)}</div>
+                    <div style="font-weight:700;font-size:.88em">${_sanitize(n.materia)}</div>
                     <div style="font-size:.78em;color:var(--text-faint)">${new Date(n.created_at).toLocaleDateString('es-AR')}</div>
                 </div>
             </div>
-            ${n.comentario ? `<div style="font-size:.82em;color:var(--text-muted)">${sanitize(n.comentario)}</div>` : ''}
+            ${n.comentario ? `<div style="font-size:.82em;color:var(--text-muted)">${_sanitize(n.comentario)}</div>` : ''}
             ${n.imagen_url ? `<img src="${n.imagen_url}" style="max-width:100%;border-radius:var(--radius);margin-top:8px;cursor:pointer" onclick="window.open(this.src,'_blank')">` : ''}
         `;
         list.appendChild(card);
