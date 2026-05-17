@@ -203,6 +203,19 @@
             font-size: 0.72em;
             color: var(--text-faint);
         }
+        .mobile-channel-select {
+            display: none;
+            margin-left: auto;
+            min-width: 140px;
+            max-width: 46vw;
+            padding: 7px 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg-subtle);
+            color: var(--text);
+            font-family: var(--font-body);
+            font-size: 0.8em;
+        }
         .chat-messages-area {
             flex: 1;
             overflow-y: auto;
@@ -346,6 +359,10 @@
         @media (max-width: 600px) {
             .chat-channels { display: none; }
             .chat-shell { height: calc(100vh - var(--header-h) - 180px); }
+            .mobile-channel-select { display: block; }
+            .chat-channel-header { padding: 10px 12px; }
+            .chat-channel-name { font-size: 0.84em; }
+            .chat-channel-sub { display: none; }
         }
 
         /* ── ATTENDANCE ──────────────────────────────────── */
@@ -575,6 +592,9 @@
                                 <div class="chat-channel-name" id="currentChannelName">Seleccioná un canal</div>
                                 <div class="chat-channel-sub" id="currentChannelSub"></div>
                             </div>
+                            <select class="mobile-channel-select" id="mobileChannelSelect" onchange="selectChannelById(this.value)" disabled>
+                                <option value="">Canales...</option>
+                            </select>
                         </div>
                         <div class="chat-messages-area" id="chatMessages">
                             <div class="empty-state">
@@ -777,29 +797,100 @@ function switchDashTab(tab) {
 // ── CHANNELS ───────────────────────────────────────────────
 async function loadChannels() {
     const list = document.getElementById('channelList');
+    const mobileSelect = document.getElementById('mobileChannelSelect');
 
     if (!_activeGrade && !_schoolId) {
         list.innerHTML = `<div class="empty-state" style="padding:16px"><p>Sin grado asignado</p></div>`;
+        renderMobileChannels([]);
         return;
     }
 
-    // Canales del grado activo + canal general de la escuela
-    const { data, error } = await supabaseClient
+    list.innerHTML = `<div style="padding:16px;text-align:center"><div class="spinner"></div></div>`;
+    if (mobileSelect) mobileSelect.disabled = true;
+
+    try {
+        let data = await fetchChannels();
+
+        if (!data.length) {
+            const created = await ensureChannels();
+            if (!created.ok) {
+                showChannelError(created.error || 'No se pudieron crear los canales');
+                return;
+            }
+            data = await fetchChannels();
+        }
+
+        if (!data.length) {
+            showChannelError('No hay canales disponibles para esta escuela');
+            return;
+        }
+
+        _channels = data;
+        renderChannelList(data);
+        renderMobileChannels(data);
+
+        if (!_activeChannel || !data.some(ch => ch.id === _activeChannel.id)) {
+            await selectChannel(data[0]);
+        } else {
+            updateChannelSelectionUI();
+        }
+    } catch (error) {
+        console.error('Error cargando canales:', error);
+        showChannelError(error?.message || 'Error cargando canales');
+    }
+}
+
+async function ensureChannels() {
+    try {
+        const { error: schoolError } = await supabaseClient.from('chat_channels').upsert({
+            school_id: _schoolId,
+            grade_id: null,
+            name: 'General',
+            type: 'school'
+        }, { onConflict: 'school_id,type,name' }).select();
+
+        if (schoolError) return { ok: false, error: schoolError.message };
+
+        if (_activeGrade) {
+            const { error: gradeError } = await supabaseClient.from('chat_channels').upsert({
+                school_id: _schoolId,
+                grade_id: _activeGrade.id,
+                name: _activeGrade.name,
+                type: 'grade'
+            }, { onConflict: 'school_id,type,grade_id' }).select();
+
+            if (gradeError) return { ok: false, error: gradeError.message };
+        }
+
+        return { ok: true };
+    } catch (error) {
+        return { ok: false, error: error?.message || 'Error creando canales' };
+    }
+}
+
+async function fetchChannels() {
+    let query = supabaseClient
         .from('chat_channels')
         .select('*')
-        .or(`grade_id.eq.${_activeGrade?.id},school_id.eq.${_schoolId}`)
-        .order('type', { ascending: false }); // school primero
+        .order('type', { ascending: false });
 
-    if (error || !data?.length) {
-        // Si no hay canales, crearlos automáticamente
-        await ensureChannels();
-        return loadChannels();
+    if (_activeGrade?.id) {
+        query = query.or(`school_id.eq.${_schoolId},grade_id.eq.${_activeGrade.id}`);
+    } else {
+        query = query.eq('school_id', _schoolId);
     }
 
-    _channels = data;
+    const { data, error } = await query;
+    if (error) throw error;
+
+    return data || [];
+}
+
+function renderChannelList(channels) {
+    const list = document.getElementById('channelList');
     list.innerHTML = '';
 
-    data.forEach(ch => {
+    channels.forEach(ch => {
         const item = document.createElement('div');
         item.className = `channel-item ${ch.id === _activeChannel?.id ? 'active' : ''}`;
         item.dataset.id = ch.id;
@@ -810,38 +901,60 @@ async function loadChannels() {
         item.onclick = () => selectChannel(ch);
         list.appendChild(item);
     });
-
-    // Auto-seleccionar el primero
-    if (!_activeChannel && data.length > 0) selectChannel(data[0]);
 }
 
-async function ensureChannels() {
-    // Canal general de la escuela
-    await supabaseClient.from('chat_channels').upsert({
-        school_id: _schoolId,
-        grade_id: null,
-        name: 'General',
-        type: 'school'
-    }, { onConflict: 'school_id,type,name' }).select();
+function renderMobileChannels(channels) {
+    const select = document.getElementById('mobileChannelSelect');
+    if (!select) return;
 
-    // Canal del grado
-    if (_activeGrade) {
-        await supabaseClient.from('chat_channels').upsert({
-            school_id: _schoolId,
-            grade_id: _activeGrade.id,
-            name: _activeGrade.name,
-            type: 'grade'
-        }, { onConflict: 'school_id,type,grade_id' }).select();
+    select.innerHTML = channels.length
+        ? channels.map(ch => `<option value="${ch.id}">${ch.type === 'school' ? '🏫' : '👥'} ${sanitize(ch.name)}</option>`).join('')
+        : '<option value="">Sin canales</option>';
+    select.disabled = !channels.length;
+    if (_activeChannel?.id && channels.some(ch => ch.id === _activeChannel.id)) {
+        select.value = _activeChannel.id;
     }
+}
+
+function showChannelError(message) {
+    const list = document.getElementById('channelList');
+    const mobileSelect = document.getElementById('mobileChannelSelect');
+    _channels = [];
+    _activeChannel = null;
+
+    if (list) {
+        list.innerHTML = `<div class="alert alert-warning" style="margin:12px;font-size:.82em">${sanitize(message)}</div>`;
+    }
+    if (mobileSelect) {
+        mobileSelect.innerHTML = '<option value="">Sin canales</option>';
+        mobileSelect.disabled = true;
+    }
+
+    document.getElementById('currentChannelName').textContent = 'Sin canales';
+    document.getElementById('currentChannelSub').textContent = message;
+    document.getElementById('chatMessages').innerHTML = `<div class="empty-state"><div class="empty-icon">💬</div><p>${sanitize(message)}</p></div>`;
+    document.getElementById('chatInput').disabled = true;
+    document.getElementById('chatSendBtn').disabled = true;
+}
+
+function updateChannelSelectionUI() {
+    document.querySelectorAll('.channel-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.id === _activeChannel?.id);
+    });
+    const mobileSelect = document.getElementById('mobileChannelSelect');
+    if (mobileSelect && _activeChannel?.id) mobileSelect.value = _activeChannel.id;
+}
+
+function selectChannelById(channelId) {
+    const channel = _channels.find(ch => ch.id === channelId);
+    if (channel) selectChannel(channel);
 }
 
 async function selectChannel(channel) {
     _activeChannel = channel;
 
     // UI
-    document.querySelectorAll('.channel-item').forEach(el => {
-        el.classList.toggle('active', el.dataset.id === channel.id);
-    });
+    updateChannelSelectionUI();
     document.getElementById('currentChannelName').textContent = channel.name;
     document.getElementById('currentChannelSub').textContent =
         channel.type === 'school' ? 'Canal general de la escuela' : `Canal del grado ${channel.name}`;
@@ -870,34 +983,44 @@ async function loadMessages(channelId) {
     const area = document.getElementById('chatMessages');
     area.innerHTML = `<div style="display:flex;justify-content:center;padding:16px"><div class="spinner"></div></div>`;
 
-    const { data, error } = await supabaseClient
-        .from('chat_messages')
-        .select('*')
-        .eq('channel_id', channelId)
-        .order('created_at', { ascending: true })
-        .limit(80);
+    try {
+        const { data, error } = await supabaseClient
+            .from('chat_messages')
+            .select('*')
+            .eq('channel_id', channelId)
+            .order('created_at', { ascending: true })
+            .limit(80);
 
-    area.innerHTML = '';
+        area.innerHTML = '';
 
-    if (error || !data?.length) {
-        area.innerHTML = `<div class="empty-state"><div class="empty-icon">💬</div><p>Sé el primero en escribir algo</p></div>`;
-        return;
-    }
-
-    let lastDate = null;
-    data.forEach(msg => {
-        const msgDate = formatFechaDivider(msg.created_at);
-        if (msgDate !== lastDate) {
-            const divider = document.createElement('div');
-            divider.className = 'chat-date-divider';
-            divider.textContent = msgDate;
-            area.appendChild(divider);
-            lastDate = msgDate;
+        if (error) {
+            area.innerHTML = `<div class="empty-state"><div class="empty-icon">💬</div><p>${sanitize(error.message || 'No se pudieron cargar los mensajes')}</p></div>`;
+            return;
         }
-        area.appendChild(buildMsgEl(msg));
-    });
 
-    scrollToBottom();
+        if (!data?.length) {
+            area.innerHTML = `<div class="empty-state"><div class="empty-icon">💬</div><p>Sé el primero en escribir algo</p></div>`;
+            return;
+        }
+
+        let lastDate = null;
+        data.forEach(msg => {
+            const msgDate = formatFechaDivider(msg.created_at);
+            if (msgDate !== lastDate) {
+                const divider = document.createElement('div');
+                divider.className = 'chat-date-divider';
+                divider.textContent = msgDate;
+                area.appendChild(divider);
+                lastDate = msgDate;
+            }
+            area.appendChild(buildMsgEl(msg));
+        });
+
+        scrollToBottom();
+    } catch (error) {
+        console.error('Error cargando mensajes:', error);
+        area.innerHTML = `<div class="empty-state"><div class="empty-icon">💬</div><p>${sanitize(error?.message || 'No se pudieron cargar los mensajes')}</p></div>`;
+    }
 }
 
 function buildMsgEl(msg) {
@@ -1186,6 +1309,13 @@ function updateXP(totalXP) {
 // Exponer cliente supabase para usar directamente en chat
 // (api.js lo crea como _sb dentro del IIFE — necesitamos acceso directo)
 const supabaseClient = AlephAPI._client;
+
+Object.assign(window, {
+    selectChannelById,
+    switchDashTab,
+    sendMessage,
+    toggleQuizPicker
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
     await AlephAPI.Auth.init();
