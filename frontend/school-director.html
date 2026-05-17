@@ -345,7 +345,7 @@
                             placeholder="Ej: 3° A, 1° Año..."
                             style="flex:1"
                             onkeydown="if(event.key==='Enter')crearGrado()">
-                        <button class="btn btn-primary" onclick="crearGrado()">Crear</button>
+                        <button class="btn btn-primary" id="btnCrearGrado" onclick="crearGrado()">Crear</button>
                     </div>
                 </div>
 
@@ -433,7 +433,7 @@
                                 <option value="urgente">🚨 Urgente</option>
                                 <option value="recordatorio">🔔 Recordatorio</option>
                             </select>
-                            <button class="btn btn-primary" style="margin-left:auto" onclick="publicarAnuncio()">Publicar</button>
+                            <button class="btn btn-primary" id="btnPublicarAnuncio" style="margin-left:auto" onclick="publicarAnuncio()">Publicar</button>
                         </div>
                     </div>
                 </div>
@@ -486,7 +486,7 @@
                             <input type="text" class="form-input" id="eventoDesc" placeholder="Descripción breve...">
                         </div>
                         <div style="display:flex;justify-content:flex-end">
-                            <button class="btn btn-primary" onclick="crearEvento()">Crear evento</button>
+                            <button class="btn btn-primary" id="btnCrearEvento" onclick="crearEvento()">Crear evento</button>
                         </div>
                     </div>
                 </div>
@@ -542,6 +542,19 @@ function toggleMobileNav() { document.getElementById('sidebar').classList.toggle
 function toggleMasSheet() {
     document.getElementById('masSheet').classList.toggle('open');
     document.getElementById('masOverlay').classList.toggle('open');
+}
+
+function setButtonBusy(btn, busy, label = 'Guardando...') {
+    if (!btn) return;
+    if (busy) {
+        btn.dataset.originalText = btn.textContent;
+        btn.textContent = label;
+        btn.disabled = true;
+    } else {
+        btn.textContent = btn.dataset.originalText || btn.textContent;
+        btn.disabled = false;
+        delete btn.dataset.originalText;
+    }
 }
 
 // ── TABS ───────────────────────────────────────────────────
@@ -706,13 +719,21 @@ async function asignarGrado(userId, role, btn) {
     const gradeId = select?.value;
     if (!gradeId) { showToast('Seleccioná un grado', 'warning'); return; }
 
-    btn.disabled = true;
-    const memberRole = role === 'teacher' ? 'teacher' : 'student';
-    const res = await AlephAPI.Schools.asignarGrado(userId, gradeId, memberRole);
-    if (!res.ok) { showToast(res.error, 'error'); btn.disabled = false; return; }
-    showToast('Grado asignado', 'success');
-    btn.disabled = false;
-    select.value = '';
+    setButtonBusy(btn, true, 'Asignando...');
+    try {
+        const memberRole = role === 'teacher' ? 'teacher' : 'student';
+        const res = await AlephAPI.Schools.asignarGrado(userId, gradeId, memberRole);
+        if (!res.ok) { showToast(res.error, 'error'); return; }
+        showToast('Grado asignado', 'success');
+        select.value = '';
+        await loadGrades();
+        await loadActive();
+    } catch (error) {
+        console.error('Error asignando grado:', error);
+        showToast(error?.message || 'No se pudo asignar el grado', 'error');
+    } finally {
+        setButtonBusy(btn, false);
+    }
 }
 
 // ── GRADOS ─────────────────────────────────────────────────
@@ -778,16 +799,26 @@ async function crearGrado() {
     const nombre = document.getElementById('nuevoGradoNombre').value.trim();
     if (!nombre) { showToast('Ingresá un nombre', 'warning'); return; }
 
-    const { error } = await supabaseClient
-        .from('school_grades')
-        .insert({ school_id: _schoolId, name: nombre })
-        .select()
-        .single();
+    const btn = document.getElementById('btnCrearGrado');
+    setButtonBusy(btn, true, 'Creando...');
+    try {
+        const { error } = await supabaseClient
+            .from('school_grades')
+            .insert({ school_id: _schoolId, name: nombre })
+            .select()
+            .single();
 
-    if (error) { showToast(error.message || 'Error creando grado', 'error'); return; }
-    document.getElementById('nuevoGradoNombre').value = '';
-    showToast(`Grado "${nombre}" creado`, 'success');
-    await loadGrades();
+        if (error) { showToast(error.message || 'Error creando grado', 'error'); return; }
+        document.getElementById('nuevoGradoNombre').value = '';
+        showToast(`Grado "${nombre}" creado`, 'success');
+        await loadGrades();
+        await loadActive();
+    } catch (error) {
+        console.error('Error creando grado:', error);
+        showToast(error?.message || 'Error creando grado', 'error');
+    } finally {
+        setButtonBusy(btn, false);
+    }
 }
 
 async function removerDeGrado(userId, gradeId, username) {
@@ -943,28 +974,37 @@ async function publicarAnuncio() {
     const titulo = document.getElementById('anuncioTitulo').value.trim();
     const contenido = document.getElementById('anuncioContenido').value.trim();
     const tipo = document.getElementById('anuncioTipo').value || 'anuncio';
+    const btn = document.getElementById('btnPublicarAnuncio');
 
     if (!titulo || !contenido) {
         showToast('Completá título y contenido', 'warning');
         return;
     }
 
-    const res = await AlephAPI.Comunicacion.crear({
-        titulo,
-        contenido,
-        autor: _currentUser.username,
-        curso: 'todos',
-        materia: _school?.name || 'Escuela',
-        tipo
-    });
+    setButtonBusy(btn, true, 'Publicando...');
+    try {
+        const res = await AlephAPI.Comunicacion.crear({
+            titulo,
+            contenido,
+            autor: _currentUser.username,
+            curso: 'todos',
+            materia: _school?.name || 'Escuela',
+            tipo
+        });
 
-    if (!res.ok) { showToast(res.error || 'No se pudo publicar el anuncio', 'error'); return; }
+        if (!res.ok) { showToast(res.error || 'No se pudo publicar el anuncio', 'error'); return; }
 
-    document.getElementById('anuncioTitulo').value = '';
-    document.getElementById('anuncioContenido').value = '';
-    document.getElementById('anuncioTipo').value = 'anuncio';
-    showToast('Anuncio publicado', 'success');
-    await loadAnuncios();
+        document.getElementById('anuncioTitulo').value = '';
+        document.getElementById('anuncioContenido').value = '';
+        document.getElementById('anuncioTipo').value = 'anuncio';
+        showToast('Anuncio publicado', 'success');
+        await loadAnuncios();
+    } catch (error) {
+        console.error('Error publicando anuncio:', error);
+        showToast(error?.message || 'No se pudo publicar el anuncio', 'error');
+    } finally {
+        setButtonBusy(btn, false);
+    }
 }
 
 // ── EVENTOS ────────────────────────────────────────────────
@@ -1030,32 +1070,50 @@ async function crearEvento() {
     const tipo = document.getElementById('eventoTipo').value || 'evento';
     const curso = document.getElementById('eventoGrado').value || 'todos';
     const descripcion = document.getElementById('eventoDesc').value.trim();
+    const btn = document.getElementById('btnCrearEvento');
 
     if (!titulo || !fecha) {
         showToast('Completá título y fecha', 'warning');
         return;
     }
 
-    const res = await AlephAPI.Calendario.agregar({
-        titulo,
-        fecha,
-        tipo,
-        curso,
-        descripcion
-    });
+    setButtonBusy(btn, true, 'Creando...');
+    try {
+        const res = await AlephAPI.Calendario.agregar({
+            titulo,
+            fecha,
+            tipo,
+            curso,
+            descripcion
+        });
 
-    if (!res.ok) { showToast('No se pudo crear el evento', 'error'); return; }
+        if (!res.ok) { showToast('No se pudo crear el evento', 'error'); return; }
 
-    document.getElementById('eventoTitulo').value = '';
-    document.getElementById('eventoDesc').value = '';
-    document.getElementById('eventoTipo').value = 'evento';
-    document.getElementById('eventoGrado').value = 'todos';
-    showToast('Evento creado', 'success');
-    await loadEventos();
+        document.getElementById('eventoTitulo').value = '';
+        document.getElementById('eventoDesc').value = '';
+        document.getElementById('eventoTipo').value = 'evento';
+        document.getElementById('eventoGrado').value = 'todos';
+        showToast('Evento creado', 'success');
+        await loadEventos();
+    } catch (error) {
+        console.error('Error creando evento:', error);
+        showToast(error?.message || 'No se pudo crear el evento', 'error');
+    } finally {
+        setButtonBusy(btn, false);
+    }
 }
 
 // ── INIT ───────────────────────────────────────────────────
 const supabaseClient = AlephAPI._client;
+
+Object.assign(window, {
+    asignarGrado,
+    crearGrado,
+    publicarAnuncio,
+    crearEvento,
+    loadAnuncios,
+    loadEventos
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
     await AlephAPI.Auth.init();
