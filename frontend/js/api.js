@@ -941,7 +941,7 @@ const AlephAPI = (() => {
             await _sb.from('school_members').insert({
                 school_id: data.id,
                 user_id: user.id,
-                role: 'director',
+                role: user.role,
                 status: 'active'
             });
 
@@ -1038,6 +1038,6 @@ const AlephAPI = (() => {
         }
     };
 
-    return { Auth, Comunicacion, Tareas, Horario, Promedios, Calendario, Quiz, Preguntas, Sala, Asignacion, Storage, Schools };
+    return { Auth, Comunicacion, Tareas, Horario, Promedios, Calendario, Quiz, Preguntas, Sala, Asignacion, Storage, Schools, _client: _sb };
 
 })();
