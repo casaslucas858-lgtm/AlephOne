@@ -864,6 +864,20 @@ const AlephAPI = (() => {
             return { ok: true, grades: data || [] };
         },
 
+        async crearGrado(schoolId, name) {
+            const cleanName = (name || '').trim();
+            if (!schoolId) return { ok: false, error: 'Escuela no encontrada' };
+            if (!cleanName) return { ok: false, error: 'Ingresa un nombre para el grado' };
+
+            const { data, error } = await _sb
+                .from('school_grades')
+                .insert({ school_id: schoolId, name: cleanName })
+                .select()
+                .single();
+            if (error) return { ok: false, error: error.message };
+            return { ok: true, grade: data };
+        },
+
         async asignarGrado(userId, gradeId, role = 'student') {
             const { data: existing } = await _sb
                 .from('grade_members')
