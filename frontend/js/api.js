@@ -837,10 +837,10 @@ const AlephAPI = (() => {
                 .from('school_members')
                 .update({ status: 'active' })
                 .eq('id', memberId)
-                .select()
-                .single();
+                .select();
             if (error) return { ok: false, error: error.message };
-            return { ok: true, member: data };
+            if (!data?.length) return { ok: false, error: 'Sin permisos o miembro no encontrado' };
+            return { ok: true, member: data[0] };
         },
 
         async rechazar(memberId) {
@@ -848,10 +848,10 @@ const AlephAPI = (() => {
                 .from('school_members')
                 .update({ status: 'rejected' })
                 .eq('id', memberId)
-                .select()
-                .single();
+                .select();
             if (error) return { ok: false, error: error.message };
-            return { ok: true, member: data };
+            if (!data?.length) return { ok: false, error: 'Sin permisos o miembro no encontrado' };
+            return { ok: true, member: data[0] };
         },
 
         async getGrados(schoolId) {
