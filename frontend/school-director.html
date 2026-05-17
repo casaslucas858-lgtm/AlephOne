@@ -899,10 +899,7 @@ async function guardarNota() {
 }
 
 // ── INIT ───────────────────────────────────────────────────
-const supabaseClient = supabase.createClient(
-    'https://ikxvbmsvzmsiztxvzdtz.supabase.co',
-    'sb_publishable_cN4exqC8p4r9Hg3ZQYWcWg_gLwcRdui'
-);
+const supabaseClient = AlephAPI._client;
 
 document.addEventListener('DOMContentLoaded', async () => {
     await AlephAPI.Auth.init();
@@ -957,8 +954,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     ]);
     await loadActive(); // después de grados para tener _grades listo
     await Promise.all([
-        loadAnuncios(),
-        loadEventos()
+        // loadAnuncios(), // TODO: Implementar
+        // loadEventos()   // TODO: Implementar
     ]);
 });
 </script>
