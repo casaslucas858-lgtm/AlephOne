@@ -6,504 +6,139 @@
     <title>Sala en vivo — AlephProject</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        :root {
-            --opt-a: #7C3AED;
-            --opt-b: #0EA5E9;
-            --opt-c: #1CE6C1;
-            --opt-d: #4BE61C;
-        }
-
+        :root { --opt-a:#7C3AED; --opt-b:#0EA5E9; --opt-c:#1CE6C1; --opt-d:#4BE61C; }
         body { overflow: hidden; }
 
-        /* ── SALA SHELL: 3 columnas ── */
         .sala-shell {
             display: grid;
             grid-template-columns: 260px 1fr 220px;
             grid-template-rows: var(--header-h) 1fr;
-            height: 100vh;
-            overflow: hidden;
+            height: 100vh; overflow: hidden;
         }
 
         .sala-topbar {
-            grid-column: 1 / -1;
-            height: var(--header-h);
-            background: rgba(19,19,26,0.92);
-            backdrop-filter: blur(12px);
+            grid-column: 1 / -1; height: var(--header-h);
+            background: rgba(19,19,26,0.92); backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(255,255,255,0.07);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; position: sticky; top: 0; z-index: 100;
         }
-
         .sala-topbar-logo {
-            font-family: var(--font-display);
-            font-size: 1.1em;
-            font-weight: 800;
+            font-family: var(--font-display); font-size: 1.1em; font-weight: 800;
             background: linear-gradient(135deg, var(--teal), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-
         .sala-code {
-            font-family: var(--font-mono);
-            font-size: 1.4em;
-            font-weight: 700;
-            color: var(--teal);
-            letter-spacing: 4px;
-            background: rgba(38,212,199,0.08);
-            border: 1px solid rgba(38,212,199,0.2);
-            padding: 4px 16px;
-            border-radius: var(--radius);
+            font-family: var(--font-mono); font-size: 1.4em; font-weight: 700;
+            color: var(--teal); letter-spacing: 4px;
+            background: rgba(38,212,199,0.08); border: 1px solid rgba(38,212,199,0.2);
+            padding: 4px 16px; border-radius: var(--radius);
         }
+        .sala-info { display: flex; align-items: center; gap: 12px; font-size: 0.82em; color: rgba(255,255,255,0.5); }
 
-        .sala-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.82em;
-            color: rgba(255,255,255,0.5);
-        }
-
-        /* ── PANEL IZQUIERDO: participantes ── */
+        /* Panel participantes */
         .panel-participantes {
-            background: #13131A;
-            border-right: 1px solid rgba(255,255,255,0.06);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            background: #13131A; border-right: 1px solid rgba(255,255,255,0.06);
+            display: flex; flex-direction: column; overflow: hidden;
         }
-
-        .panel-header {
-            padding: 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            flex-shrink: 0;
-        }
-
-        .panel-header-title {
-            font-family: var(--font-display);
-            font-size: 0.72em;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.3);
-        }
-
-        .panel-header-count {
-            font-family: var(--font-display);
-            font-size: 1.8em;
-            font-weight: 800;
-            color: white;
-            line-height: 1;
-            margin-top: 2px;
-        }
-
-        .participante-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .participante-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 10px;
-            border-radius: var(--radius);
-            background: rgba(255,255,255,0.04);
-            font-size: 0.82em;
-            transition: all var(--t);
-        }
-
-        .participante-item.respondio {
-            background: rgba(38,212,199,0.08);
-            border: 1px solid rgba(38,212,199,0.15);
-        }
-
+        .panel-header { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0; }
+        .panel-header-title { font-family: var(--font-display); font-size: 0.72em; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+        .panel-header-count { font-family: var(--font-display); font-size: 1.8em; font-weight: 800; color: white; line-height: 1; margin-top: 2px; }
+        .participante-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 4px; }
+        .participante-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--radius); background: rgba(255,255,255,0.04); font-size: 0.82em; transition: all var(--t); }
+        .participante-item.respondio { background: rgba(38,212,199,0.08); border: 1px solid rgba(38,212,199,0.15); }
         .participante-avatar {
-            width: 24px; height: 24px;
-            border-radius: var(--radius);
+            width: 24px; height: 24px; border-radius: var(--radius);
             background: linear-gradient(135deg, var(--teal), var(--blue));
             display: flex; align-items: center; justify-content: center;
-            font-family: var(--font-display);
-            font-size: 0.68em;
-            font-weight: 800;
-            color: white;
-            flex-shrink: 0;
+            font-family: var(--font-display); font-size: 0.68em; font-weight: 800; color: white; flex-shrink: 0;
         }
-
-        .participante-name {
-            flex: 1;
-            color: rgba(255,255,255,0.75);
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .participante-pts {
-            font-family: var(--font-display);
-            font-size: 0.78em;
-            font-weight: 700;
-            color: var(--teal);
-        }
-
-        .participante-check {
-            font-size: 0.85em;
-            opacity: 0;
-            transition: opacity var(--t);
-        }
+        .participante-name { flex: 1; color: rgba(255,255,255,0.75); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .participante-pts  { font-family: var(--font-display); font-size: 0.78em; font-weight: 700; color: var(--teal); }
+        .participante-check { font-size: 0.85em; opacity: 0; transition: opacity var(--t); }
         .participante-item.respondio .participante-check { opacity: 1; }
 
-        /* ── CENTRO: pregunta / ranking / espera ── */
-        .panel-centro {
-            background: #13131A;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
+        /* Centro */
+        .panel-centro { background: #13131A; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* Estado: waiting */
         .estado-waiting {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            padding: 40px;
-            text-align: center;
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 20px; padding: 40px; text-align: center;
         }
+        .waiting-code  { font-family: var(--font-mono); font-size: 4em; font-weight: 700; color: var(--teal); letter-spacing: 8px; line-height: 1; }
+        .waiting-label { font-family: var(--font-display); font-size: 0.78em; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+        .waiting-count { font-family: var(--font-display); font-size: 1.1em; color: rgba(255,255,255,0.5); }
 
-        .waiting-code {
-            font-family: var(--font-mono);
-            font-size: 4em;
-            font-weight: 700;
-            color: var(--teal);
-            letter-spacing: 8px;
-            line-height: 1;
-        }
+        .estado-pregunta { flex: 1; display: flex; flex-direction: column; padding: 28px; gap: 20px; overflow-y: auto; }
+        .pregunta-header { display: flex; align-items: center; justify-content: space-between; }
+        .pregunta-num-badge { font-family: var(--font-display); font-size: 0.78em; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 1px; text-transform: uppercase; }
 
-        .waiting-label {
-            font-family: var(--font-display);
-            font-size: 0.78em;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.3);
-        }
-
-        .waiting-count {
-            font-family: var(--font-display);
-            font-size: 1.1em;
-            color: rgba(255,255,255,0.5);
-        }
-
-        /* Estado: pregunta_activa */
-        .estado-pregunta {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 28px;
-            gap: 20px;
-            overflow-y: auto;
-        }
-
-        .pregunta-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .pregunta-num-badge {
-            font-family: var(--font-display);
-            font-size: 0.78em;
-            font-weight: 700;
-            color: rgba(255,255,255,0.3);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        /* Timer */
-        .timer-ring {
-            position: relative;
-            width: 64px; height: 64px;
-            flex-shrink: 0;
-        }
-
-        .timer-ring svg {
-            transform: rotate(-90deg);
-        }
-
-        .timer-ring .ring-bg {
-            fill: none;
-            stroke: rgba(255,255,255,0.08);
-            stroke-width: 4;
-        }
-
-        .timer-ring .ring-fill {
-            fill: none;
-            stroke: var(--teal);
-            stroke-width: 4;
-            stroke-linecap: round;
-            stroke-dasharray: 163;
-            stroke-dashoffset: 0;
-            transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
-        }
-
+        .timer-ring { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
+        .timer-ring svg { transform: rotate(-90deg); }
+        .timer-ring .ring-bg   { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 4; }
+        .timer-ring .ring-fill { fill: none; stroke: var(--teal); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 163; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear, stroke 0.3s ease; }
         .timer-ring .ring-fill.urgente { stroke: #dc3545; }
+        .timer-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 1.1em; font-weight: 800; color: white; }
 
-        .timer-text {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: var(--font-display);
-            font-size: 1.1em;
-            font-weight: 800;
-            color: white;
-        }
+        .pregunta-enunciado { font-family: var(--font-display); font-size: 1.4em; font-weight: 700; color: white; line-height: 1.4; flex: 1; }
 
-        .pregunta-enunciado {
-            font-family: var(--font-display);
-            font-size: 1.4em;
-            font-weight: 700;
-            color: white;
-            line-height: 1.4;
-            flex: 1;
-        }
+        .respuestas-counter { display: flex; align-items: center; gap: 8px; font-size: 0.82em; color: rgba(255,255,255,0.4); }
+        .respuestas-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
+        .respuestas-fill { height: 100%; background: var(--teal); border-radius: 999px; transition: width 0.3s ease; }
 
-        /* Contador respuestas */
-        .respuestas-counter {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.82em;
-            color: rgba(255,255,255,0.4);
-        }
-
-        .respuestas-bar {
-            flex: 1;
-            height: 4px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 999px;
-            overflow: hidden;
-        }
-
-        .respuestas-fill {
-            height: 100%;
-            background: var(--teal);
-            border-radius: 999px;
-            transition: width 0.3s ease;
-        }
-
-        /* Opciones en modo sala (decorativas, no clickeables) */
-        .opciones-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
+        .opciones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .opcion-sala {
-            padding: 14px 16px;
-            border-radius: var(--radius-lg);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.9em;
-            font-weight: 600;
-            color: white;
-            position: relative;
-            overflow: hidden;
+            padding: 14px 16px; border-radius: var(--radius-lg);
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.9em; font-weight: 600; color: white;
         }
-
         .opcion-sala[data-opt="A"] { background: rgba(124,58,237,0.25); border: 1px solid rgba(124,58,237,0.4); }
-        .opcion-sala[data-opt="B"] { background: rgba(14,165,233,0.25); border: 1px solid rgba(14,165,233,0.4); }
-        .opcion-sala[data-opt="C"] { background: rgba(28,230,193,0.25); border: 1px solid rgba(28,230,193,0.4); }
-        .opcion-sala[data-opt="D"] { background: rgba(75,230,28,0.25);  border: 1px solid rgba(75,230,28,0.4); }
-
+        .opcion-sala[data-opt="B"] { background: rgba(14,165,233,0.25);  border: 1px solid rgba(14,165,233,0.4); }
+        .opcion-sala[data-opt="C"] { background: rgba(28,230,193,0.25);  border: 1px solid rgba(28,230,193,0.4); }
+        .opcion-sala[data-opt="D"] { background: rgba(75,230,28,0.25);   border: 1px solid rgba(75,230,28,0.4); }
+        .opcion-sala[data-opt="V"] { background: rgba(75,230,28,0.25);   border: 1px solid rgba(75,230,28,0.4); }
+        .opcion-sala[data-opt="F"] { background: rgba(220,53,69,0.25);   border: 1px solid rgba(220,53,69,0.4); }
         .opcion-sala .opt-letra {
-            width: 28px; height: 28px;
-            border-radius: var(--radius);
+            width: 28px; height: 28px; border-radius: var(--radius);
             display: flex; align-items: center; justify-content: center;
-            font-family: var(--font-display);
-            font-size: 0.82em;
-            font-weight: 800;
-            flex-shrink: 0;
+            font-family: var(--font-display); font-size: 0.82em; font-weight: 800; flex-shrink: 0;
         }
-
         .opcion-sala[data-opt="A"] .opt-letra { background: var(--opt-a); }
         .opcion-sala[data-opt="B"] .opt-letra { background: var(--opt-b); }
         .opcion-sala[data-opt="C"] .opt-letra { background: var(--opt-c); color: #0a0a0a; }
         .opcion-sala[data-opt="D"] .opt-letra { background: var(--opt-d); color: #0a0a0a; }
+        .opcion-sala[data-opt="V"] .opt-letra { background: var(--opt-d); color: #0a0a0a; }
+        .opcion-sala[data-opt="F"] .opt-letra { background: #dc3545; }
 
-        /* Estado: ranking */
-        .estado-ranking {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 28px;
-            gap: 12px;
-            overflow-y: auto;
-        }
-
-        .ranking-title {
-            font-family: var(--font-display);
-            font-size: 1.3em;
-            font-weight: 800;
-            color: white;
-            text-align: center;
-            margin-bottom: 8px;
-        }
-
-        .ranking-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-radius: var(--radius);
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
-            animation: fadeUp 0.4s ease both;
-        }
-
-        .ranking-item:nth-child(1) { background: rgba(255,215,0,0.1); border-color: rgba(255,215,0,0.25); }
+        .estado-ranking { flex: 1; display: flex; flex-direction: column; padding: 28px; gap: 12px; overflow-y: auto; }
+        .ranking-title  { font-family: var(--font-display); font-size: 1.3em; font-weight: 800; color: white; text-align: center; margin-bottom: 8px; }
+        .ranking-item   { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--radius); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); animation: fadeUp 0.4s ease both; }
+        .ranking-item:nth-child(1) { background: rgba(255,215,0,0.1);   border-color: rgba(255,215,0,0.25); }
         .ranking-item:nth-child(2) { background: rgba(192,192,192,0.08); border-color: rgba(192,192,192,0.2); }
-        .ranking-item:nth-child(3) { background: rgba(205,127,50,0.08); border-color: rgba(205,127,50,0.2); }
-
-        .ranking-pos {
-            font-family: var(--font-display);
-            font-size: 1em;
-            font-weight: 800;
-            width: 28px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-
+        .ranking-item:nth-child(3) { background: rgba(205,127,50,0.08);  border-color: rgba(205,127,50,0.2); }
+        .ranking-pos { font-family: var(--font-display); font-size: 1em; font-weight: 800; width: 28px; text-align: center; flex-shrink: 0; }
         .ranking-item:nth-child(1) .ranking-pos { color: gold; }
         .ranking-item:nth-child(2) .ranking-pos { color: silver; }
         .ranking-item:nth-child(3) .ranking-pos { color: #cd7f32; }
+        .ranking-name { flex: 1; color: rgba(255,255,255,0.85); font-weight: 600; font-size: 0.9em; }
+        .ranking-pts  { font-family: var(--font-display); font-weight: 800; color: var(--teal); font-size: 1em; }
 
-        .ranking-name {
-            flex: 1;
-            color: rgba(255,255,255,0.85);
-            font-weight: 600;
-            font-size: 0.9em;
-        }
-
-        .ranking-pts {
-            font-family: var(--font-display);
-            font-weight: 800;
-            color: var(--teal);
-            font-size: 1em;
-        }
-
-        /* ── PANEL DERECHO: controles ── */
-        .panel-controles {
-            background: #1A1A24;
-            border-left: 1px solid rgba(255,255,255,0.06);
-            display: flex;
-            flex-direction: column;
-            padding: 20px 16px;
-            gap: 12px;
-        }
-
-        .control-section {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .control-label {
-            font-size: 0.65em;
-            font-weight: 700;
-            letter-spacing: 1.2px;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.25);
-            font-family: var(--font-display);
-            padding-bottom: 4px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-
-        .btn-control {
-            width: 100%;
-            padding: 11px;
-            border-radius: var(--radius);
-            font-family: var(--font-display);
-            font-size: 0.82em;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all var(--t);
-            border: none;
-            text-align: center;
-        }
-
-        .btn-control.primary {
-            background: var(--teal);
-            color: #0a0a0a;
-            box-shadow: 0 2px 8px rgba(38,212,199,0.25);
-        }
-        .btn-control.primary:hover {
-            background: var(--teal-dim);
-            transform: translateY(-1px);
-        }
-        .btn-control.primary:disabled {
-            opacity: 0.35;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-control.secondary {
-            background: rgba(255,255,255,0.06);
-            color: rgba(255,255,255,0.6);
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-        .btn-control.secondary:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
-        }
-
-        .btn-control.danger {
-            background: rgba(220,53,69,0.12);
-            color: #f87171;
-            border: 1px solid rgba(220,53,69,0.2);
-        }
+        /* Controles */
+        .panel-controles { background: #1A1A24; border-left: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; padding: 20px 16px; gap: 12px; }
+        .control-section { display: flex; flex-direction: column; gap: 8px; }
+        .control-label { font-size: 0.65em; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,255,255,0.25); font-family: var(--font-display); padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .btn-control { width: 100%; padding: 11px; border-radius: var(--radius); font-family: var(--font-display); font-size: 0.82em; font-weight: 700; cursor: pointer; transition: all var(--t); border: none; text-align: center; }
+        .btn-control.primary   { background: var(--teal); color: #0a0a0a; box-shadow: 0 2px 8px rgba(38,212,199,0.25); }
+        .btn-control.primary:hover { background: var(--teal-dim); transform: translateY(-1px); }
+        .btn-control.primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+        .btn-control.secondary { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.08); }
+        .btn-control.secondary:hover { background: rgba(255,255,255,0.1); color: white; }
+        .btn-control.danger    { background: rgba(220,53,69,0.12); color: #f87171; border: 1px solid rgba(220,53,69,0.2); }
         .btn-control.danger:hover { background: #dc3545; color: white; }
-
         .control-spacer { flex: 1; }
-
-        /* Progreso */
-        .progreso-info {
-            text-align: center;
-            font-size: 0.72em;
-            color: rgba(255,255,255,0.3);
-            font-family: var(--font-display);
-            font-weight: 700;
-        }
-
-        .progreso-bar {
-            height: 3px;
-            background: rgba(255,255,255,0.06);
-            border-radius: 999px;
-            overflow: hidden;
-            margin-top: 4px;
-        }
-
-        .progreso-fill {
-            height: 100%;
-            background: var(--teal);
-            border-radius: 999px;
-            transition: width 0.4s ease;
-        }
+        .progreso-info { text-align: center; font-size: 0.72em; color: rgba(255,255,255,0.3); font-family: var(--font-display); font-weight: 700; }
+        .progreso-bar  { height: 3px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden; margin-top: 4px; }
+        .progreso-fill { height: 100%; background: var(--teal); border-radius: 999px; transition: width 0.4s ease; }
 
         @media (max-width: 900px) {
             .sala-shell { grid-template-columns: 1fr; grid-template-rows: var(--header-h) auto 1fr auto; }
@@ -516,7 +151,6 @@
 <body>
 <div class="sala-shell">
 
-    <!-- TOPBAR -->
     <div class="sala-topbar">
         <span class="sala-topbar-logo">ℵ AlephProject — Sala en vivo</span>
         <span class="sala-code" id="salaCode">——————</span>
@@ -527,7 +161,6 @@
         </div>
     </div>
 
-    <!-- PARTICIPANTES -->
     <div class="panel-participantes">
         <div class="panel-header">
             <div class="panel-header-title">Participantes</div>
@@ -536,9 +169,7 @@
         <div class="participante-list" id="participanteList"></div>
     </div>
 
-    <!-- CENTRO -->
     <div class="panel-centro" id="panelCentro">
-        <!-- Estado inicial: waiting -->
         <div class="estado-waiting" id="estadoWaiting">
             <div class="waiting-label">Código de sala</div>
             <div class="waiting-code" id="waitingCode">——————</div>
@@ -548,23 +179,19 @@
             </p>
         </div>
 
-        <!-- Estado: pregunta activa (oculto inicialmente) -->
         <div class="estado-pregunta" id="estadoPregunta" style="display:none;">
             <div class="pregunta-header">
                 <span class="pregunta-num-badge" id="preguntaNumBadge">Pregunta 1 de N</span>
                 <div class="timer-ring" id="timerRing">
                     <svg width="64" height="64" viewBox="0 0 64 64">
-                        <circle class="ring-bg" cx="32" cy="32" r="26"/>
+                        <circle class="ring-bg"   cx="32" cy="32" r="26"/>
                         <circle class="ring-fill" id="ringFill" cx="32" cy="32" r="26"/>
                     </svg>
                     <div class="timer-text" id="timerText">30</div>
                 </div>
             </div>
-
             <div class="pregunta-enunciado" id="preguntaEnunciado"></div>
-
             <div id="opcionesDisplay"></div>
-
             <div class="respuestas-counter">
                 <span id="respuestasTexto">0 respuestas</span>
                 <div class="respuestas-bar">
@@ -573,43 +200,26 @@
             </div>
         </div>
 
-        <!-- Estado: ranking (oculto inicialmente) -->
         <div class="estado-ranking" id="estadoRanking" style="display:none;">
             <div class="ranking-title">🏆 Ranking</div>
             <div id="rankingList"></div>
         </div>
     </div>
 
-    <!-- CONTROLES -->
     <div class="panel-controles">
         <div class="control-section">
             <div class="control-label">Juego</div>
-
-            <!-- Botón dinámico según estado -->
-            <button class="btn-control primary" id="btnAccion" onclick="accionPrincipal()">
-                ▶ Comenzar
-            </button>
-
-            <button class="btn-control secondary" id="btnRanking"
-                    onclick="mostrarRanking()" style="display:none;">
-                🏆 Ver ranking
-            </button>
+            <button class="btn-control primary" id="btnAccion" onclick="accionPrincipal()">▶ Comenzar</button>
+            <button class="btn-control secondary" id="btnRanking" onclick="mostrarRanking()" style="display:none;">🏆 Ver ranking</button>
         </div>
-
         <div class="control-spacer"></div>
-
         <div class="control-section">
             <div class="progreso-info" id="progresoInfo">—</div>
-            <div class="progreso-bar">
-                <div class="progreso-fill" id="progresoFill" style="width:0%"></div>
-            </div>
+            <div class="progreso-bar"><div class="progreso-fill" id="progresoFill" style="width:0%"></div></div>
         </div>
-
         <div class="control-section">
             <div class="control-label">Sala</div>
-            <button class="btn-control danger" onclick="terminarSala()">
-                ⏹ Terminar sala
-            </button>
+            <button class="btn-control danger" onclick="terminarSala()">⏹ Terminar sala</button>
         </div>
     </div>
 
@@ -619,19 +229,47 @@
 <script src="js/api.js"></script>
 <script src="js/app.js"></script>
 <script>
-// ── Estado ────────────────────────────────────────────────
-let sala = null;
-let preguntas = [];
-let participantes = [];
+const BACKEND = 'https://alephone-backend-production.up.railway.app';
+
+let sala               = null;
+let preguntas          = [];
+let participantes      = [];
 let respuestasActuales = [];
-let timerInterval = null;
-let tiempoRestante = 0;
-let suscripciones = [];
-let currentUser = null;
+let timerInterval      = null;
+let tiempoRestante     = 0;
+let suscripciones      = [];
+let currentUser        = null;
 
-const LETRAS = ['A','B','C','D'];
+const LETRAS   = ['A','B','C','D'];
+const MEDALLAS = ['🥇','🥈','🥉'];
 
-// ── Init ──────────────────────────────────────────────────
+// FIX: despertar Railway cuando carga la sala del docente
+async function wakeBackend() {
+    try { await fetch(`${BACKEND}/ping`); } catch(e) { /* silencioso */ }
+}
+
+function normalizarPregunta(p) {
+    if (typeof p.respuesta_correcta === 'string') {
+        try { p.respuesta_correcta = JSON.parse(p.respuesta_correcta); } catch(e) {}
+    }
+    if ((p.tipo === 'imagen_click' || p.tipo === 'slide' || p.tipo === 'libre_imagen' || p.tipo === 'escala') && p.opciones) {
+        const opts = typeof p.opciones === 'string'
+            ? (() => { try { return JSON.parse(p.opciones); } catch { return null; } })()
+            : p.opciones;
+        if (opts && typeof opts === 'object' && !Array.isArray(opts)) {
+            p.imagen_url       = opts.imagen_url    || '';
+            p.imagen_path      = opts.imagen_path   || '';
+            p.imagen_bucket    = opts.imagen_bucket || '';
+            p.imagen_nombre    = opts.imagen_nombre || '';
+            p.slide_titulo     = opts.slide_titulo  || '';
+            p.escala_min       = opts.min           ?? p.escala_min;
+            p.escala_max       = opts.max           ?? p.escala_max;
+            p.escala_label_izq = opts.left_label    || '';
+            p.escala_label_der = opts.right_label   || '';
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     await AlephAPI.Auth.init();
     currentUser = requireAuth();
@@ -641,58 +279,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     const salaId = params.get('sala');
     if (!salaId) { window.location.href = 'quizzit.html'; return; }
 
-    // Cargar sala
+    // Despertar backend al cargar la sala (antes de que los alumnos necesiten responder)
+    wakeBackend();
+
     const res = await AlephAPI.Sala.getById(salaId);
-    if (!res.ok || !res.sala) {
-        showToast('Sala no encontrada', 'error');
-        window.location.href = 'quizzit.html';
-        return;
-    }
+    if (!res.ok || !res.sala) { showToast('Sala no encontrada', 'error'); window.location.href = 'quizzit.html'; return; }
 
-    sala = res.sala;
-    preguntas = (sala.quizzes?.preguntas || []).sort((a,b) => a.orden - b.orden);
+    sala      = res.sala;
+    preguntas = (sala.quizzes?.preguntas || []).sort((a, b) => a.orden - b.orden);
+    preguntas.forEach(normalizarPregunta);
 
-    // Normalizar datos de preguntas que vienen del backend
-    preguntas.forEach(p => {
-        if (typeof p.respuesta_correcta === 'string') {
-            try {
-                const parsed = JSON.parse(p.respuesta_correcta);
-                if (typeof parsed === 'object' && parsed !== null) {
-                    p.respuesta_correcta = parsed;
-                }
-            } catch(e) { /* string normal */ }
-        }
-        if ((p.tipo === 'imagen_click' || p.tipo === 'slide' || p.tipo === 'libre_imagen' || p.tipo === 'escala') && p.opciones) {
-            const imageOptions = typeof p.opciones === 'string'
-                ? (() => { try { return JSON.parse(p.opciones); } catch { return null; } })()
-                : p.opciones;
-            if (imageOptions && typeof imageOptions === 'object' && !Array.isArray(imageOptions)) {
-                p.imagen_url = imageOptions.imagen_url || '';
-                p.imagen_path = imageOptions.imagen_path || '';
-                p.imagen_bucket = imageOptions.imagen_bucket || '';
-                p.imagen_nombre = imageOptions.imagen_nombre || '';
-                p.slide_titulo = imageOptions.slide_titulo || '';
-                p.escala_min = imageOptions.min ?? p.escala_min;
-                p.escala_max = imageOptions.max ?? p.escala_max;
-                p.escala_label_izq = imageOptions.left_label || '';
-                p.escala_label_der = imageOptions.right_label || '';
-            }
-        }
-    });
+    document.getElementById('salaCode').textContent    = sala.codigo;
+    document.getElementById('waitingCode').textContent  = sala.codigo;
+    document.getElementById('quizNombre').textContent   = sala.quizzes?.titulo || 'Quiz';
 
-    // UI inicial
-    document.getElementById('salaCode').textContent = sala.codigo;
-    document.getElementById('waitingCode').textContent = sala.codigo;
-    document.getElementById('quizNombre').textContent = sala.quizzes?.titulo || 'Quiz';
-
-    // Suscribir Realtime
     suscribirRealtime(salaId);
-
-    // Cargar participantes iniciales
     await cargarParticipantes();
 });
 
-// ── Realtime ──────────────────────────────────────────────
 function suscribirRealtime(salaId) {
     const subPart = AlephAPI.Sala.suscribirParticipantes(salaId, () => cargarParticipantes());
     const subResp = AlephAPI.Sala.suscribirRespuestas(salaId, () => cargarRespuestasActuales());
@@ -706,26 +310,23 @@ async function cargarParticipantes() {
 
 async function cargarRespuestasActuales() {
     if (!preguntas[sala.pregunta_actual]) return;
-    const pregId = preguntas[sala.pregunta_actual].id;
-    respuestasActuales = await AlephAPI.Sala.getRespuestasDePregunta(sala.id, pregId);
+    respuestasActuales = await AlephAPI.Sala.getRespuestasDePregunta(sala.id, preguntas[sala.pregunta_actual].id);
     renderContadorRespuestas();
 }
 
-// ── Render participantes ──────────────────────────────────
 function renderParticipantes() {
-    const lista = document.getElementById('participanteList');
-    const count = document.getElementById('participantesCount');
-    const waitCount = document.getElementById('waitingCount');
+    const lista      = document.getElementById('participanteList');
+    const count      = document.getElementById('participantesCount');
+    const waitCount  = document.getElementById('waitingCount');
+    const respondIds = new Set(respuestasActuales.map(r => r.user_id));
 
-    count.textContent = participantes.length;
+    count.textContent     = participantes.length;
     waitCount.textContent = participantes.length === 0
         ? 'Esperando participantes...'
         : `${participantes.length} conectado${participantes.length !== 1 ? 's' : ''}`;
 
-    const respondioIds = new Set(respuestasActuales.map(r => r.user_id));
-
     lista.innerHTML = participantes.map(p => `
-        <div class="participante-item ${respondioIds.has(p.user_id) ? 'respondio' : ''}">
+        <div class="participante-item ${respondIds.has(p.user_id) ? 'respondio' : ''}">
             <div class="participante-avatar">${p.username.charAt(0).toUpperCase()}</div>
             <span class="participante-name">${sanitize(p.username)}</span>
             <span class="participante-pts">${p.puntaje}</span>
@@ -733,269 +334,180 @@ function renderParticipantes() {
         </div>`).join('');
 }
 
-// ── Render contador respuestas ────────────────────────────
 function renderContadorRespuestas() {
-    const total = participantes.length;
+    const total       = participantes.length;
     const respondieron = respuestasActuales.length;
-    const pct = total > 0 ? (respondieron / total) * 100 : 0;
-
+    const pct         = total > 0 ? (respondieron / total) * 100 : 0;
     document.getElementById('respuestasTexto').textContent =
         `${respondieron} de ${total} respuesta${respondieron !== 1 ? 's' : ''}`;
     document.getElementById('respuestasFill').style.width = pct + '%';
-
     renderParticipantes();
-
-    // Todos respondieron — avisar
-    if (total > 0 && respondieron >= total) {
-        document.getElementById('timerText').style.color = var_teal();
-    }
 }
 
-function var_teal() { return getComputedStyle(document.documentElement).getPropertyValue('--teal').trim(); }
-
-// ── Mostrar pregunta ──────────────────────────────────────
 function mostrarPregunta(idx) {
     const p = preguntas[idx];
     if (!p) return;
 
-    // Ocultar estados anteriores
     document.getElementById('estadoWaiting').style.display  = 'none';
     document.getElementById('estadoRanking').style.display  = 'none';
     document.getElementById('estadoPregunta').style.display = 'flex';
 
-    // Badge
     document.getElementById('preguntaNumBadge').textContent =
         `Pregunta ${idx + 1} de ${preguntas.length}`;
-
-    // Enunciado
     document.getElementById('preguntaEnunciado').textContent = p.enunciado;
 
-    // Opciones decorativas
     const opcDisplay = document.getElementById('opcionesDisplay');
+
     if (p.tipo === 'slide') {
         opcDisplay.innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:16px;">
-                <div style="padding:18px; border-radius:var(--radius-lg); background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); text-align:center;">
-                    <div style="font-family:var(--font-display); font-size:1.08em; font-weight:700; color:white;">${sanitize(p.slide_titulo || 'Diapositiva')}</div>
-                    <p style="margin-top:8px; color:rgba(255,255,255,0.42); font-size:0.82em;">Bloque informativo sin respuesta.</p>
-                </div>
-                ${p.imagen_url ? `<img src="${sanitize(p.imagen_url)}" style="display:block; max-width:100%; max-height:300px; margin:0 auto; border-radius:12px;">` : ''}
-            </div>`;
-    } else if (p.tipo === 'encuesta' && p.opciones) {
-        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : p.opciones;
-        opcDisplay.innerHTML = `<div class="opciones-grid">
-            ${opts.map((op, i) => op.trim() ? `
-                <div class="opcion-sala" data-opt="${LETRAS[i]}">
-                    <div class="opt-letra">${LETRAS[i]}</div>
-                    <span>${sanitize(op)}</span>
-                </div>` : '').join('')}
-        </div>`;
-    } else if (p.tipo === 'escala') {
-        const min = Number(p.escala_min ?? 1);
-        const max = Number(p.escala_max ?? 5);
-        const vals = [];
-        for (let v = min; v <= max; v++) vals.push(v);
-        opcDisplay.innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:10px;">
-                <div style="display:flex; justify-content:space-between; color:rgba(255,255,255,0.42); font-size:0.78em;">
-                    <span>${sanitize(p.escala_label_izq || '')}</span>
-                    <span>${sanitize(p.escala_label_der || '')}</span>
-                </div>
-                <div class="opciones-grid">
-                    ${vals.map(v => `
-                        <div class="opcion-sala" style="justify-content:center;">
-                            <span style="font-family:var(--font-display); font-size:1.1em;">${v}</span>
-                        </div>`).join('')}
-                </div>
-            </div>`;
+            <div style="padding:18px;border-radius:var(--radius-lg);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);text-align:center;">
+                <div style="font-family:var(--font-display);font-size:1.08em;font-weight:700;color:white;">${sanitize(p.slide_titulo || 'Diapositiva')}</div>
+                <p style="margin-top:8px;color:rgba(255,255,255,0.42);font-size:0.82em;">Bloque informativo sin respuesta.</p>
+            </div>
+            ${p.imagen_url ? `<img src="${sanitize(p.imagen_url)}" style="display:block;max-width:100%;max-height:300px;margin:0 auto;border-radius:12px;margin-top:12px;">` : ''}`;
     } else if ((p.tipo === 'multiple_choice' || p.tipo === 'seleccion_multiple') && p.opciones) {
         const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : p.opciones;
         opcDisplay.innerHTML = `<div class="opciones-grid">
             ${opts.map((op, i) => op.trim() ? `
                 <div class="opcion-sala" data-opt="${LETRAS[i]}">
-                    <div class="opt-letra" style="${p.tipo === 'seleccion_multiple' ? 'border-radius:4px;' : ''}">${LETRAS[i]}</div>
+                    <div class="opt-letra" style="${p.tipo==='seleccion_multiple'?'border-radius:4px;':''}">${LETRAS[i]}</div>
                     <span>${sanitize(op)}</span>
                 </div>` : '').join('')}
         </div>`;
+    } else if (p.tipo === 'encuesta' && p.opciones) {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : p.opciones;
+        opcDisplay.innerHTML = `<div class="opciones-grid">
+            ${opts.map((op, i) => op.trim() ? `
+                <div class="opcion-sala" data-opt="${LETRAS[i]}">
+                    <div class="opt-letra">${LETRAS[i]}</div><span>${sanitize(op)}</span>
+                </div>` : '').join('')}
+        </div>`;
+    } else if (p.tipo === 'escala') {
+        const min = Number(p.escala_min ?? 1), max = Number(p.escala_max ?? 5);
+        const vals = []; for (let v = min; v <= max; v++) vals.push(v);
+        opcDisplay.innerHTML = `<div class="opciones-grid">
+            ${vals.map(v => `<div class="opcion-sala" style="justify-content:center;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);">
+                <span style="font-family:var(--font-display);font-size:1.1em;">${v}</span></div>`).join('')}
+        </div>`;
+    // FIX: V/F usa data-opt="V"/"F" con colores correctos
     } else if (p.tipo === 'verdadero_falso') {
         opcDisplay.innerHTML = `<div class="opciones-grid">
-            <div class="opcion-sala" data-opt="C"><div class="opt-letra">V</div><span>Verdadero</span></div>
-            <div class="opcion-sala" data-opt="A"><div class="opt-letra">F</div><span>Falso</span></div>
+            <div class="opcion-sala" data-opt="V"><div class="opt-letra">V</div><span>Verdadero</span></div>
+            <div class="opcion-sala" data-opt="F"><div class="opt-letra">F</div><span>Falso</span></div>
         </div>`;
     } else if (p.tipo === 'ordenar') {
         const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
         opcDisplay.innerHTML = `<div class="opciones-grid">
             ${opts.map((op, i) => `
-                <div class="opcion-sala" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
-                    <div class="opt-letra" style="border-radius:4px; background:var(--teal); color:#0a0a0a;">${i+1}</div>
+                <div class="opcion-sala" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);">
+                    <div class="opt-letra" style="border-radius:4px;background:var(--teal);color:#0a0a0a;">${i+1}</div>
                     <span>${sanitize(op)}</span>
                 </div>`).join('')}
         </div>`;
     } else if (p.tipo === 'relacionar_columnas') {
         const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
-        opcDisplay.innerHTML = `<div style="display:flex; flex-direction:column; gap:8px;">
+        opcDisplay.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px;">
             ${opts.map(op => `
-                <div style="display:flex; gap:10px; align-items:center;">
-                    <div class="opcion-sala" style="flex:1; background:rgba(255,255,255,0.05);">${sanitize(op.izq)}</div>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <div class="opcion-sala" style="flex:1;background:rgba(255,255,255,0.05);">${sanitize(op.izq)}</div>
                     <span style="color:var(--text-faint);">→</span>
-                    <div class="opcion-sala" style="flex:1; background:rgba(255,255,255,0.05);">${sanitize(op.der)}</div>
+                    <div class="opcion-sala" style="flex:1;background:rgba(255,255,255,0.05);">${sanitize(op.der)}</div>
                 </div>`).join('')}
         </div>`;
     } else if (p.tipo === 'imagen_click') {
-        const url = p.imagen_url || '';
         const corr = typeof p.respuesta_correcta === 'string' ? JSON.parse(p.respuesta_correcta) : p.respuesta_correcta;
         opcDisplay.innerHTML = `
-            <div style="position:relative; display:inline-block; max-width:100%; border-radius:8px; overflow:hidden;">
-                <img src="${sanitize(url)}" style="display:block; max-width:100%; height:auto;">
-                ${corr ? `
-                    <div style="position:absolute; top:${corr.y}%; left:${corr.x}%; width:16px; height:16px; background:var(--teal); border:2px solid white; border-radius:50%; transform:translate(-50%, -50%); pointer-events:none; box-shadow:0 0 10px rgba(0,0,0,0.5);"></div>
-                ` : ''}
-            </div>
-        `;
+            <div style="position:relative;display:inline-block;max-width:100%;border-radius:8px;overflow:hidden;">
+                <img src="${sanitize(p.imagen_url || '')}" style="display:block;max-width:100%;height:auto;">
+                ${corr ? `<div style="position:absolute;top:${corr.y}%;left:${corr.x}%;width:16px;height:16px;background:var(--teal);border:2px solid white;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 0 10px rgba(0,0,0,0.5);"></div>` : ''}
+            </div>`;
     } else if (p.tipo === 'libre_imagen') {
-        opcDisplay.innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                ${p.imagen_url ? `<img src="${sanitize(p.imagen_url)}" style="display:block; max-width:100%; max-height:300px; margin:0 auto; border-radius:12px;">` : ''}
-                <p style="color:rgba(255,255,255,0.42); font-size:0.84em;">Respuesta abierta con apoyo visual.</p>
-            </div>
-        `;
+        opcDisplay.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px;">
+            ${p.imagen_url ? `<img src="${sanitize(p.imagen_url)}" style="display:block;max-width:100%;max-height:300px;margin:0 auto;border-radius:12px;">` : ''}
+            <p style="color:rgba(255,255,255,0.42);font-size:0.84em;">Respuesta abierta con apoyo visual.</p>
+        </div>`;
     } else {
         opcDisplay.innerHTML = `<p style="color:rgba(255,255,255,0.4);font-size:0.88em;">
             Respuesta ${p.tipo === 'numerica' ? 'numérica' : 'de texto / interactiva'}
         </p>`;
     }
 
-    // Progreso
-    const pct = ((idx + 1) / preguntas.length) * 100;
-    document.getElementById('progresoInfo').textContent = `${idx + 1} / ${preguntas.length}`;
-    document.getElementById('progresoFill').style.width = pct + '%';
-
-    // Respuestas
-    respuestasActuales = [];
-    renderContadorRespuestas();
-
-    // Timer
+    document.getElementById('progresoInfo').textContent      = `${idx + 1} / ${preguntas.length}`;
+    document.getElementById('progresoFill').style.width      = ((idx + 1) / preguntas.length * 100) + '%';
+    respuestasActuales = []; renderContadorRespuestas();
     iniciarTimer(p.tiempo_segundos || 30);
-
-    // Botones
     document.getElementById('btnAccion').textContent = '⏭ Siguiente pregunta';
-    document.getElementById('btnAccion').disabled = false;
+    document.getElementById('btnAccion').disabled    = false;
     document.getElementById('btnRanking').style.display = 'block';
 }
 
-// ── Timer ─────────────────────────────────────────────────
 function iniciarTimer(segundos) {
     clearInterval(timerInterval);
     tiempoRestante = segundos;
-    const circumference = 163;
-
+    const circ = 163;
     function tick() {
-        const pct = tiempoRestante / segundos;
-        const offset = circumference * (1 - pct);
+        const pct  = tiempoRestante / segundos;
         const ring = document.getElementById('ringFill');
         const text = document.getElementById('timerText');
-
         if (!ring || !text) { clearInterval(timerInterval); return; }
-
-        ring.style.strokeDashoffset = offset;
+        ring.style.strokeDashoffset = circ * (1 - pct);
         text.textContent = tiempoRestante;
-
         if (tiempoRestante <= 5) ring.classList.add('urgente');
         else ring.classList.remove('urgente');
-
-        if (tiempoRestante <= 0) {
-            clearInterval(timerInterval);
-            text.textContent = '⏱';
-        } else {
-            tiempoRestante--;
-        }
+        if (tiempoRestante <= 0) { clearInterval(timerInterval); text.textContent = '⏱'; }
+        else tiempoRestante--;
     }
-
     tick();
     timerInterval = setInterval(tick, 1000);
 }
 
-// ── Acción principal (botón dinámico) ────────────────────
 async function accionPrincipal() {
     if (!sala) return;
 
     if (sala.estado === 'waiting') {
-        // Comenzar — ir a primera pregunta
-        await AlephAPI.Sala.actualizarEstado({
-            salaId: sala.id,
-            estado: 'pregunta_activa',
-            preguntaActual: 0
-        });
-        sala.estado = 'pregunta_activa';
-        sala.pregunta_actual = 0;
+        // FIX: ping al backend cuando el docente arranca — da ~0.5s extra de margen
+        wakeBackend();
+        await AlephAPI.Sala.actualizarEstado({ salaId: sala.id, estado: 'pregunta_activa', preguntaActual: 0 });
+        sala.estado = 'pregunta_activa'; sala.pregunta_actual = 0;
         mostrarPregunta(0);
 
     } else if (sala.estado === 'pregunta_activa' || sala.estado === 'mostrando_ranking') {
-        // Siguiente pregunta
         const siguiente = sala.pregunta_actual + 1;
-
-        if (siguiente >= preguntas.length) {
-            // Fin del quiz
-            await terminarSala();
-            return;
-        }
-
+        if (siguiente >= preguntas.length) { await terminarSala(); return; }
         clearInterval(timerInterval);
-        await AlephAPI.Sala.actualizarEstado({
-            salaId: sala.id,
-            estado: 'pregunta_activa',
-            preguntaActual: siguiente
-        });
-        sala.estado = 'pregunta_activa';
-        sala.pregunta_actual = siguiente;
+        await AlephAPI.Sala.actualizarEstado({ salaId: sala.id, estado: 'pregunta_activa', preguntaActual: siguiente });
+        sala.estado = 'pregunta_activa'; sala.pregunta_actual = siguiente;
         mostrarPregunta(siguiente);
     }
 }
 
-// ── Mostrar ranking ───────────────────────────────────────
 async function mostrarRanking() {
     clearInterval(timerInterval);
-
-    await AlephAPI.Sala.actualizarEstado({
-        salaId: sala.id,
-        estado: 'mostrando_ranking',
-        preguntaActual: sala.pregunta_actual
-    });
+    await AlephAPI.Sala.actualizarEstado({ salaId: sala.id, estado: 'mostrando_ranking', preguntaActual: sala.pregunta_actual });
     sala.estado = 'mostrando_ranking';
-
-    // Recargar puntajes
     await cargarParticipantes();
 
     document.getElementById('estadoPregunta').style.display = 'none';
     document.getElementById('estadoWaiting').style.display  = 'none';
     document.getElementById('estadoRanking').style.display  = 'flex';
 
-    const top10 = [...participantes].sort((a,b) => b.puntaje - a.puntaje).slice(0,10);
-    const medallas = ['🥇','🥈','🥉'];
-
+    const top10 = [...participantes].sort((a, b) => b.puntaje - a.puntaje).slice(0, 10);
     document.getElementById('rankingList').innerHTML = top10.map((p, i) => `
         <div class="ranking-item" style="animation-delay:${i*0.06}s">
-            <span class="ranking-pos">${medallas[i] || (i+1)}</span>
+            <span class="ranking-pos">${MEDALLAS[i] || (i+1)}</span>
             <span class="ranking-name">${sanitize(p.username)}</span>
             <span class="ranking-pts">${p.puntaje} pts</span>
         </div>`).join('');
 
     const esUltima = sala.pregunta_actual >= preguntas.length - 1;
-    document.getElementById('btnAccion').textContent = esUltima ? '🏁 Terminar' : '⏭ Siguiente pregunta';
-    document.getElementById('btnRanking').style.display = 'none';
+    document.getElementById('btnAccion').textContent        = esUltima ? '🏁 Terminar' : '⏭ Siguiente pregunta';
+    document.getElementById('btnRanking').style.display     = 'none';
 }
 
-// ── Terminar sala ─────────────────────────────────────────
 async function terminarSala() {
     clearInterval(timerInterval);
     suscripciones.forEach(s => s?.unsubscribe?.());
-
-    await AlephAPI.Sala.actualizarEstado({
-        salaId: sala.id,
-        estado: 'finalizado',
-        preguntaActual: sala.pregunta_actual
-    });
-
+    await AlephAPI.Sala.actualizarEstado({ salaId: sala.id, estado: 'finalizado', preguntaActual: sala.pregunta_actual });
     window.location.href = `quiz-resultados.html?sala=${sala.id}`;
 }
 </script>
