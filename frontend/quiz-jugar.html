@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,258 +12,89 @@
             --opt-c: #1CE6C1;
             --opt-d: #4BE61C;
         }
+        body { background: #13131A; overflow: hidden; min-height: 100vh; display: flex; flex-direction: column; }
 
-        body {
-            background: #13131A;
-            overflow: hidden;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* ── TOPBAR ── */
         .jugar-topbar {
             height: var(--header-h);
-            background: rgba(19, 19, 26, 0.92);
+            background: rgba(19,19,26,0.92);
             backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            flex-shrink: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; flex-shrink: 0;
         }
-
         .jugar-logo {
-            font-family: var(--font-display);
-            font-size: 1.1em;
-            font-weight: 800;
+            font-family: var(--font-display); font-size: 1.1em; font-weight: 800;
             background: linear-gradient(135deg, var(--teal), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
+        .jugar-user { display: flex; align-items: center; gap: 8px; font-size: 0.82em; color: rgba(255,255,255,0.45); }
+        .jugar-pts  { font-family: var(--font-display); font-weight: 800; color: var(--teal); font-size: 0.95em; }
 
-        .jugar-user {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.82em;
-            color: rgba(255, 255, 255, 0.45);
-        }
-
-        .jugar-pts {
-            font-family: var(--font-display);
-            font-weight: 800;
-            color: var(--teal);
-            font-size: 0.95em;
-        }
-
-        /* ── MAIN AREA ── */
         .jugar-main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            overflow: hidden;
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 24px; overflow: hidden;
         }
 
-        /* ── ESTADO: WAITING ── */
-        .estado-waiting {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            text-align: center;
-            animation: fadeUp 0.4s ease both;
-        }
-
-        .waiting-emoji { font-size: 3.5em; }
-
-        .waiting-titulo {
-            font-family: var(--font-display);
-            font-size: 1.4em;
-            font-weight: 800;
-            color: white;
-        }
-
-        .waiting-sub {
-            font-size: 0.88em;
-            color: rgba(255, 255, 255, 0.35);
-            line-height: 1.6;
-        }
-
-        .waiting-participantes {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            justify-content: center;
-            max-width: 400px;
-        }
-
+        /* Waiting */
+        .estado-waiting { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; animation: fadeUp 0.4s ease both; }
+        .waiting-titulo { font-family: var(--font-display); font-size: 1.4em; font-weight: 800; color: white; }
+        .waiting-sub    { font-size: 0.88em; color: rgba(255,255,255,0.35); line-height: 1.6; }
+        .waiting-participantes { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-width: 400px; }
         .waiting-pill {
-            padding: 4px 12px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 999px;
-            font-size: 0.78em;
-            color: rgba(255, 255, 255, 0.55);
-            font-family: var(--font-display);
-            font-weight: 600;
+            padding: 4px 12px; background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 999px;
+            font-size: 0.78em; color: rgba(255,255,255,0.55);
+            font-family: var(--font-display); font-weight: 600;
         }
-
-        .waiting-pill.yo {
-            background: rgba(38, 212, 199, 0.12);
-            border-color: rgba(38, 212, 199, 0.25);
-            color: var(--teal);
-        }
-
-        /* Pulse dot */
+        .waiting-pill.yo { background: rgba(38,212,199,0.12); border-color: rgba(38,212,199,0.25); color: var(--teal); }
         .pulse-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: var(--teal);
+            width: 12px; height: 12px; border-radius: 50%; background: var(--teal);
             animation: pulseDot 1.5s ease-in-out infinite;
         }
+        @keyframes pulseDot { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.4);opacity:0.5} }
 
-        @keyframes pulseDot {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.4); opacity: 0.5; }
-        }
-
-        /* ── ESTADO: PREGUNTA ── */
-        .estado-pregunta {
-            width: 100%;
-            max-width: 640px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            animation: fadeUp 0.35s ease both;
-        }
-
-        .pregunta-header-alumno {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .pregunta-badge {
-            font-family: var(--font-display);
-            font-size: 0.72em;
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.3);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        /* Timer del alumno — barra horizontal */
-        .timer-bar-wrap {
-            flex: 1;
-            margin: 0 16px;
-        }
-
-        .timer-bar {
-            height: 6px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 999px;
-            overflow: hidden;
-        }
-
-        .timer-bar-fill {
-            height: 100%;
-            border-radius: 999px;
-            background: var(--teal);
-            transition: width 1s linear, background 0.3s ease;
-        }
-
+        /* Pregunta */
+        .estado-pregunta { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 20px; animation: fadeUp 0.35s ease both; }
+        .pregunta-header-alumno { display: flex; align-items: center; justify-content: space-between; }
+        .pregunta-badge { font-family: var(--font-display); font-size: 0.72em; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 1px; text-transform: uppercase; }
+        .timer-bar-wrap { flex: 1; margin: 0 16px; }
+        .timer-bar { height: 6px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
+        .timer-bar-fill { height: 100%; border-radius: 999px; background: var(--teal); transition: width 1s linear, background 0.3s ease; }
         .timer-bar-fill.urgente { background: #dc3545; }
+        .timer-num { font-family: var(--font-display); font-size: 0.9em; font-weight: 800; color: white; min-width: 28px; text-align: right; }
+        .pregunta-texto { font-family: var(--font-display); font-size: 1.35em; font-weight: 700; color: white; line-height: 1.45; text-align: center; }
 
-        .timer-num {
-            font-family: var(--font-display);
-            font-size: 0.9em;
-            font-weight: 800;
-            color: white;
-            min-width: 28px;
-            text-align: right;
-        }
-
-        .pregunta-texto {
-            font-family: var(--font-display);
-            font-size: 1.35em;
-            font-weight: 700;
-            color: white;
-            line-height: 1.45;
-            text-align: center;
-        }
-
-        /* Opciones del alumno */
-        .opciones-alumno {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
+        .opciones-alumno { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .opcion-alumno {
-            padding: 18px 16px;
-            border-radius: var(--radius-lg);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.9em;
-            font-weight: 600;
-            color: white;
-            cursor: pointer;
-            transition: all var(--t);
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
+            padding: 18px 16px; border-radius: var(--radius-lg);
+            display: flex; align-items: center; gap: 12px;
+            font-size: 0.9em; font-weight: 600; color: white;
+            cursor: pointer; transition: all var(--t); border: 2px solid transparent; overflow: hidden;
         }
+        .opcion-alumno[data-opt="A"] { background: rgba(124,58,237,0.2); border-color: rgba(124,58,237,0.35); }
+        .opcion-alumno[data-opt="B"] { background: rgba(14,165,233,0.2);  border-color: rgba(14,165,233,0.35); }
+        .opcion-alumno[data-opt="C"] { background: rgba(28,230,193,0.2);  border-color: rgba(28,230,193,0.35); }
+        .opcion-alumno[data-opt="D"] { background: rgba(75,230,28,0.2);   border-color: rgba(75,230,28,0.35); }
+        /* FIX: V/F usan sus propios data-opt en lugar de C y A */
+        .opcion-alumno[data-opt="V"] { background: rgba(75,230,28,0.2);   border-color: rgba(75,230,28,0.35); }
+        .opcion-alumno[data-opt="F"] { background: rgba(220,53,69,0.2);   border-color: rgba(220,53,69,0.35); }
 
-        .opcion-alumno[data-opt="A"] { background: rgba(124, 58, 237, 0.2); border-color: rgba(124, 58, 237, 0.35); }
-        .opcion-alumno[data-opt="B"] { background: rgba(14, 165, 233, 0.2); border-color: rgba(14, 165, 233, 0.35); }
-        .opcion-alumno[data-opt="C"] { background: rgba(28, 230, 193, 0.2); border-color: rgba(28, 230, 193, 0.35); }
-        .opcion-alumno[data-opt="D"] { background: rgba(75, 230, 28, 0.2); border-color: rgba(75, 230, 28, 0.35); }
+        .opcion-alumno:hover:not(.respondida) { transform: translateY(-2px) scale(1.02); filter: brightness(1.2); }
+        .opcion-alumno.seleccionada { transform: scale(0.97); filter: brightness(1.3); border-width: 3px; }
+        .opcion-alumno.respondida   { cursor: not-allowed; }
 
-        /* Verdadero/Falso usa data-opt="V" y "F" */
-        .opcion-alumno[data-opt="V"] { background: rgba(75, 230, 28, 0.2); border-color: rgba(75, 230, 28, 0.35); }
-        .opcion-alumno[data-opt="F"] { background: rgba(220, 53, 69, 0.2); border-color: rgba(220, 53, 69, 0.35); }
-
-        .opcion-alumno:hover:not(.respondida) {
-            transform: translateY(-2px) scale(1.02);
-            filter: brightness(1.2);
-        }
-
-        .opcion-alumno.seleccionada {
-            transform: scale(0.97);
-            filter: brightness(1.3);
-            border-width: 3px;
-        }
-
-        .opcion-alumno.respondida { cursor: not-allowed; }
-
-        .opcion-alumno[data-opt="A"].seleccionada { border-color: var(--opt-a); background: rgba(124, 58, 237, 0.35); }
-        .opcion-alumno[data-opt="B"].seleccionada { border-color: var(--opt-b); background: rgba(14, 165, 233, 0.35); }
-        .opcion-alumno[data-opt="C"].seleccionada { border-color: var(--opt-c); background: rgba(28, 230, 193, 0.35); }
-        .opcion-alumno[data-opt="D"].seleccionada { border-color: var(--opt-d); background: rgba(75, 230, 28, 0.35); }
-        .opcion-alumno[data-opt="V"].seleccionada { border-color: var(--opt-d); background: rgba(75, 230, 28, 0.35); }
-        .opcion-alumno[data-opt="F"].seleccionada { border-color: #dc3545; background: rgba(220, 53, 69, 0.35); }
+        .opcion-alumno[data-opt="A"].seleccionada { border-color: var(--opt-a); background: rgba(124,58,237,0.35); }
+        .opcion-alumno[data-opt="B"].seleccionada { border-color: var(--opt-b); background: rgba(14,165,233,0.35); }
+        .opcion-alumno[data-opt="C"].seleccionada { border-color: var(--opt-c); background: rgba(28,230,193,0.35); }
+        .opcion-alumno[data-opt="D"].seleccionada { border-color: var(--opt-d); background: rgba(75,230,28,0.35); }
+        .opcion-alumno[data-opt="V"].seleccionada { border-color: var(--opt-d); background: rgba(75,230,28,0.35); }
+        .opcion-alumno[data-opt="F"].seleccionada { border-color: #dc3545;      background: rgba(220,53,69,0.35); }
 
         .opt-letra-alumno {
-            width: 32px;
-            height: 32px;
-            border-radius: var(--radius);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: var(--font-display);
-            font-size: 0.85em;
-            font-weight: 800;
-            flex-shrink: 0;
+            width: 32px; height: 32px; border-radius: var(--radius);
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-display); font-size: 0.85em; font-weight: 800; flex-shrink: 0;
         }
-
         .opcion-alumno[data-opt="A"] .opt-letra-alumno { background: var(--opt-a); }
         .opcion-alumno[data-opt="B"] .opt-letra-alumno { background: var(--opt-b); }
         .opcion-alumno[data-opt="C"] .opt-letra-alumno { background: var(--opt-c); color: #0a0a0a; }
@@ -272,796 +102,621 @@
         .opcion-alumno[data-opt="V"] .opt-letra-alumno { background: var(--opt-d); color: #0a0a0a; }
         .opcion-alumno[data-opt="F"] .opt-letra-alumno { background: #dc3545; }
 
-        /* Input texto/numérico */
         .respuesta-input-wrap { display: flex; gap: 10px; }
-
         .respuesta-input {
-            flex: 1;
-            padding: 14px 18px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-lg);
-            font-size: 1em;
-            color: white;
-            font-family: var(--font-body);
-            transition: all var(--t);
+            flex: 1; padding: 14px 18px;
+            background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius-lg); font-size: 1em; color: white;
+            font-family: var(--font-body); transition: all var(--t);
         }
-
-        .respuesta-input:focus {
-            outline: none;
-            border-color: var(--teal);
-            background: rgba(38, 212, 199, 0.06);
-        }
-
-        .respuesta-input::placeholder { color: rgba(255, 255, 255, 0.25); }
+        .respuesta-input:focus { outline: none; border-color: var(--teal); background: rgba(38,212,199,0.06); }
+        .respuesta-input::placeholder { color: rgba(255,255,255,0.25); }
 
         .btn-enviar {
-            padding: 14px 24px;
-            background: var(--teal);
-            color: #0a0a0a;
-            border: none;
-            border-radius: var(--radius-lg);
-            font-family: var(--font-display);
-            font-size: 0.88em;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all var(--t);
-            box-shadow: 0 2px 10px rgba(38, 212, 199, 0.25);
+            padding: 14px 24px; background: var(--teal); color: #0a0a0a; border: none;
+            border-radius: var(--radius-lg); font-family: var(--font-display);
+            font-size: 0.88em; font-weight: 800; cursor: pointer; transition: all var(--t);
+            box-shadow: 0 2px 10px rgba(38,212,199,0.25);
         }
-
-        .btn-enviar:hover { background: var(--teal-dim); transform: translateY(-1px); }
+        .btn-enviar:hover    { background: var(--teal-dim); transform: translateY(-1px); }
         .btn-enviar:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-        /* ── ESTADO: RESPONDIO ── */
-        .estado-respondio {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-            text-align: center;
-            animation: fadeUp 0.3s ease both;
-        }
-
-        .respondio-icon { font-size: 3.5em; }
-
-        .respondio-titulo {
-            font-family: var(--font-display);
-            font-size: 1.3em;
-            font-weight: 800;
-            color: white;
-        }
-
-        .respondio-sub { font-size: 0.88em; color: rgba(255, 255, 255, 0.35); }
-
+        /* Respondió */
+        .estado-respondio { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; animation: fadeUp 0.3s ease both; }
+        .respondio-icon   { font-size: 3.5em; }
+        .respondio-titulo { font-family: var(--font-display); font-size: 1.3em; font-weight: 800; color: white; }
+        .respondio-sub    { font-size: 0.88em; color: rgba(255,255,255,0.35); }
         .pts-ganados {
-            font-family: var(--font-display);
-            font-size: 2em;
-            font-weight: 800;
-            color: var(--teal);
-            animation: ptsAnim 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+            font-family: var(--font-display); font-size: 2em; font-weight: 800; color: var(--teal);
+            animation: ptsAnim 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
         }
+        @keyframes ptsAnim { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
 
-        @keyframes ptsAnim {
-            from { transform: scale(0.5); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        /* ── ESTADO: RANKING ── */
-        .estado-ranking {
-            width: 100%;
-            max-width: 480px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            animation: fadeUp 0.4s ease both;
-        }
-
-        .ranking-titulo {
-            font-family: var(--font-display);
-            font-size: 1.3em;
-            font-weight: 800;
-            color: white;
-            text-align: center;
-            margin-bottom: 8px;
-        }
-
-        .ranking-item-alumno {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-radius: var(--radius);
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            animation: fadeUp 0.4s ease both;
-        }
-
-        .ranking-item-alumno.yo-ranking {
-            background: rgba(38, 212, 199, 0.1);
-            border-color: rgba(38, 212, 199, 0.25);
-        }
-
-        .ranking-item-alumno:nth-child(1) { background: rgba(255, 215, 0, 0.08); border-color: rgba(255, 215, 0, 0.2); }
-        .ranking-item-alumno:nth-child(2) { background: rgba(192, 192, 192, 0.06); border-color: rgba(192, 192, 192, 0.15); }
-        .ranking-item-alumno:nth-child(3) { background: rgba(205, 127, 50, 0.06); border-color: rgba(205, 127, 50, 0.15); }
-
+        /* Ranking */
+        .estado-ranking { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 10px; animation: fadeUp 0.4s ease both; }
+        .ranking-titulo { font-family: var(--font-display); font-size: 1.3em; font-weight: 800; color: white; text-align: center; margin-bottom: 8px; }
+        .ranking-item-alumno { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--radius); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); animation: fadeUp 0.4s ease both; }
+        .ranking-item-alumno.yo-ranking { background: rgba(38,212,199,0.1); border-color: rgba(38,212,199,0.25); }
+        .ranking-item-alumno:nth-child(1) { background: rgba(255,215,0,0.08);   border-color: rgba(255,215,0,0.2); }
+        .ranking-item-alumno:nth-child(2) { background: rgba(192,192,192,0.06); border-color: rgba(192,192,192,0.15); }
+        .ranking-item-alumno:nth-child(3) { background: rgba(205,127,50,0.06);  border-color: rgba(205,127,50,0.15); }
         .rank-pos { font-family: var(--font-display); font-size: 1em; font-weight: 800; width: 28px; text-align: center; flex-shrink: 0; }
         .ranking-item-alumno:nth-child(1) .rank-pos { color: gold; }
         .ranking-item-alumno:nth-child(2) .rank-pos { color: silver; }
         .ranking-item-alumno:nth-child(3) .rank-pos { color: #cd7f32; }
+        .rank-name { flex: 1; color: rgba(255,255,255,0.8); font-weight: 600; font-size: 0.9em; }
+        .rank-pts  { font-family: var(--font-display); font-weight: 800; color: var(--teal); }
 
-        .rank-name { flex: 1; color: rgba(255, 255, 255, 0.8); font-weight: 600; font-size: 0.9em; }
-        .rank-pts { font-family: var(--font-display); font-weight: 800; color: var(--teal); }
-
-        /* ── ESTADO: FINAL ── */
-        .estado-final {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            text-align: center;
-            animation: fadeUp 0.4s ease both;
-        }
-
-        .final-emoji { font-size: 4em; }
-
-        .final-titulo {
-            font-family: var(--font-display);
-            font-size: 1.6em;
-            font-weight: 800;
-            color: white;
-        }
-
-        .final-pts {
-            font-family: var(--font-display);
-            font-size: 3.5em;
-            font-weight: 800;
-            color: var(--teal);
-            line-height: 1;
-        }
-
-        .final-sub { font-size: 0.88em; color: rgba(255, 255, 255, 0.35); }
+        /* Final */
+        .estado-final { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; animation: fadeUp 0.4s ease both; }
+        .final-emoji  { font-size: 4em; }
+        .final-titulo { font-family: var(--font-display); font-size: 1.6em; font-weight: 800; color: white; }
+        .final-pts    { font-family: var(--font-display); font-size: 3.5em; font-weight: 800; color: var(--teal); line-height: 1; }
+        .final-sub    { font-size: 0.88em; color: rgba(255,255,255,0.35); }
     </style>
 </head>
-
 <body>
 
-    <div class="jugar-topbar">
-        <span class="jugar-logo">ℵ AlephProject</span>
-        <div class="jugar-user">
-            <span id="jugarUsername">—</span>
-            <span class="jugar-pts" id="jugarPts">0 pts</span>
-        </div>
+<div class="jugar-topbar">
+    <span class="jugar-logo">ℵ AlephProject</span>
+    <div class="jugar-user">
+        <span id="jugarUsername">—</span>
+        <span class="jugar-pts" id="jugarPts">0 pts</span>
     </div>
+</div>
 
-    <div class="jugar-main" id="jugarMain">
-        <div class="empty-state">
-            <div class="spinner"></div>
-        </div>
-    </div>
+<div class="jugar-main" id="jugarMain">
+    <div class="empty-state"><div class="spinner"></div></div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/api.js"></script>
-    <script src="js/app.js"></script>
-    <script>
-        // ── Estado ────────────────────────────────────────────────
-        let sala = null;
-        let preguntas = [];
-        let participantes = [];
-        let currentUser = null;
-        let puntajeLocal = 0;
-        let yaRespondio = false;
-        let timerInterval = null;
-        let tiempoInicio = null;
-        let suscripciones = [];
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script>
+const BACKEND = 'https://alephone-backend-production.up.railway.app';
 
-        const LETRAS = ['A', 'B', 'C', 'D'];
-        const MEDALLAS = ['🥇', '🥈', '🥉'];
+let sala          = null;
+let preguntas     = [];
+let participantes = [];
+let currentUser   = null;
+let puntajeLocal  = 0;
+let yaRespondio   = false;
+let timerInterval = null;
+let tiempoInicio  = null;
+let suscripciones = [];
 
-        // ── Init ──────────────────────────────────────────────────
-        document.addEventListener('DOMContentLoaded', async () => {
-            await AlephAPI.Auth.init();
-            currentUser = requireAuth();
-            if (!currentUser) return;
+const LETRAS  = ['A','B','C','D'];
+const MEDALLAS = ['🥇','🥈','🥉'];
 
-            document.getElementById('jugarUsername').textContent = currentUser.username;
+// ── FIX: Wake-up para evitar cold start en Railway ────────────────────────────
+// Se llama en init; da tiempo al backend de arrancar antes de la primera pregunta
+async function wakeBackend() {
+    try { await fetch(`${BACKEND}/ping`); } catch(e) { /* silencioso */ }
+}
 
-            const params = new URLSearchParams(window.location.search);
-            const salaId = params.get('sala');
-            if (!salaId) { window.location.href = 'quizzit.html'; return; }
-
-            const salaRes = await AlephAPI.Sala.getById(salaId);
-            if (!salaRes.ok || !salaRes.sala) {
-                showToast('Sala no encontrada', 'error');
-                window.location.href = 'quizzit.html';
-                return;
-            }
-
-            sala = salaRes.sala;
-            preguntas = (sala.quizzes?.preguntas || []).sort((a, b) => a.orden - b.orden);
-
-            // Normalizar datos de preguntas que vienen del backend
-            preguntas.forEach(p => {
-                if (typeof p.respuesta_correcta === 'string') {
-                    try {
-                        const parsed = JSON.parse(p.respuesta_correcta);
-                        if (typeof parsed === 'object' && parsed !== null) {
-                            p.respuesta_correcta = parsed;
-                        }
-                    } catch(e) { /* string plano, dejarlo */ }
-                }
-                if ((p.tipo === 'imagen_click' || p.tipo === 'slide' || p.tipo === 'libre_imagen' || p.tipo === 'escala') && p.opciones) {
-                    const imageOptions = typeof p.opciones === 'string'
-                        ? (() => { try { return JSON.parse(p.opciones); } catch { return null; } })()
-                        : p.opciones;
-                    if (imageOptions && typeof imageOptions === 'object' && !Array.isArray(imageOptions)) {
-                        p.imagen_url       = imageOptions.imagen_url || '';
-                        p.imagen_path      = imageOptions.imagen_path || '';
-                        p.imagen_bucket    = imageOptions.imagen_bucket || '';
-                        p.imagen_nombre    = imageOptions.imagen_nombre || '';
-                        p.slide_titulo     = imageOptions.slide_titulo || '';
-                        p.escala_min       = imageOptions.min ?? p.escala_min;
-                        p.escala_max       = imageOptions.max ?? p.escala_max;
-                        p.escala_label_izq = imageOptions.left_label || '';
-                        p.escala_label_der = imageOptions.right_label || '';
-                    }
-                }
-            });
-
-            await AlephAPI.Sala.unirse({ salaId: sala.id, username: currentUser.username });
-
-            const sub = AlephAPI.Sala.suscribirSala(sala.id, payload => {
-                if (payload.new) {
-                    sala = { ...sala, ...payload.new };
-                    manejarCambioEstado();
-                }
-            });
-            suscripciones = [sub];
-
-            await cargarParticipantes();
-            manejarCambioEstado();
-        });
-
-        // ── Cargar participantes ──────────────────────────────────
-        async function cargarParticipantes() {
-            participantes = await AlephAPI.Sala.getParticipantes(sala.id);
-            const yo = participantes.find(p => p.user_id === currentUser.id);
-            if (yo) {
-                puntajeLocal = yo.puntaje;
-                document.getElementById('jugarPts').textContent = puntajeLocal + ' pts';
-            }
+// ── FIX: Normalización correcta de respuesta_correcta ────────────────────────
+// Elimina el guard 'typeof parsed === object' que impedía normalizar '"A"' → 'A'
+function normalizarPregunta(p) {
+    if (typeof p.respuesta_correcta === 'string') {
+        try {
+            p.respuesta_correcta = JSON.parse(p.respuesta_correcta);
+        } catch(e) { /* string plano, dejarlo */ }
+    }
+    if ((p.tipo === 'imagen_click' || p.tipo === 'slide' || p.tipo === 'libre_imagen' || p.tipo === 'escala') && p.opciones) {
+        const opts = typeof p.opciones === 'string'
+            ? (() => { try { return JSON.parse(p.opciones); } catch { return null; } })()
+            : p.opciones;
+        if (opts && typeof opts === 'object' && !Array.isArray(opts)) {
+            p.imagen_url       = opts.imagen_url    || '';
+            p.imagen_path      = opts.imagen_path   || '';
+            p.imagen_bucket    = opts.imagen_bucket || '';
+            p.imagen_nombre    = opts.imagen_nombre || '';
+            p.slide_titulo     = opts.slide_titulo  || '';
+            p.escala_min       = opts.min           ?? p.escala_min;
+            p.escala_max       = opts.max           ?? p.escala_max;
+            p.escala_label_izq = opts.left_label    || '';
+            p.escala_label_der = opts.right_label   || '';
         }
+    }
+}
 
-        // ── Manejar cambio de estado ──────────────────────────────
-        function manejarCambioEstado() {
-            if (!sala) return;
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+    await AlephAPI.Auth.init();
+    currentUser = requireAuth();
+    if (!currentUser) return;
+
+    document.getElementById('jugarUsername').textContent = currentUser.username;
+
+    const params = new URLSearchParams(window.location.search);
+    const salaId = params.get('sala');
+    if (!salaId) { window.location.href = 'quizzit.html'; return; }
+
+    // Wake backend ahora para que esté listo cuando llegue la primera pregunta
+    wakeBackend();
+
+    const salaRes = await AlephAPI.Sala.getById(salaId);
+    if (!salaRes.ok || !salaRes.sala) {
+        showToast('Sala no encontrada', 'error');
+        window.location.href = 'quizzit.html';
+        return;
+    }
+
+    sala      = salaRes.sala;
+    preguntas = (sala.quizzes?.preguntas || []).sort((a, b) => a.orden - b.orden);
+    preguntas.forEach(normalizarPregunta);
+
+    // FIX: mostrar error si unirse falla en vez de fallar silenciosamente
+    try {
+        const joinRes = await AlephAPI.Sala.unirse({ salaId: sala.id, username: currentUser.username });
+        if (!joinRes.ok) {
+            showToast('No se pudo unir a la sala: ' + joinRes.error, 'error');
+            setTimeout(() => window.location.href = 'quizzit.html', 2500);
+            return;
+        }
+    } catch(err) {
+        showToast('Error de red al unirse: ' + err.message, 'error');
+        setTimeout(() => window.location.href = 'quizzit.html', 2500);
+        return;
+    }
+
+    const sub = AlephAPI.Sala.suscribirSala(sala.id, payload => {
+        if (payload.new) { sala = { ...sala, ...payload.new }; manejarCambioEstado(); }
+    });
+    suscripciones = [sub];
+
+    await cargarParticipantes();
+    manejarCambioEstado();
+});
+
+async function cargarParticipantes() {
+    participantes = await AlephAPI.Sala.getParticipantes(sala.id);
+    const yo = participantes.find(p => p.user_id === currentUser.id);
+    if (yo) {
+        puntajeLocal = yo.puntaje;
+        document.getElementById('jugarPts').textContent = puntajeLocal + ' pts';
+    }
+}
+
+function manejarCambioEstado() {
+    if (!sala) return;
+    clearInterval(timerInterval);
+    switch (sala.estado) {
+        case 'waiting':           renderWaiting();                          break;
+        case 'pregunta_activa':   yaRespondio = false; renderPregunta(sala.pregunta_actual); break;
+        case 'mostrando_ranking': renderRanking();                          break;
+        case 'finalizado':        renderFinal();                            break;
+    }
+}
+
+// ── Waiting ───────────────────────────────────────────────────────────────────
+async function renderWaiting() {
+    await cargarParticipantes();
+    const pillsHTML = participantes.map(p => `
+        <div class="waiting-pill ${p.user_id === currentUser.id ? 'yo' : ''}">
+            ${sanitize(p.username)}${p.user_id === currentUser.id ? ' (vos)' : ''}
+        </div>`).join('');
+
+    document.getElementById('jugarMain').innerHTML = `
+        <div class="estado-waiting">
+            <div class="pulse-dot"></div>
+            <div class="waiting-titulo">Esperando que empiece...</div>
+            <div class="waiting-sub">
+                ${sanitize(sala.quizzes?.titulo || 'Quiz')}<br>
+                ${preguntas.length} pregunta${preguntas.length !== 1 ? 's' : ''}
+            </div>
+            <div class="waiting-participantes">${pillsHTML}</div>
+        </div>`;
+}
+
+// ── Pregunta ──────────────────────────────────────────────────────────────────
+function renderPregunta(idx) {
+    const p = preguntas[idx];
+    if (!p) return;
+
+    tiempoInicio = Date.now();
+    seleccionadasMultiples = [];
+    paresConectados        = [];
+    marcaImagenClick       = null;
+
+    const tiempoTotal   = p.tiempo_segundos || 30;
+    let   tiempoRestante = tiempoTotal;
+
+    document.getElementById('jugarMain').innerHTML = `
+        <div class="estado-pregunta">
+            <div class="pregunta-header-alumno">
+                <span class="pregunta-badge">P${idx + 1} / ${preguntas.length}</span>
+                <div class="timer-bar-wrap">
+                    <div class="timer-bar">
+                        <div class="timer-bar-fill" id="timerFill" style="width:100%"></div>
+                    </div>
+                </div>
+                <span class="timer-num" id="timerNum">${tiempoTotal}</span>
+            </div>
+            <div class="pregunta-texto">${sanitize(p.enunciado)}</div>
+            <div id="opcionesWrap">${renderOpcionesAlumno(p)}</div>
+        </div>`;
+
+    timerInterval = setInterval(() => {
+        tiempoRestante--;
+        const fill = document.getElementById('timerFill');
+        const num  = document.getElementById('timerNum');
+        if (!fill || !num) { clearInterval(timerInterval); return; }
+        fill.style.width = (tiempoRestante / tiempoTotal * 100) + '%';
+        num.textContent  = tiempoRestante;
+        if (tiempoRestante <= 5) fill.classList.add('urgente');
+        if (tiempoRestante <= 0) {
             clearInterval(timerInterval);
-
-            switch (sala.estado) {
-                case 'waiting':          renderWaiting();                      break;
-                case 'pregunta_activa':  yaRespondio = false; renderPregunta(sala.pregunta_actual); break;
-                case 'mostrando_ranking': renderRanking();                     break;
-                case 'finalizado':       renderFinal();                        break;
-            }
+            if (p.tipo === 'slide' && !yaRespondio) { yaRespondio = true; renderEsperando(true, 0); }
+            else if (!yaRespondio) { renderEsperando(false, 0); }
         }
+    }, 1000);
+}
 
-        // ── RENDER: Waiting ───────────────────────────────────────
-        async function renderWaiting() {
-            await cargarParticipantes();
-            const pillsHTML = participantes.map(p => `
-                <div class="waiting-pill ${p.user_id === currentUser.id ? 'yo' : ''}">
-                    ${sanitize(p.username)}${p.user_id === currentUser.id ? ' (vos)' : ''}
-                </div>`).join('');
+function renderOpcionesAlumno(p) {
+    if (p.tipo === 'slide') {
+        return `<div style="display:flex;flex-direction:column;gap:16px;">
+            <div style="padding:18px;border-radius:var(--radius-lg);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);text-align:center;">
+                <div style="font-family:var(--font-display);font-size:1.1em;font-weight:700;color:white;">${sanitize(p.slide_titulo || 'Diapositiva')}</div>
+                <p style="margin-top:8px;color:rgba(255,255,255,0.45);font-size:0.84em;">Esperá a que el docente continúe.</p>
+            </div>
+            ${p.imagen_url ? `<img src="${sanitize(p.imagen_url)}" style="display:block;max-width:100%;max-height:320px;margin:0 auto;border-radius:12px;">` : ''}
+        </div>`;
+    }
 
-            document.getElementById('jugarMain').innerHTML = `
-                <div class="estado-waiting">
-                    <div class="pulse-dot"></div>
-                    <div class="waiting-titulo">Esperando que empiece...</div>
-                    <div class="waiting-sub">
-                        ${sanitize(sala.quizzes?.titulo || 'Quiz')}<br>
-                        ${preguntas.length} pregunta${preguntas.length !== 1 ? 's' : ''}
-                    </div>
-                    <div class="waiting-participantes">${pillsHTML}</div>
-                </div>`;
+    if (p.tipo === 'encuesta') {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        return `<div class="opciones-alumno">
+            ${opts.map((op, i) => op.trim() ? `
+                <div class="opcion-alumno" data-opt="${LETRAS[i]}" onclick="responderOpinion('${LETRAS[i]}', this)">
+                    <div class="opt-letra-alumno">${LETRAS[i]}</div><span>${sanitize(op)}</span>
+                </div>` : '').join('')}
+        </div>`;
+    }
+
+    if (p.tipo === 'escala') {
+        const min = Number(p.escala_min ?? 1), max = Number(p.escala_max ?? 5);
+        const vals = []; for (let v = min; v <= max; v++) vals.push(v);
+        return `<div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,0.42);font-size:0.78em;">
+                <span>${sanitize(p.escala_label_izq || '')}</span>
+                <span>${sanitize(p.escala_label_der || '')}</span>
+            </div>
+            <div class="opciones-alumno">
+                ${vals.map(v => `
+                    <div class="opcion-alumno" onclick="responderOpinion('${v}', this)" style="justify-content:center;">
+                        <span style="font-family:var(--font-display);font-size:1.15em;">${v}</span>
+                    </div>`).join('')}
+            </div>
+        </div>`;
+    }
+
+    if (p.tipo === 'multiple_choice') {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        return `<div class="opciones-alumno">
+            ${opts.map((op, i) => op.trim() ? `
+                <div class="opcion-alumno" data-opt="${LETRAS[i]}" onclick="responderOpcion('${LETRAS[i]}', this)">
+                    <div class="opt-letra-alumno">${LETRAS[i]}</div><span>${sanitize(op)}</span>
+                </div>` : '').join('')}
+        </div>`;
+    }
+
+    if (p.tipo === 'seleccion_multiple') {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        return `<div class="opciones-alumno">
+            ${opts.map((op, i) => op.trim() ? `
+                <div class="opcion-alumno seleccion-multiple" data-opt="${LETRAS[i]}"
+                     onclick="toggleOpcionMultiple(this, '${LETRAS[i]}')">
+                    <div class="opt-letra-alumno" style="border-radius:4px;">${LETRAS[i]}</div><span>${sanitize(op)}</span>
+                </div>` : '').join('')}
+        </div>
+        <button class="btn-enviar" onclick="enviarSeleccionMultiple()" style="margin-top:20px;width:100%;">Enviar Respuestas →</button>`;
+    }
+
+    // FIX: V/F usa data-opt="V"/"F" (estilos propios) y manda valor 'Verdadero'/'Falso'
+    if (p.tipo === 'verdadero_falso') {
+        return `<div class="opciones-alumno">
+            <div class="opcion-alumno" data-opt="V" onclick="responderOpcion('Verdadero', this)">
+                <div class="opt-letra-alumno">V</div><span>Verdadero</span>
+            </div>
+            <div class="opcion-alumno" data-opt="F" onclick="responderOpcion('Falso', this)">
+                <div class="opt-letra-alumno">F</div><span>Falso</span>
+            </div>
+        </div>`;
+    }
+
+    if (p.tipo === 'ordenar') {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        const shuffled = [...opts];
+        for (let k = shuffled.length - 1; k > 0; k--) {
+            const j = Math.floor(Math.random() * (k + 1));
+            [shuffled[k], shuffled[j]] = [shuffled[j], shuffled[k]];
         }
+        return `<div style="margin-bottom:10px;color:rgba(255,255,255,0.45);font-size:0.82em;">Arrastrá las casillas para definir el orden correcto.</div>
+        <div class="opciones-alumno" id="ordenarContainer">
+            ${shuffled.map(op => `
+                <div class="opcion-alumno opcion-ordenar" style="cursor:grab;display:flex;justify-content:space-between;"
+                     draggable="true" data-valor="${sanitize(op)}"
+                     ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event)">
+                    <span>${sanitize(op)}</span>
+                </div>`).join('')}
+        </div>
+        <button class="btn-enviar" onclick="enviarOrden()" style="margin-top:20px;width:100%;">Enviar Orden →</button>`;
+    }
 
-        // ── RENDER: Pregunta ──────────────────────────────────────
-        function renderPregunta(idx) {
-            const p = preguntas[idx];
-            if (!p) return;
+    if (p.tipo === 'relacionar_columnas') {
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        const left  = opts.map((o, i) => ({ id: i, text: o.izq }));
+        const right = opts.map((o, i) => ({ id: i, text: o.der }));
+        for (let k = left.length  - 1; k > 0; k--) { const j = Math.floor(Math.random()*(k+1)); [left[k],left[j]]=[left[j],left[k]]; }
+        for (let k = right.length - 1; k > 0; k--) { const j = Math.floor(Math.random()*(k+1)); [right[k],right[j]]=[right[j],right[k]]; }
+        return `<div class="opciones-alumno" style="display:flex;gap:20px;justify-content:space-between;" id="relacionarContainer">
+            <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
+                ${left.map(l => `<div class="opcion-alumno rel-izq" data-id="${l.id}" onclick="selectRelIzq(this,${l.id})"><span>${sanitize(l.text)}</span></div>`).join('')}
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
+                ${right.map(r => `<div class="opcion-alumno rel-der" data-id="${r.id}" onclick="selectRelDer(this,${r.id})"><span>${sanitize(r.text)}</span></div>`).join('')}
+            </div>
+        </div>
+        <button class="btn-enviar" onclick="enviarRelacionar()" style="margin-top:20px;width:100%;">Enviar Relaciones →</button>`;
+    }
 
-            tiempoInicio = Date.now();
-            seleccionadasMultiples = [];
-            paresConectados = [];
-            const tiempoTotal = p.tiempo_segundos || 30;
-            let tiempoRestante = tiempoTotal;
+    if (p.tipo === 'imagen_click') {
+        return `<div class="opciones-alumno" style="display:flex;justify-content:center;">
+            <div style="position:relative;display:inline-block;max-width:100%;border-radius:8px;overflow:hidden;cursor:crosshair;" onclick="onImagenClick(event)">
+                <img src="${sanitize(p.imagen_url || '')}" style="display:block;max-width:100%;height:auto;" id="imagenClickMapJugar">
+                <div id="marcadorImagenJugar" style="position:absolute;width:16px;height:16px;background:var(--teal);border:2px solid white;border-radius:50%;transform:translate(-50%,-50%);display:none;pointer-events:none;box-shadow:0 0 10px rgba(0,0,0,0.5);"></div>
+            </div>
+        </div>
+        <button class="btn-enviar" onclick="enviarImagenClick()" style="margin-top:20px;width:100%;">Enviar Marca →</button>`;
+    }
 
-            const opcionesHTML = renderOpcionesAlumno(p);
-
-            document.getElementById('jugarMain').innerHTML = `
-                <div class="estado-pregunta">
-                    <div class="pregunta-header-alumno">
-                        <span class="pregunta-badge">P${idx + 1} / ${preguntas.length}</span>
-                        <div class="timer-bar-wrap">
-                            <div class="timer-bar">
-                                <div class="timer-bar-fill" id="timerFill" style="width:100%"></div>
-                            </div>
-                        </div>
-                        <span class="timer-num" id="timerNum">${tiempoTotal}</span>
-                    </div>
-                    <div class="pregunta-texto">${sanitize(p.enunciado)}</div>
-                    <div id="opcionesWrap">${opcionesHTML}</div>
-                </div>`;
-
-            timerInterval = setInterval(() => {
-                tiempoRestante--;
-                const pct = (tiempoRestante / tiempoTotal) * 100;
-                const fill = document.getElementById('timerFill');
-                const num  = document.getElementById('timerNum');
-                if (!fill || !num) { clearInterval(timerInterval); return; }
-
-                fill.style.width = pct + '%';
-                num.textContent = tiempoRestante;
-                if (tiempoRestante <= 5) fill.classList.add('urgente');
-
-                if (tiempoRestante <= 0) {
-                    clearInterval(timerInterval);
-                    const pregActual = preguntas[sala?.pregunta_actual];
-                    if (pregActual?.tipo === 'slide' && !yaRespondio) {
-                        yaRespondio = true;
-                        renderEsperando(true, 0);
-                    } else if (!yaRespondio) {
-                        renderEsperando(false, 0);
-                    }
-                }
-            }, 1000);
-        }
-
-        function renderOpcionesAlumno(p) {
-            if (p.tipo === 'slide') {
-                const title = p.slide_titulo || 'Diapositiva';
-                return `<div style="display:flex; flex-direction:column; gap:16px;">
-                    <div style="padding:18px; border-radius:var(--radius-lg); background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); text-align:center;">
-                        <div style="font-family:var(--font-display); font-size:1.1em; font-weight:700; color:white;">${sanitize(title)}</div>
-                        <p style="margin-top:8px; color:rgba(255,255,255,0.45); font-size:0.84em;">Esperá a que el docente continúe.</p>
-                    </div>
-                    ${p.imagen_url ? `<img src="${sanitize(p.imagen_url)}" style="display:block; max-width:100%; max-height:320px; margin:0 auto; border-radius:12px;">` : ''}
-                </div>`;
-            }
-
-            if (p.tipo === 'encuesta') {
-                const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
-                return `<div class="opciones-alumno">
-                    ${opts.map((op, i) => op.trim() ? `
-                        <div class="opcion-alumno" data-opt="${LETRAS[i]}"
-                             onclick="responderOpinion('${LETRAS[i]}', this)">
-                            <div class="opt-letra-alumno">${LETRAS[i]}</div>
-                            <span>${sanitize(op)}</span>
-                        </div>` : '').join('')}
-                </div>`;
-            }
-
-            if (p.tipo === 'escala') {
-                const min = Number(p.escala_min ?? 1);
-                const max = Number(p.escala_max ?? 5);
-                const values = [];
-                for (let v = min; v <= max; v++) values.push(v);
-                return `<div style="display:flex; flex-direction:column; gap:14px;">
-                    <div style="display:flex; justify-content:space-between; gap:12px; color:rgba(255,255,255,0.42); font-size:0.78em;">
-                        <span>${sanitize(p.escala_label_izq || '')}</span>
-                        <span>${sanitize(p.escala_label_der || '')}</span>
-                    </div>
-                    <div class="opciones-alumno">
-                        ${values.map(v => `
-                            <div class="opcion-alumno" onclick="responderOpinion('${v}', this)" style="justify-content:center;">
-                                <span style="font-family:var(--font-display); font-size:1.15em;">${v}</span>
-                            </div>`).join('')}
-                    </div>
-                </div>`;
-            }
-
-            if (p.tipo === 'multiple_choice') {
-                const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
-                return `<div class="opciones-alumno">
-                    ${opts.map((op, i) => op.trim() ? `
-                        <div class="opcion-alumno" data-opt="${LETRAS[i]}"
-                             onclick="responderOpcion('${LETRAS[i]}', this)">
-                            <div class="opt-letra-alumno">${LETRAS[i]}</div>
-                            <span>${sanitize(op)}</span>
-                        </div>` : '').join('')}
-                </div>`;
-            }
-
-            if (p.tipo === 'seleccion_multiple') {
-                const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
-                return `<div class="opciones-alumno">
-                    ${opts.map((op, i) => op.trim() ? `
-                        <div class="opcion-alumno seleccion-multiple" data-opt="${LETRAS[i]}"
-                             onclick="toggleOpcionMultiple(this, '${LETRAS[i]}')">
-                            <div class="opt-letra-alumno" style="border-radius:4px;">${LETRAS[i]}</div>
-                            <span>${sanitize(op)}</span>
-                        </div>` : '').join('')}
-                </div>
-                <button class="btn-enviar" onclick="enviarSeleccionMultiple()" style="margin-top:20px; width:100%;">Enviar Respuestas →</button>`;
-            }
-
-            // ── FIX: verdadero_falso manda 'Verdadero'/'Falso' como valor,
-            //         usa data-opt="V"/"F" solo para estilos ──
-            if (p.tipo === 'verdadero_falso') {
-                return `<div class="opciones-alumno">
-                    <div class="opcion-alumno" data-opt="V" onclick="responderOpcion('Verdadero', this)">
-                        <div class="opt-letra-alumno">V</div>
-                        <span>Verdadero</span>
-                    </div>
-                    <div class="opcion-alumno" data-opt="F" onclick="responderOpcion('Falso', this)">
-                        <div class="opt-letra-alumno">F</div>
-                        <span>Falso</span>
-                    </div>
-                </div>`;
-            }
-
-            if (p.tipo === 'ordenar') {
-                const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
-                const shuffled = [...opts];
-                for (let k = shuffled.length - 1; k > 0; k--) {
-                    const j = Math.floor(Math.random() * (k + 1));
-                    [shuffled[k], shuffled[j]] = [shuffled[j], shuffled[k]];
-                }
-                return `<div style="margin-bottom:10px; color:rgba(255,255,255,0.45); font-size:0.82em;">Arrastrá las casillas para definir el orden correcto.</div>
-                <div class="opciones-alumno" id="ordenarContainer">
-                    ${shuffled.map(op => `
-                        <div class="opcion-alumno opcion-ordenar" style="cursor:grab; display:flex; justify-content:space-between;"
-                             draggable="true" data-valor="${sanitize(op)}"
-                             ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event)">
-                            <span>${sanitize(op)}</span>
-                        </div>`).join('')}
-                </div>
-                <button class="btn-enviar" onclick="enviarOrden()" style="margin-top:20px; width:100%;">Enviar Orden →</button>`;
-            }
-
-            if (p.tipo === 'relacionar_columnas') {
-                const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
-                const leftSide = opts.map((o, i) => ({ id: i, text: o.izq }));
-                for (let k = leftSide.length - 1; k > 0; k--) {
-                    const j = Math.floor(Math.random() * (k + 1));
-                    [leftSide[k], leftSide[j]] = [leftSide[j], leftSide[k]];
-                }
-                const rightSide = opts.map((o, i) => ({ id: i, text: o.der }));
-                for (let k = rightSide.length - 1; k > 0; k--) {
-                    const j = Math.floor(Math.random() * (k + 1));
-                    [rightSide[k], rightSide[j]] = [rightSide[j], rightSide[k]];
-                }
-                return `<div class="opciones-alumno" style="display:flex; gap:20px; justify-content:space-between;" id="relacionarContainer">
-                    <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
-                        ${leftSide.map(l => `
-                            <div class="opcion-alumno rel-izq" data-id="${l.id}" onclick="selectRelIzq(this, ${l.id})">
-                                <span>${sanitize(l.text)}</span>
-                            </div>`).join('')}
-                    </div>
-                    <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
-                        ${rightSide.map(r => `
-                            <div class="opcion-alumno rel-der" data-id="${r.id}" onclick="selectRelDer(this, ${r.id})">
-                                <span>${sanitize(r.text)}</span>
-                            </div>`).join('')}
-                    </div>
-                </div>
-                <button class="btn-enviar" onclick="enviarRelacionar()" style="margin-top:20px; width:100%;">Enviar Relaciones →</button>`;
-            }
-
-            if (p.tipo === 'imagen_click') {
-                const url = p.imagen_url || '';
-                return `
-                <div class="opciones-alumno" style="display:flex; justify-content:center;">
-                    <div style="position:relative; display:inline-block; max-width:100%; border-radius:8px; overflow:hidden; cursor:crosshair;" onclick="marcarImagenClick(event)">
-                        <img src="${sanitize(url)}" style="display:block; max-width:100%; height:auto;" id="imagenClickMapJugar">
-                        <div id="marcadorImagenJugar" style="position:absolute; width:16px; height:16px; background:var(--teal); border:2px solid white; border-radius:50%; transform:translate(-50%, -50%); display:none; pointer-events:none; box-shadow:0 0 10px rgba(0,0,0,0.5);"></div>
-                    </div>
-                </div>
-                <button class="btn-enviar" onclick="enviarImagenClick()" style="margin-top:20px; width:100%;">Enviar Marca →</button>`;
-            }
-
-            if (p.tipo === 'libre_imagen') {
-                return `<div style="display:flex; flex-direction:column; gap:14px;">
-                    ${p.imagen_url ? `<img src="${sanitize(p.imagen_url)}" style="display:block; max-width:100%; max-height:320px; margin:0 auto; border-radius:12px;">` : ''}
-                    <div class="respuesta-input-wrap">
-                        <input type="text" class="respuesta-input" id="respuestaInput"
-                               placeholder="Escribí qué es..."
-                               onkeydown="if(event.key==='Enter')enviarTexto()">
-                        <button class="btn-enviar" onclick="enviarTexto()">Enviar →</button>
-                    </div>
-                </div>`;
-            }
-
-            // Numérica, respuesta_corta, completar_espacio
-            let ph = 'Tu respuesta...';
-            let type = 'text';
-            if (p.tipo === 'numerica') { type = 'number'; ph = 'Número...'; }
-            if (p.tipo === 'completar_espacio') ph = 'Completá la palabra...';
-
-            return `<div class="respuesta-input-wrap">
-                <input type="${type}" class="respuesta-input" id="respuestaInput"
-                       placeholder="${ph}"
+    if (p.tipo === 'libre_imagen') {
+        return `<div style="display:flex;flex-direction:column;gap:14px;">
+            ${p.imagen_url ? `<img src="${sanitize(p.imagen_url)}" style="display:block;max-width:100%;max-height:320px;margin:0 auto;border-radius:12px;">` : ''}
+            <div class="respuesta-input-wrap">
+                <input type="text" class="respuesta-input" id="respuestaInput" placeholder="Escribí qué es..."
                        onkeydown="if(event.key==='Enter')enviarTexto()">
                 <button class="btn-enviar" onclick="enviarTexto()">Enviar →</button>
-            </div>`;
-        }
+            </div>
+        </div>`;
+    }
 
-        // ── Imagen Click ──────────────────────────────────────────
-        let marcaImagenClick = null;
+    let ph = 'Tu respuesta...', type = 'text';
+    if (p.tipo === 'numerica')         { type = 'number'; ph = 'Número...'; }
+    if (p.tipo === 'completar_espacio') ph = 'Completá la palabra...';
 
-        function marcarImagenClick(e) {
-            if (yaRespondio) return;
-            const img = document.getElementById('imagenClickMapJugar');
-            const rect = img.getBoundingClientRect();
-            const x = ((e.clientX - rect.left) / rect.width) * 100;
-            const y = ((e.clientY - rect.top) / rect.height) * 100;
-            marcaImagenClick = { x, y };
-            const marcador = document.getElementById('marcadorImagenJugar');
-            marcador.style.left  = `${x}%`;
-            marcador.style.top   = `${y}%`;
-            marcador.style.display = 'block';
-        }
+    return `<div class="respuesta-input-wrap">
+        <input type="${type}" class="respuesta-input" id="respuestaInput" placeholder="${ph}"
+               onkeydown="if(event.key==='Enter')enviarTexto()">
+        <button class="btn-enviar" onclick="enviarTexto()">Enviar →</button>
+    </div>`;
+}
 
-        async function enviarImagenClick() {
-            if (yaRespondio || !marcaImagenClick) return;
-            yaRespondio = true;
-            clearInterval(timerInterval);
-            await _enviarRespuesta(JSON.stringify(marcaImagenClick));
-        }
+// ── Interacciones ────────────────────────────────────────────────────────────
+let marcaImagenClick       = null;
+let seleccionadasMultiples = [];
+let draggedItem            = null;
+let selectedIzq            = null;
+let selectedDer            = null;
+let paresConectados        = [];
 
-        // ── Opinión (encuesta / escala) ───────────────────────────
-        async function responderOpinion(valor, el) {
-            if (yaRespondio) return;
-            yaRespondio = true;
-            clearInterval(timerInterval);
-            document.querySelectorAll('.opcion-alumno').forEach(o => o.classList.add('respondida'));
-            el.classList.add('seleccionada');
-            await _enviarRespuesta(valor);
-        }
+function onImagenClick(e) {
+    if (yaRespondio) return;
+    const img  = document.getElementById('imagenClickMapJugar');
+    const rect = img.getBoundingClientRect();
+    marcaImagenClick = {
+        x: ((e.clientX - rect.left)  / rect.width)  * 100,
+        y: ((e.clientY - rect.top)   / rect.height) * 100
+    };
+    const m = document.getElementById('marcadorImagenJugar');
+    m.style.left = marcaImagenClick.x + '%';
+    m.style.top  = marcaImagenClick.y + '%';
+    m.style.display = 'block';
+}
+async function enviarImagenClick() {
+    if (yaRespondio || !marcaImagenClick) return;
+    yaRespondio = true; clearInterval(timerInterval);
+    await _enviarRespuesta(JSON.stringify(marcaImagenClick));
+}
 
-        // ── Selección múltiple ────────────────────────────────────
-        let seleccionadasMultiples = [];
+async function responderOpinion(valor, el) {
+    if (yaRespondio) return;
+    yaRespondio = true; clearInterval(timerInterval);
+    document.querySelectorAll('.opcion-alumno').forEach(o => o.classList.add('respondida'));
+    el.classList.add('seleccionada');
+    await _enviarRespuesta(valor);
+}
 
-        function toggleOpcionMultiple(el, letra) {
-            if (yaRespondio) return;
-            if (seleccionadasMultiples.includes(letra)) {
-                seleccionadasMultiples = seleccionadasMultiples.filter(l => l !== letra);
-                el.classList.remove('seleccionada');
-            } else {
-                seleccionadasMultiples.push(letra);
-                el.classList.add('seleccionada');
+function toggleOpcionMultiple(el, letra) {
+    if (yaRespondio) return;
+    if (seleccionadasMultiples.includes(letra)) {
+        seleccionadasMultiples = seleccionadasMultiples.filter(l => l !== letra);
+        el.classList.remove('seleccionada');
+    } else {
+        seleccionadasMultiples.push(letra);
+        el.classList.add('seleccionada');
+    }
+}
+async function enviarSeleccionMultiple() {
+    if (yaRespondio || seleccionadasMultiples.length === 0) return;
+    yaRespondio = true; clearInterval(timerInterval);
+    document.querySelectorAll('.opcion-alumno').forEach(o => o.classList.add('respondida'));
+    await _enviarRespuesta(JSON.stringify(seleccionadasMultiples.sort()));
+}
+
+function dragStart(e) { if (yaRespondio) return; draggedItem = e.target; e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',''); }
+function dragOver(e)  { if (yaRespondio) return; e.preventDefault(); }
+function drop(e) {
+    if (yaRespondio) return; e.preventDefault();
+    const target = e.target.closest('.opcion-ordenar');
+    if (!target || draggedItem === target) return;
+    const all = [...document.getElementById('ordenarContainer').querySelectorAll('.opcion-ordenar')];
+    if (all.indexOf(draggedItem) < all.indexOf(target)) target.after(draggedItem);
+    else target.before(draggedItem);
+}
+async function enviarOrden() {
+    if (yaRespondio) return; yaRespondio = true; clearInterval(timerInterval);
+    const items = [...document.querySelectorAll('.opcion-ordenar')];
+    items.forEach(i => i.style.pointerEvents = 'none');
+    await _enviarRespuesta(JSON.stringify(items.map(i => i.dataset.valor)));
+}
+
+function selectRelIzq(el, id) {
+    if (yaRespondio || el.classList.contains('conectado')) return;
+    document.querySelectorAll('.rel-izq').forEach(e => e.classList.remove('seleccionada'));
+    el.classList.add('seleccionada'); selectedIzq = { el, id }; checkRelacion();
+}
+function selectRelDer(el, id) {
+    if (yaRespondio || el.classList.contains('conectado')) return;
+    document.querySelectorAll('.rel-der').forEach(e => e.classList.remove('seleccionada'));
+    el.classList.add('seleccionada'); selectedDer = { el, id }; checkRelacion();
+}
+function checkRelacion() {
+    if (!selectedIzq || !selectedDer) return;
+    paresConectados.push({ izqId: selectedIzq.id, derId: selectedDer.id });
+    selectedIzq.el.classList.add('conectado'); selectedDer.el.classList.add('conectado');
+    selectedIzq.el.classList.remove('seleccionada'); selectedDer.el.classList.remove('seleccionada');
+    const c = `hsl(${Math.random()*360},70%,40%)`;
+    selectedIzq.el.style.borderLeft = `4px solid ${c}`;
+    selectedDer.el.style.borderLeft = `4px solid ${c}`;
+    selectedIzq = null; selectedDer = null;
+}
+async function enviarRelacionar() {
+    if (yaRespondio) return; yaRespondio = true; clearInterval(timerInterval);
+    await _enviarRespuesta(JSON.stringify(paresConectados));
+}
+
+// Múltiple choice y V/F — 'valor' ya es el string correcto ('A','B','Verdadero','Falso')
+async function responderOpcion(valor, el) {
+    if (yaRespondio) return;
+    yaRespondio = true; clearInterval(timerInterval);
+    document.querySelectorAll('.opcion-alumno').forEach(o => o.classList.add('respondida'));
+    el.classList.add('seleccionada');
+    await _enviarRespuesta(valor);
+}
+
+async function enviarTexto() {
+    if (yaRespondio) return;
+    const input = document.getElementById('respuestaInput');
+    if (!input || !input.value.trim()) return;
+    yaRespondio = true; clearInterval(timerInterval);
+    input.disabled = true;
+    const btn = document.querySelector('.btn-enviar');
+    if (btn) btn.disabled = true;
+    await _enviarRespuesta(input.value.trim());
+}
+
+// ── FIX: _enviarRespuesta con retry para cold start de Railway ────────────────
+async function _enviarRespuesta(valorRaw) {
+    const p = preguntas[sala.pregunta_actual];
+    if (!p) return;
+
+    const tiempoMs = Date.now() - (tiempoInicio || Date.now());
+
+    // Mostrar "enviando..." mientras reintenta
+    document.getElementById('jugarMain').innerHTML = `
+        <div class="estado-respondio">
+            <div class="respondio-icon">⏳</div>
+            <div class="respondio-titulo">Enviando...</div>
+            <div class="respondio-sub">Un momento</div>
+        </div>`;
+
+    const MAX_INTENTOS = 3;
+    for (let intento = 0; intento < MAX_INTENTOS; intento++) {
+        try {
+            const res  = await fetch(`${BACKEND}/responder-pregunta`, {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    salaId:     sala.id,
+                    preguntaId: p.id,
+                    userId:     currentUser.id,
+                    username:   currentUser.username,
+                    respuesta:  valorRaw,
+                    tiempoMs
+                })
+            });
+            const data = await res.json();
+            if (!data.ok) {
+                console.error('Error al responder:', data.error);
+                renderEsperando(false, 0);
+                return;
             }
-        }
+            renderEsperando(data.esCorrecta, data.puntosGanados);
+            return;
 
-        async function enviarSeleccionMultiple() {
-            if (yaRespondio || seleccionadasMultiples.length === 0) return;
-            yaRespondio = true;
-            clearInterval(timerInterval);
-            document.querySelectorAll('.opcion-alumno').forEach(o => o.classList.add('respondida'));
-            await _enviarRespuesta(JSON.stringify(seleccionadasMultiples.sort()));
-        }
-
-        // ── Ordenar ───────────────────────────────────────────────
-        let draggedItem = null;
-
-        function dragStart(e) {
-            if (yaRespondio) return;
-            draggedItem = e.target;
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', '');
-        }
-
-        function dragOver(e) {
-            if (yaRespondio) return;
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-        }
-
-        function drop(e) {
-            if (yaRespondio) return;
-            e.preventDefault();
-            const target = e.target.closest('.opcion-ordenar');
-            if (!target || draggedItem === target) return;
-            const container = document.getElementById('ordenarContainer');
-            const allItems = [...container.querySelectorAll('.opcion-ordenar')];
-            const draggedIdx = allItems.indexOf(draggedItem);
-            const targetIdx  = allItems.indexOf(target);
-            if (draggedIdx < targetIdx) target.after(draggedItem);
-            else target.before(draggedItem);
-        }
-
-        async function enviarOrden() {
-            if (yaRespondio) return;
-            yaRespondio = true;
-            clearInterval(timerInterval);
-            const items = [...document.querySelectorAll('.opcion-ordenar')];
-            items.forEach(i => i.style.pointerEvents = 'none');
-            const orden = items.map(i => i.dataset.valor);
-            await _enviarRespuesta(JSON.stringify(orden));
-        }
-
-        // ── Relacionar columnas ───────────────────────────────────
-        let selectedIzq = null;
-        let selectedDer = null;
-        let paresConectados = [];
-
-        function selectRelIzq(el, id) {
-            if (yaRespondio || el.classList.contains('conectado')) return;
-            document.querySelectorAll('.rel-izq').forEach(e => e.classList.remove('seleccionada'));
-            el.classList.add('seleccionada');
-            selectedIzq = { el, id };
-            checkRelacion();
-        }
-
-        function selectRelDer(el, id) {
-            if (yaRespondio || el.classList.contains('conectado')) return;
-            document.querySelectorAll('.rel-der').forEach(e => e.classList.remove('seleccionada'));
-            el.classList.add('seleccionada');
-            selectedDer = { el, id };
-            checkRelacion();
-        }
-
-        function checkRelacion() {
-            if (!selectedIzq || !selectedDer) return;
-            paresConectados.push({ izqId: selectedIzq.id, derId: selectedDer.id });
-
-            selectedIzq.el.classList.add('conectado');
-            selectedDer.el.classList.add('conectado');
-            selectedIzq.el.classList.remove('seleccionada');
-            selectedDer.el.classList.remove('seleccionada');
-
-            const color = `hsl(${Math.random() * 360}, 70%, 40%)`;
-            selectedIzq.el.style.borderLeft = `4px solid ${color}`;
-            selectedDer.el.style.borderLeft = `4px solid ${color}`;
-
-            selectedIzq = null;
-            selectedDer = null;
-        }
-
-        async function enviarRelacionar() {
-            if (yaRespondio) return;
-            yaRespondio = true;
-            clearInterval(timerInterval);
-            await _enviarRespuesta(JSON.stringify(paresConectados));
-        }
-
-        // ── Multiple choice (y V/F via valor explícito) ───────────
-        async function responderOpcion(valor, el) {
-            if (yaRespondio) return;
-            yaRespondio = true;
-            clearInterval(timerInterval);
-            document.querySelectorAll('.opcion-alumno').forEach(o => o.classList.add('respondida'));
-            el.classList.add('seleccionada');
-            await _enviarRespuesta(valor);
-        }
-
-        // ── Texto / Numérica ──────────────────────────────────────
-        async function enviarTexto() {
-            if (yaRespondio) return;
-            const input = document.getElementById('respuestaInput');
-            if (!input) return;
-            const valor = input.value.trim();
-            if (!valor) return;
-
-            yaRespondio = true;
-            clearInterval(timerInterval);
-            input.disabled = true;
-            const btnEnviar = document.querySelector('.btn-enviar');
-            if (btnEnviar) btnEnviar.disabled = true;
-
-            await _enviarRespuesta(valor);
-        }
-
-        // ── Enviar al backend ─────────────────────────────────────
-        async function _enviarRespuesta(valorRaw) {
-            const p = preguntas[sala.pregunta_actual];
-            if (!p) return;
-
-            const tiempoMs = Date.now() - (tiempoInicio || Date.now());
-
-            try {
-                const res = await fetch('https://alephone-backend-production.up.railway.app/responder-pregunta', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        salaId:    sala.id,
-                        preguntaId: p.id,
-                        userId:    currentUser.id,
-                        username:  currentUser.username,
-                        respuesta: valorRaw,
-                        tiempoMs
-                    })
-                });
-
-                const data = await res.json();
-                if (!data.ok) {
-                    console.error('Error al responder:', data.error);
-                    renderEsperando(false, 0);
-                    return;
-                }
-
-                renderEsperando(data.esCorrecta, data.puntosGanados);
-
-            } catch (err) {
-                console.error('Error de red al responder:', err);
+        } catch (err) {
+            console.error(`Intento ${intento + 1} fallido:`, err);
+            if (intento < MAX_INTENTOS - 1) {
+                // Esperar antes de reintentar (backend arrancando)
+                await new Promise(r => setTimeout(r, 2500));
+            } else {
+                console.error('No se pudo contactar el backend después de 3 intentos');
                 renderEsperando(false, 0);
             }
         }
+    }
+}
 
-        // ── RENDER: Esperando resultado ───────────────────────────
-        function renderEsperando(correcto, pts) {
-            puntajeLocal += pts;
-            document.getElementById('jugarPts').textContent = puntajeLocal + ' pts';
-            const p = preguntas[sala.pregunta_actual];
-            const esOpinion = p && ['encuesta', 'escala', 'slide'].includes(p.tipo);
+function renderEsperando(correcto, pts) {
+    puntajeLocal += pts;
+    document.getElementById('jugarPts').textContent = puntajeLocal + ' pts';
+    const p        = preguntas[sala.pregunta_actual];
+    const esOpinion = p && ['encuesta', 'escala', 'slide'].includes(p.tipo);
 
-            document.getElementById('jugarMain').innerHTML = `
-                <div class="estado-respondio">
-                    <div class="respondio-icon">${esOpinion ? '🗳️' : (correcto ? '✅' : '❌')}</div>
-                    <div class="respondio-titulo">${esOpinion ? 'Listo' : (correcto ? '¡Correcto!' : 'Incorrecto')}</div>
-                    ${pts > 0 ? `<div class="pts-ganados">+${pts} pts</div>` : ''}
-                    <div class="respondio-sub">Esperando al docente...</div>
-                </div>`;
-        }
+    document.getElementById('jugarMain').innerHTML = `
+        <div class="estado-respondio">
+            <div class="respondio-icon">${esOpinion ? '🗳️' : (correcto ? '✅' : '❌')}</div>
+            <div class="respondio-titulo">${esOpinion ? 'Listo' : (correcto ? '¡Correcto!' : 'Incorrecto')}</div>
+            ${pts > 0 ? `<div class="pts-ganados">+${pts} pts</div>` : ''}
+            <div class="respondio-sub">Esperando al docente...</div>
+        </div>`;
+}
 
-        // ── RENDER: Ranking ───────────────────────────────────────
-        async function renderRanking() {
-            await cargarParticipantes();
-            const top10 = [...participantes].sort((a, b) => b.puntaje - a.puntaje).slice(0, 10);
+// ── Ranking ───────────────────────────────────────────────────────────────────
+async function renderRanking() {
+    await cargarParticipantes();
+    const top10 = [...participantes].sort((a, b) => b.puntaje - a.puntaje).slice(0, 10);
+    const miPosicion = [...participantes].sort((a, b) => b.puntaje - a.puntaje)
+        .findIndex(p => p.user_id === currentUser.id);
 
-            const itemsHTML = top10.map((p, i) => {
+    document.getElementById('jugarMain').innerHTML = `
+        <div class="estado-ranking">
+            <div class="ranking-titulo">🏆 Ranking</div>
+            ${top10.map((p, i) => {
                 const esYo = p.user_id === currentUser.id;
-                return `
-                    <div class="ranking-item-alumno ${esYo ? 'yo-ranking' : ''}"
-                         style="animation-delay:${i * 0.06}s">
-                        <span class="rank-pos">${MEDALLAS[i] || (i + 1)}</span>
-                        <span class="rank-name">${sanitize(p.username)}${esYo ? ' 👈' : ''}</span>
-                        <span class="rank-pts">${p.puntaje} pts</span>
-                    </div>`;
-            }).join('');
-
-            const miPosicion = [...participantes]
-                .sort((a, b) => b.puntaje - a.puntaje)
-                .findIndex(p => p.user_id === currentUser.id);
-
-            document.getElementById('jugarMain').innerHTML = `
-                <div class="estado-ranking">
-                    <div class="ranking-titulo">🏆 Ranking</div>
-                    ${itemsHTML}
-                    ${miPosicion >= 10 ? `<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:0.82em;margin-top:8px;">
-                        Tu posición: #${miPosicion + 1}
-                    </div>` : ''}
+                return `<div class="ranking-item-alumno ${esYo ? 'yo-ranking' : ''}" style="animation-delay:${i*0.06}s">
+                    <span class="rank-pos">${MEDALLAS[i] || (i+1)}</span>
+                    <span class="rank-name">${sanitize(p.username)}${esYo ? ' 👈' : ''}</span>
+                    <span class="rank-pts">${p.puntaje} pts</span>
                 </div>`;
-        }
+            }).join('')}
+            ${miPosicion >= 10 ? `<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:0.82em;margin-top:8px;">Tu posición: #${miPosicion+1}</div>` : ''}
+        </div>`;
+}
 
-        // ── RENDER: Final ─────────────────────────────────────────
-        async function renderFinal() {
-            clearInterval(timerInterval);
-            suscripciones.forEach(s => s?.unsubscribe?.());
+// ── Final ─────────────────────────────────────────────────────────────────────
+async function renderFinal() {
+    clearInterval(timerInterval);
+    suscripciones.forEach(s => s?.unsubscribe?.());
+    await cargarParticipantes();
+    const sorted = [...participantes].sort((a, b) => b.puntaje - a.puntaje);
+    const miPos  = sorted.findIndex(p => p.user_id === currentUser.id);
+    const yo     = sorted[miPos];
+    const emoji  = ['🥇','🥈','🥉'][miPos] || '🎮';
 
-            await cargarParticipantes();
-            const sorted = [...participantes].sort((a, b) => b.puntaje - a.puntaje);
-            const miPos  = sorted.findIndex(p => p.user_id === currentUser.id);
-            const yo     = sorted[miPos];
-
-            let emoji = '🎮';
-            if (miPos === 0) emoji = '🥇';
-            else if (miPos === 1) emoji = '🥈';
-            else if (miPos === 2) emoji = '🥉';
-
-            document.getElementById('jugarMain').innerHTML = `
-                <div class="estado-final">
-                    <div class="final-emoji">${emoji}</div>
-                    <div class="final-titulo">¡Fin del quiz!</div>
-                    <div class="final-pts">${yo?.puntaje || puntajeLocal} pts</div>
-                    <div class="final-sub">Puesto #${miPos + 1} de ${participantes.length}</div>
-                    <button class="btn btn-primary" onclick="window.location.href='quizzit.html'"
-                            style="margin-top:8px;">
-                        Volver a Quizzit
-                    </button>
-                </div>`;
-        }
-    </script>
+    document.getElementById('jugarMain').innerHTML = `
+        <div class="estado-final">
+            <div class="final-emoji">${emoji}</div>
+            <div class="final-titulo">¡Fin del quiz!</div>
+            <div class="final-pts">${yo?.puntaje || puntajeLocal} pts</div>
+            <div class="final-sub">Puesto #${miPos+1} de ${participantes.length}</div>
+            <button class="btn btn-primary" onclick="window.location.href='quizzit.html'" style="margin-top:8px;">
+                Volver a Quizzit
+            </button>
+        </div>`;
+}
+</script>
 </body>
-
 </html>
