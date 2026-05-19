@@ -795,14 +795,14 @@ const AlephAPI = (() => {
                 return { ok: false, error: msgs[existing.status] || 'Ya tenés una solicitud' };
             }
 
-            const { data, error } = await _sb
-                .from('school_members')
-                .insert({
-                    school_id: schoolId,
-                    user_id: user.id,
-                    role: user.role,
-                    status: 'pending'
-                })
+const { data, error } = await _sb
+    .from('school_members')
+    .insert({
+        school_id: schoolId,
+        user_id: user.id,
+        role: user.role === 'superadmin' ? 'director' : (user.role || 'student'),
+        status: 'pending'
+    })
                 .select()
                 .single();
             if (error) return { ok: false, error: error.message };
@@ -952,12 +952,12 @@ const AlephAPI = (() => {
             if (error) return { ok: false, error: error.message };
 
             // Agregar al superadmin como miembro activo
-            await _sb.from('school_members').insert({
-                school_id: data.id,
-                user_id: user.id,
-                role: user.role,
-                status: 'active'
-            });
+await _sb.from('school_members').insert({
+    school_id: data.id,
+    user_id: user.id,
+    role: user.role === 'superadmin' ? 'director' : (user.role || 'teacher'),
+    status: 'active'
+});
 
             return { ok: true, school: data };
         },
