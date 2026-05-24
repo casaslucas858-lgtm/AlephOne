@@ -4,6 +4,7 @@
 
 const SUPABASE_URL = 'https://ikxvbmsvzmsiztxvzdtz.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_cN4exqC8p4r9Hg3ZQYWcWg_gLwcRdui';
+const BACKEND_URL = 'https://alephone-backend.onrender.com';
 const QUIZ_IMAGE_BUCKET = 'quiz-images';
 
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -795,14 +796,14 @@ const AlephAPI = (() => {
                 return { ok: false, error: msgs[existing.status] || 'Ya tenés una solicitud' };
             }
 
-const { data, error } = await _sb
-    .from('school_members')
-    .insert({
-        school_id: schoolId,
-        user_id: user.id,
-        role: user.role === 'superadmin' ? 'director' : (user.role || 'student'),
-        status: 'pending'
-    })
+            const { data, error } = await _sb
+                .from('school_members')
+                .insert({
+                    school_id: schoolId,
+                    user_id: user.id,
+                    role: user.role,
+                    status: 'pending'
+                })
                 .select()
                 .single();
             if (error) return { ok: false, error: error.message };
@@ -952,12 +953,12 @@ const { data, error } = await _sb
             if (error) return { ok: false, error: error.message };
 
             // Agregar al superadmin como miembro activo
-await _sb.from('school_members').insert({
-    school_id: data.id,
-    user_id: user.id,
-    role: user.role === 'superadmin' ? 'director' : (user.role || 'teacher'),
-    status: 'active'
-});
+            await _sb.from('school_members').insert({
+                school_id: data.id,
+                user_id: user.id,
+                role: user.role,
+                status: 'active'
+            });
 
             return { ok: true, school: data };
         },
