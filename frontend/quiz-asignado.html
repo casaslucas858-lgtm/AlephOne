@@ -6,72 +6,256 @@
     <title>Quiz — AlephProject</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        :root { --opt-a:#7C3AED; --opt-b:#0EA5E9; --opt-c:#1CE6C1; --opt-d:#4BE61C; }
+        :root {
+            --opt-a: #7C3AED;
+            --opt-b: #0EA5E9;
+            --opt-c: #1CE6C1;
+            --opt-d: #4BE61C;
+        }
+
         body { background: #13131A; min-height: 100vh; display: flex; flex-direction: column; }
 
+        /* ── TOPBAR ── */
         .asig-topbar {
-            height: var(--header-h); background: rgba(19,19,26,0.92); backdrop-filter: blur(12px);
+            height: var(--header-h);
+            background: rgba(19,19,26,0.92);
+            backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(255,255,255,0.06);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 24px; flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            flex-shrink: 0;
         }
+
         .asig-logo {
-            font-family: var(--font-display); font-size: 1.1em; font-weight: 800;
+            font-family: var(--font-display);
+            font-size: 1.1em;
+            font-weight: 800;
             background: linear-gradient(135deg, var(--teal), var(--accent));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        .asig-timer { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-size: 1.2em; font-weight: 800; color: white; }
+
+        .asig-timer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-display);
+            font-size: 1.2em;
+            font-weight: 800;
+            color: white;
+        }
+
         .asig-timer.urgente { color: #f87171; }
-        .asig-info  { font-size: 0.82em; color: rgba(255,255,255,0.35); font-family: var(--font-display); }
 
-        .global-progress      { height: 3px; background: rgba(255,255,255,0.06); flex-shrink: 0; }
-        .global-progress-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--accent)); transition: width 0.4s ease; }
+        .asig-info {
+            font-size: 0.82em;
+            color: rgba(255,255,255,0.35);
+            font-family: var(--font-display);
+        }
 
-        .asig-main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 28px 20px; overflow-y: auto; }
+        /* ── PROGRESS BAR global ── */
+        .global-progress {
+            height: 3px;
+            background: rgba(255,255,255,0.06);
+            flex-shrink: 0;
+        }
 
-        /* Inicio */
-        .pantalla-inicio { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; max-width: 440px; animation: fadeUp 0.4s ease both; }
-        .inicio-icon     { font-size: 3.5em; }
-        .inicio-titulo   { font-family: var(--font-display); font-size: 1.5em; font-weight: 800; color: white; }
-        .inicio-meta     { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-        .inicio-tag      { padding: 5px 14px; border-radius: 999px; font-size: 0.78em; font-weight: 700; font-family: var(--font-display); }
+        .global-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--teal), var(--accent));
+            transition: width 0.4s ease;
+        }
+
+        /* ── MAIN ── */
+        .asig-main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px 20px;
+            overflow-y: auto;
+        }
+
+        /* ── PANTALLA: cargando / inicio ── */
+        .pantalla-inicio {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            text-align: center;
+            max-width: 440px;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .inicio-icon { font-size: 3.5em; }
+
+        .inicio-titulo {
+            font-family: var(--font-display);
+            font-size: 1.5em;
+            font-weight: 800;
+            color: white;
+        }
+
+        .inicio-meta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .inicio-tag {
+            padding: 5px 14px;
+            border-radius: 999px;
+            font-size: 0.78em;
+            font-weight: 700;
+            font-family: var(--font-display);
+        }
+
         .inicio-tag.teal { background: rgba(38,212,199,0.12); color: var(--teal); border: 1px solid rgba(38,212,199,0.2); }
         .inicio-tag.warn { background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
-        .inicio-aviso    { padding: 12px 18px; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.18); border-radius: var(--radius); font-size: 0.82em; color: rgba(255,255,255,0.45); line-height: 1.6; }
 
-        /* Pregunta */
-        .pantalla-pregunta { width: 100%; max-width: 620px; display: flex; flex-direction: column; gap: 22px; animation: fadeUp 0.3s ease both; }
-        .preg-header { display: flex; align-items: center; justify-content: space-between; }
-        .preg-badge  { font-family: var(--font-display); font-size: 0.72em; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 1px; text-transform: uppercase; }
-        .preg-pts-badge { padding: 3px 10px; background: rgba(38,212,199,0.1); border: 1px solid rgba(38,212,199,0.18); border-radius: 999px; font-family: var(--font-display); font-size: 0.72em; font-weight: 700; color: var(--teal); }
-        .preg-enunciado { font-family: var(--font-display); font-size: 1.3em; font-weight: 700; color: white; line-height: 1.45; }
-
-        .opciones-asig { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .opc-asig {
-            padding: 16px; border-radius: var(--radius-lg); display: flex; align-items: center; gap: 10px;
-            font-size: 0.88em; font-weight: 600; color: white; cursor: pointer; transition: all var(--t); border: 2px solid transparent;
+        .inicio-aviso {
+            padding: 12px 18px;
+            background: rgba(245,158,11,0.08);
+            border: 1px solid rgba(245,158,11,0.18);
+            border-radius: var(--radius);
+            font-size: 0.82em;
+            color: rgba(255,255,255,0.45);
+            line-height: 1.6;
         }
+
+        /* ── PANTALLA: pregunta ── */
+        .pantalla-pregunta {
+            width: 100%;
+            max-width: 620px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            animation: fadeUp 0.3s ease both;
+        }
+
+        .preg-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .preg-badge {
+            font-family: var(--font-display);
+            font-size: 0.72em;
+            font-weight: 700;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .preg-pts-badge {
+            padding: 3px 10px;
+            background: rgba(38,212,199,0.1);
+            border: 1px solid rgba(38,212,199,0.18);
+            border-radius: 999px;
+            font-family: var(--font-display);
+            font-size: 0.72em;
+            font-weight: 700;
+            color: var(--teal);
+        }
+
+        .preg-enunciado {
+            font-family: var(--font-display);
+            font-size: 1.3em;
+            font-weight: 700;
+            color: white;
+            line-height: 1.45;
+        }
+
+        /* Opciones */
+        .opciones-asig {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .opc-asig {
+            padding: 16px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.88em;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all var(--t);
+            border: 2px solid transparent;
+        }
+
         .opc-asig[data-opt="A"] { background: rgba(124,58,237,0.18); border-color: rgba(124,58,237,0.3); }
-        .opc-asig[data-opt="B"] { background: rgba(14,165,233,0.18);  border-color: rgba(14,165,233,0.3); }
-        .opc-asig[data-opt="C"] { background: rgba(28,230,193,0.18);  border-color: rgba(28,230,193,0.3); }
-        .opc-asig[data-opt="D"] { background: rgba(75,230,28,0.18);   border-color: rgba(75,230,28,0.3); }
-        .opc-asig:hover:not(.bloqueada) { transform: translateY(-2px) scale(1.02); filter: brightness(1.2); }
-        .opc-asig.seleccionada { border-width: 3px; filter: brightness(1.25); }
+        .opc-asig[data-opt="B"] { background: rgba(14,165,233,0.18); border-color: rgba(14,165,233,0.3); }
+        .opc-asig[data-opt="C"] { background: rgba(28,230,193,0.18); border-color: rgba(28,230,193,0.3); }
+        .opc-asig[data-opt="D"] { background: rgba(75,230,28,0.18);  border-color: rgba(75,230,28,0.3); }
+
+        .opc-asig:hover:not(.bloqueada) {
+            transform: translateY(-2px) scale(1.02);
+            filter: brightness(1.2);
+        }
+
+        .opc-asig.seleccionada {
+            border-width: 3px;
+            filter: brightness(1.25);
+        }
         .opc-asig[data-opt="A"].seleccionada { border-color: var(--opt-a); background: rgba(124,58,237,0.32); }
         .opc-asig[data-opt="B"].seleccionada { border-color: var(--opt-b); background: rgba(14,165,233,0.32); }
         .opc-asig[data-opt="C"].seleccionada { border-color: var(--opt-c); background: rgba(28,230,193,0.32); }
         .opc-asig[data-opt="D"].seleccionada { border-color: var(--opt-d); background: rgba(75,230,28,0.32); }
-        .opc-asig.correcta-reveal  { background: rgba(34,197,94,0.2) !important; border-color: #22c55e !important; }
-        .opc-asig.incorrecta-reveal { opacity: 0.4; }
+
+        .opc-asig.correcta-reveal {
+            background: rgba(34,197,94,0.2) !important;
+            border-color: #22c55e !important;
+        }
+
+        .opc-asig.incorrecta-reveal {
+            opacity: 0.4;
+        }
+
         .opc-asig.bloqueada { cursor: not-allowed; }
-        .opc-letra { width: 30px; height: 30px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 0.82em; font-weight: 800; flex-shrink: 0; }
+
+        .opc-letra {
+            width: 30px; height: 30px;
+            border-radius: var(--radius);
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-display);
+            font-size: 0.82em;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
         .opc-asig[data-opt="A"] .opc-letra { background: var(--opt-a); }
         .opc-asig[data-opt="B"] .opc-letra { background: var(--opt-b); }
         .opc-asig[data-opt="C"] .opc-letra { background: var(--opt-c); color: #0a0a0a; }
         .opc-asig[data-opt="D"] .opc-letra { background: var(--opt-d); color: #0a0a0a; }
 
-        .vf-asig { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .vf-asig-btn { padding: 18px; border-radius: var(--radius-lg); border: 2px solid; font-family: var(--font-display); font-size: 0.95em; font-weight: 800; cursor: pointer; transition: all var(--t); text-align: center; color: white; }
+        /* VF */
+        .vf-asig {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .vf-asig-btn {
+            padding: 18px;
+            border-radius: var(--radius-lg);
+            border: 2px solid;
+            font-family: var(--font-display);
+            font-size: 0.95em;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all var(--t);
+            text-align: center;
+            color: white;
+        }
+
         .vf-asig-btn.verd { background: rgba(75,230,28,0.15); border-color: rgba(75,230,28,0.3); }
         .vf-asig-btn.fals { background: rgba(220,53,69,0.15); border-color: rgba(220,53,69,0.3); }
         .vf-asig-btn.sel-v { background: rgba(75,230,28,0.3); border-color: var(--opt-d); }
@@ -79,38 +263,147 @@
         .vf-asig-btn:hover:not(.bloqueada) { filter: brightness(1.2); transform: translateY(-2px); }
         .vf-asig-btn.bloqueada { cursor: not-allowed; }
 
-        .texto-wrap  { display: flex; gap: 10px; }
-        .texto-input { flex: 1; padding: 13px 16px; background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.1); border-radius: var(--radius-lg); font-size: 0.95em; color: white; font-family: var(--font-body); transition: all var(--t); }
+        /* Input texto */
+        .texto-wrap {
+            display: flex; gap: 10px;
+        }
+
+        .texto-input {
+            flex: 1;
+            padding: 13px 16px;
+            background: rgba(255,255,255,0.06);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius-lg);
+            font-size: 0.95em;
+            color: white;
+            font-family: var(--font-body);
+            transition: all var(--t);
+        }
         .texto-input:focus { outline: none; border-color: var(--teal); background: rgba(38,212,199,0.06); }
         .texto-input::placeholder { color: rgba(255,255,255,0.25); }
-        .btn-enviar-asig { padding: 13px 22px; background: var(--teal); color: #0a0a0a; border: none; border-radius: var(--radius-lg); font-family: var(--font-display); font-size: 0.85em; font-weight: 800; cursor: pointer; transition: all var(--t); }
+
+        .btn-enviar-asig {
+            padding: 13px 22px;
+            background: var(--teal);
+            color: #0a0a0a;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-family: var(--font-display);
+            font-size: 0.85em;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all var(--t);
+        }
         .btn-enviar-asig:hover { background: var(--teal-dim); }
         .btn-enviar-asig:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        .feedback-inline { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--radius); font-size: 0.88em; font-weight: 600; animation: fadeUp 0.25s ease both; }
-        .feedback-inline.ok  { background: rgba(34,197,94,0.1);  border: 1px solid rgba(34,197,94,0.2);  color: #4ade80; }
-        .feedback-inline.mal { background: rgba(220,53,69,0.1);  border: 1px solid rgba(220,53,69,0.2);  color: #f87171; }
+        /* Feedback inline */
+        .feedback-inline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            font-size: 0.88em;
+            font-weight: 600;
+            animation: fadeUp 0.25s ease both;
+        }
+        .feedback-inline.ok { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); color: #4ade80; }
+        .feedback-inline.mal { background: rgba(220,53,69,0.1); border: 1px solid rgba(220,53,69,0.2); color: #f87171; }
 
-        .nav-preguntas { display: flex; justify-content: flex-end; }
+        /* Nav preguntas */
+        .nav-preguntas {
+            display: flex;
+            justify-content: flex-end;
+        }
 
-        /* Resultados */
-        .pantalla-resultados { width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 16px; animation: fadeUp 0.4s ease both; }
-        .res-header  { text-align: center; margin-bottom: 8px; }
-        .res-emoji   { font-size: 3.5em; margin-bottom: 8px; display: block; }
-        .res-titulo  { font-family: var(--font-display); font-size: 1.5em; font-weight: 800; color: white; margin-bottom: 4px; }
-        .res-pts     { font-family: var(--font-display); font-size: 2.8em; font-weight: 800; color: var(--teal); line-height: 1; }
-        .res-stats   { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .res-stat    { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: var(--radius-lg); padding: 14px; text-align: center; }
-        .res-stat-val { font-family: var(--font-display); font-size: 1.6em; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+        /* ── PANTALLA: resultados ── */
+        .pantalla-resultados {
+            width: 100%;
+            max-width: 520px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .res-header {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .res-emoji { font-size: 3.5em; margin-bottom: 8px; display: block; }
+
+        .res-titulo {
+            font-family: var(--font-display);
+            font-size: 1.5em;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .res-pts {
+            font-family: var(--font-display);
+            font-size: 2.8em;
+            font-weight: 800;
+            color: var(--teal);
+            line-height: 1;
+        }
+
+        /* Stats grid */
+        .res-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .res-stat {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: var(--radius-lg);
+            padding: 14px;
+            text-align: center;
+        }
+
+        .res-stat-val {
+            font-family: var(--font-display);
+            font-size: 1.6em;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
         .res-stat-val.verde  { color: #4ade80; }
         .res-stat-val.rojo   { color: #f87171; }
         .res-stat-val.blanco { color: white; }
-        .res-stat-label { font-size: 0.7em; color: rgba(255,255,255,0.3); font-family: var(--font-display); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .res-stat-label {
+            font-size: 0.7em;
+            color: rgba(255,255,255,0.3);
+            font-family: var(--font-display);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Detalle por pregunta */
         .detalle-lista { display: flex; flex-direction: column; gap: 6px; }
-        .detalle-item  { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius); background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); font-size: 0.82em; }
-        .detalle-item.ok   { border-left: 3px solid #22c55e; }
-        .detalle-item.mal  { border-left: 3px solid #dc3545; }
+
+        .detalle-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: var(--radius);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            font-size: 0.82em;
+        }
+
+        .detalle-item.ok  { border-left: 3px solid #22c55e; }
+        .detalle-item.mal { border-left: 3px solid #dc3545; }
         .detalle-item.skip { border-left: 3px solid rgba(255,255,255,0.15); }
+
         .detalle-icon { font-size: 1em; flex-shrink: 0; }
         .detalle-text { flex: 1; color: rgba(255,255,255,0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .detalle-pts  { font-family: var(--font-display); font-weight: 700; color: var(--teal); font-size: 0.85em; flex-shrink: 0; }
@@ -121,11 +414,13 @@
 <div class="asig-topbar">
     <span class="asig-logo">ℵ AlephProject</span>
     <div class="asig-timer" id="asigTimer">—:——</div>
-    <div class="asig-info"  id="asigInfo">—</div>
+    <div class="asig-info" id="asigInfo">—</div>
 </div>
+
 <div class="global-progress">
     <div class="global-progress-fill" id="globalProgress" style="width:0%"></div>
 </div>
+
 <div class="asig-main" id="asigMain">
     <div class="empty-state"><div class="spinner"></div></div>
 </div>
@@ -134,61 +429,70 @@
 <script src="js/api.js"></script>
 <script src="js/app.js"></script>
 <script>
-let asignacion    = null;
-let preguntas     = [];
-let respuestas    = {};
-let idx           = 0;
+// ── Estado ────────────────────────────────────────────────
+let asignacion   = null;
+let preguntas    = [];
+let respuestas   = {};   // { preguntaId: { valor, esCorrecta, puntosGanados } }
+let idx          = 0;
 let timerInterval = null;
-let tiempoTotal   = 0;
+let tiempoTotal  = 0;
 let tiempoRestante = 0;
-let terminado     = false;
-let currentUser   = null;
+let terminado    = false;
+let currentUser  = null;
 
 const LETRAS = ['A','B','C','D'];
 
-// FIX: normalización correcta — acepta cualquier tipo parseado, no solo objetos
-// Esto resuelve '"A"' → 'A' además de strings JSON de arrays/objetos
-function normalizarPregunta(p) {
-    if (typeof p.respuesta_correcta === 'string') {
-        try { p.respuesta_correcta = JSON.parse(p.respuesta_correcta); }
-        catch(e) { /* string plano sin encoding extra, dejarlo */ }
-    }
-    if ((p.tipo === 'imagen_click' || p.tipo === 'slide' || p.tipo === 'libre_imagen' || p.tipo === 'escala') && p.opciones) {
-        const opts = typeof p.opciones === 'string'
-            ? (() => { try { return JSON.parse(p.opciones); } catch { return null; } })()
-            : p.opciones;
-        if (opts && typeof opts === 'object' && !Array.isArray(opts)) {
-            p.imagen_url       = opts.imagen_url    || '';
-            p.imagen_path      = opts.imagen_path   || '';
-            p.imagen_bucket    = opts.imagen_bucket || '';
-            p.imagen_nombre    = opts.imagen_nombre || '';
-            p.slide_titulo     = opts.slide_titulo  || '';
-            p.escala_min       = opts.min           ?? p.escala_min;
-            p.escala_max       = opts.max           ?? p.escala_max;
-            p.escala_label_izq = opts.left_label    || '';
-            p.escala_label_der = opts.right_label   || '';
-        }
-    }
-}
-
+// ── Init ──────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
     await AlephAPI.Auth.init();
     currentUser = requireAuth();
     if (!currentUser) return;
 
-    const params  = new URLSearchParams(window.location.search);
-    const asigId  = params.get('id');
+    const params = new URLSearchParams(window.location.search);
+    const asigId = params.get('id');
     if (!asigId) { window.location.href = 'quizzit.html'; return; }
 
-    const asigs   = await AlephAPI.Asignacion.getParaCurso(currentUser.curso || '3A');
-    asignacion    = asigs.find(a => a.id === asigId);
+    // Cargar asignación
+    const asigs = await AlephAPI.Asignacion.getParaCurso(currentUser.curso || '3A');
+    asignacion = asigs.find(a => a.id === asigId);
 
-    if (!asignacion) { showToast('Asignación no encontrada', 'error'); window.location.href = 'quizzit.html'; return; }
+    if (!asignacion) {
+        showToast('Asignación no encontrada', 'error');
+        window.location.href = 'quizzit.html';
+        return;
+    }
 
-    preguntas     = (asignacion.quizzes?.preguntas || []).sort((a, b) => a.orden - b.orden);
-    preguntas.forEach(normalizarPregunta);
+    preguntas = (asignacion.quizzes?.preguntas || []).sort((a,b) => a.orden - b.orden);
 
-    tiempoTotal    = preguntas.reduce((a, p) => a + (p.tiempo_segundos || 30), 0);
+    // Normalizar datos de preguntas que vienen del backend
+    preguntas.forEach(p => {
+        if (typeof p.respuesta_correcta === 'string') {
+            try {
+                const parsed = JSON.parse(p.respuesta_correcta);
+                if (typeof parsed === 'object' && parsed !== null) {
+                    p.respuesta_correcta = parsed;
+                }
+            } catch(e) { /* string normal */ }
+        }
+        if ((p.tipo === 'imagen_click' || p.tipo === 'slide' || p.tipo === 'libre_imagen' || p.tipo === 'escala') && p.opciones) {
+            const imageOptions = typeof p.opciones === 'string'
+                ? (() => { try { return JSON.parse(p.opciones); } catch { return null; } })()
+                : p.opciones;
+            if (imageOptions && typeof imageOptions === 'object' && !Array.isArray(imageOptions)) {
+                p.imagen_url = imageOptions.imagen_url || '';
+                p.imagen_path = imageOptions.imagen_path || '';
+                p.imagen_bucket = imageOptions.imagen_bucket || '';
+                p.imagen_nombre = imageOptions.imagen_nombre || '';
+                p.slide_titulo = imageOptions.slide_titulo || '';
+                p.escala_min = imageOptions.min ?? p.escala_min;
+                p.escala_max = imageOptions.max ?? p.escala_max;
+                p.escala_label_izq = imageOptions.left_label || '';
+                p.escala_label_der = imageOptions.right_label || '';
+            }
+        }
+    });
+
+    tiempoTotal = preguntas.reduce((a, p) => a + (p.tiempo_segundos || 30), 0);
     tiempoRestante = tiempoTotal;
 
     document.getElementById('asigInfo').textContent =
@@ -197,6 +501,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderInicio();
 });
 
+// ── PANTALLA: Inicio ──────────────────────────────────────
 function renderInicio() {
     const minutos = Math.ceil(tiempoTotal / 60);
     document.getElementById('asigMain').innerHTML = `
@@ -219,37 +524,50 @@ function renderInicio() {
     document.getElementById('asigTimer').textContent = formatTimer(tiempoTotal);
 }
 
-function comenzar() { iniciarTimer(); renderPregunta(0); }
+// ── Comenzar ──────────────────────────────────────────────
+function comenzar() {
+    iniciarTimer();
+    renderPregunta(0);
+}
 
+// ── Timer global ─────────────────────────────────────────
 function iniciarTimer() {
     timerInterval = setInterval(() => {
         tiempoRestante--;
         const el = document.getElementById('asigTimer');
-        if (el) { el.textContent = formatTimer(tiempoRestante); if (tiempoRestante <= 30) el.classList.add('urgente'); }
-        if (tiempoRestante <= 0) { clearInterval(timerInterval); if (!terminado) finalizarForzado(); }
+        if (el) {
+            el.textContent = formatTimer(tiempoRestante);
+            if (tiempoRestante <= 30) el.classList.add('urgente');
+        }
+        if (tiempoRestante <= 0) {
+            clearInterval(timerInterval);
+            if (!terminado) finalizarForzado();
+        }
     }, 1000);
 }
 
 function formatTimer(seg) {
-    const m = Math.floor(seg / 60), s = seg % 60;
+    const m = Math.floor(seg / 60);
+    const s = seg % 60;
     return `${m}:${String(s).padStart(2,'0')}`;
 }
 
+// ── PANTALLA: Pregunta ────────────────────────────────────
 function renderPregunta(i) {
     idx = i;
     seleccionadasMultiplesAsig = [];
-    paresConectadosAsig        = [];
+    paresConectadosAsig = [];
     const p = preguntas[i];
     if (!p) return;
 
-    const pct    = (i / preguntas.length) * 100;
+    const pct = (i / preguntas.length) * 100;
     document.getElementById('globalProgress').style.width = pct + '%';
 
-    const yaResp      = respuestas[p.id];
+    const yaResp = respuestas[p.id];
     const opcionesHTML = renderOpcionesAsig(p, yaResp);
-    const esOpinion   = p.tipo === 'encuesta' || p.tipo === 'escala';
-    const esSlide     = p.tipo === 'slide';
 
+    const esOpinion = p.tipo === 'encuesta' || p.tipo === 'escala';
+    const esSlide = p.tipo === 'slide';
     let feedbackHTML = '';
     if (yaResp) {
         feedbackHTML = `
@@ -259,8 +577,8 @@ function renderPregunta(i) {
             </div>`;
     }
 
-    const esUltima  = i === preguntas.length - 1;
-    const botonSig  = (yaResp || esSlide)
+    const esUltima = i === preguntas.length - 1;
+    const botonSig = (yaResp || esSlide)
         ? `<button class="btn btn-primary" onclick="${esUltima ? 'finalizar()' : `renderPregunta(${i+1})`}">
                ${esUltima ? '🏁 Terminar' : 'Siguiente →'}
            </button>`
@@ -274,7 +592,7 @@ function renderPregunta(i) {
             </div>
             <div class="preg-enunciado">${sanitize(p.enunciado)}</div>
             <div id="opcionesWrap">${opcionesHTML}</div>
-            <div id="feedbackWrap">${feedbackHTML}</div>
+            ${feedbackHTML ? `<div id="feedbackWrap">${feedbackHTML}</div>` : '<div id="feedbackWrap"></div>'}
             <div class="nav-preguntas">${botonSig}</div>
         </div>`;
 }
@@ -283,12 +601,12 @@ function renderOpcionesAsig(p, yaResp) {
     const bloq = yaResp ? 'bloqueada' : '';
 
     if (p.tipo === 'slide') {
-        return `<div style="display:flex;flex-direction:column;gap:16px;">
-            <div style="padding:18px;border-radius:var(--radius-lg);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);text-align:center;">
-                <div style="font-family:var(--font-display);font-size:1.05em;font-weight:700;color:white;">${sanitize(p.slide_titulo || 'Diapositiva')}</div>
-                <p style="margin-top:8px;color:rgba(255,255,255,0.45);font-size:0.84em;">Bloque informativo.</p>
+        return `<div style="display:flex; flex-direction:column; gap:16px;">
+            <div style="padding:18px; border-radius:var(--radius-lg); background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); text-align:center;">
+                <div style="font-family:var(--font-display); font-size:1.05em; font-weight:700; color:white;">${sanitize(p.slide_titulo || 'Diapositiva')}</div>
+                <p style="margin-top:8px; color:rgba(255,255,255,0.45); font-size:0.84em;">Bloque informativo.</p>
             </div>
-            ${p.imagen_url ? `<img src="${sanitize(p.imagen_url)}" style="display:block;max-width:100%;max-height:320px;margin:0 auto;border-radius:12px;">` : ''}
+            ${p.imagen_url ? `<img src="${sanitize(p.imagen_url)}" style="display:block; max-width:100%; max-height:320px; margin:0 auto; border-radius:12px;">` : ''}
         </div>`;
     }
 
@@ -297,300 +615,508 @@ function renderOpcionesAsig(p, yaResp) {
         return `<div class="opciones-asig">
             ${opts.map((op, i) => {
                 if (!op.trim()) return '';
-                const sel = yaResp?.valor === LETRAS[i] ? 'seleccionada correcta-reveal' : '';
-                return `<div class="opc-asig ${bloq} ${sel}" data-opt="${LETRAS[i]}"
-                             onclick="responderOpinionAsig('${LETRAS[i]}','${p.id}')">
-                    <div class="opc-letra">${LETRAS[i]}</div><span>${sanitize(op)}</span>
+                const extra = yaResp?.valor === LETRAS[i] ? 'seleccionada correcta-reveal' : '';
+                return `
+                <div class="opc-asig ${bloq} ${extra}" data-opt="${LETRAS[i]}"
+                     onclick="responderOpinionAsig('${LETRAS[i]}', '${p.id}')">
+                    <div class="opc-letra">${LETRAS[i]}</div>
+                    <span>${sanitize(op)}</span>
                 </div>`;
             }).join('')}
         </div>`;
     }
 
     if (p.tipo === 'escala') {
-        const min = Number(p.escala_min ?? 1), max = Number(p.escala_max ?? 5);
-        const vals = []; for (let v = min; v <= max; v++) vals.push(v);
-        return `<div style="display:flex;flex-direction:column;gap:14px;">
-            <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,0.42);font-size:0.78em;">
-                <span>${sanitize(p.escala_label_izq||'')}</span><span>${sanitize(p.escala_label_der||'')}</span>
+        const min = Number(p.escala_min ?? 1);
+        const max = Number(p.escala_max ?? 5);
+        const vals = [];
+        for (let v = min; v <= max; v++) vals.push(v);
+        return `<div style="display:flex; flex-direction:column; gap:14px;">
+            <div style="display:flex; justify-content:space-between; color:rgba(255,255,255,0.42); font-size:0.78em;">
+                <span>${sanitize(p.escala_label_izq || '')}</span>
+                <span>${sanitize(p.escala_label_der || '')}</span>
             </div>
             <div class="opciones-asig">
                 ${vals.map(v => `
-                    <div class="opc-asig ${bloq} ${yaResp?.valor===String(v)?'seleccionada correcta-reveal':''}"
-                         onclick="responderOpinionAsig('${v}','${p.id}')" style="justify-content:center;">
-                        <span style="font-family:var(--font-display);font-size:1.1em;">${v}</span>
+                    <div class="opc-asig ${bloq} ${yaResp?.valor === String(v) ? 'seleccionada correcta-reveal' : ''}"
+                         onclick="responderOpinionAsig('${v}', '${p.id}')" style="justify-content:center;">
+                        <span style="font-family:var(--font-display); font-size:1.1em;">${v}</span>
                     </div>`).join('')}
             </div>
         </div>`;
     }
 
     if (p.tipo === 'multiple_choice') {
-        const opts    = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
-        const correcta = p.respuesta_correcta;  // ya normalizado: 'A','B','C' o 'D'
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        const correcta = p.respuesta_correcta;
         return `<div class="opciones-asig">
             ${opts.map((op, i) => {
                 if (!op.trim()) return '';
                 let extra = '';
                 if (yaResp) {
-                    if (LETRAS[i] === correcta)      extra = 'correcta-reveal';
+                    if (LETRAS[i] === correcta) extra = 'correcta-reveal';
                     else if (LETRAS[i] === yaResp.valor) extra = 'incorrecta-reveal seleccionada';
+                } else if (yaResp?.valor === LETRAS[i]) {
+                    extra = 'seleccionada';
                 }
-                return `<div class="opc-asig ${bloq} ${extra}" data-opt="${LETRAS[i]}"
-                             onclick="responderMC('${LETRAS[i]}','${p.id}')">
-                    <div class="opc-letra">${LETRAS[i]}</div><span>${sanitize(op)}</span>
+                return `
+                <div class="opc-asig ${bloq} ${extra}" data-opt="${LETRAS[i]}"
+                     onclick="responderMC('${LETRAS[i]}', '${p.id}')">
+                    <div class="opc-letra">${LETRAS[i]}</div>
+                    <span>${sanitize(op)}</span>
                 </div>`;
             }).join('')}
         </div>`;
     }
 
     if (p.tipo === 'seleccion_multiple') {
-        const opts     = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
         const correctas = Array.isArray(p.respuesta_correcta) ? p.respuesta_correcta : [];
-        let   valArr   = yaResp ? (typeof yaResp.valor === 'string' ? JSON.parse(yaResp.valor) : yaResp.valor) : [];
+        let valArr = yaResp ? (typeof yaResp.valor === 'string' ? JSON.parse(yaResp.valor) : yaResp.valor) : [];
         if (!Array.isArray(valArr)) valArr = [];
+
         return `<div class="opciones-asig">
             ${opts.map((op, i) => {
                 if (!op.trim()) return '';
                 let extra = '';
                 if (yaResp) {
-                    if (correctas.includes(LETRAS[i]))  extra = 'correcta-reveal';
-                    else if (valArr.includes(LETRAS[i])) extra = 'incorrecta-reveal seleccionada';
+                    const eraCorrecta = correctas.includes(LETRAS[i]);
+                    const fueSeleccionada = valArr.includes(LETRAS[i]);
+                    if (eraCorrecta) extra = 'correcta-reveal';
+                    else if (fueSeleccionada) extra = 'incorrecta-reveal seleccionada';
+                } else {
+                    // we handle selection dynamically in JS
                 }
-                return `<div class="opc-asig seleccion-multiple-asig ${bloq} ${extra}" data-opt="${LETRAS[i]}"
-                             onclick="toggleOpcionMultipleAsig(this,'${LETRAS[i]}')">
-                    <div class="opc-letra" style="border-radius:4px;">${LETRAS[i]}</div><span>${sanitize(op)}</span>
+                return `
+                <div class="opc-asig seleccion-multiple-asig ${bloq} ${extra}" data-opt="${LETRAS[i]}"
+                     onclick="toggleOpcionMultipleAsig(this, '${LETRAS[i]}')">
+                    <div class="opc-letra" style="border-radius:4px;">${LETRAS[i]}</div>
+                    <span>${sanitize(op)}</span>
                 </div>`;
             }).join('')}
         </div>
-        ${!yaResp ? `<button class="btn-enviar-asig" style="margin-top:20px;width:100%;" onclick="enviarSeleccionMultipleAsig('${p.id}')">Enviar Respuestas →</button>` : ''}`;
+        ${!yaResp ? `<button class="btn-enviar-asig" style="margin-top:20px; width:100%;" onclick="enviarSeleccionMultipleAsig('${p.id}')">Enviar Respuestas →</button>` : ''}`;
     }
 
     if (p.tipo === 'verdadero_falso') {
-        const sel = yaResp?.valor, cor = p.respuesta_correcta;
-        const clsV = [
-            'verd',
-            sel === 'Verdadero' ? 'sel-v' : '',
-            bloq,
-            yaResp && cor === 'Verdadero' ? 'correcta-reveal' : '',
-            yaResp && cor !== 'Verdadero' && sel === 'Verdadero' ? 'incorrecta-reveal' : ''
-        ].join(' ');
-        const clsF = [
-            'fals',
-            sel === 'Falso' ? 'sel-f' : '',
-            bloq,
-            yaResp && cor === 'Falso' ? 'correcta-reveal' : '',
-            yaResp && cor !== 'Falso' && sel === 'Falso' ? 'incorrecta-reveal' : ''
-        ].join(' ');
+        const sel = yaResp?.valor;
+        const cor = p.respuesta_correcta;
         return `<div class="vf-asig">
-            <button class="vf-asig-btn ${clsV}" onclick="responderVF('Verdadero','${p.id}')">✓ Verdadero</button>
-            <button class="vf-asig-btn ${clsF}" onclick="responderVF('Falso','${p.id}')">✗ Falso</button>
+            <button class="vf-asig-btn verd ${sel === 'Verdadero' ? 'sel-v' : ''} ${bloq} ${yaResp && cor !== 'Verdadero' ? 'incorrecta-reveal' : ''} ${yaResp && cor === 'Verdadero' ? 'correcta-reveal' : ''}"
+                    onclick="responderVF('Verdadero', '${p.id}')">✓ Verdadero</button>
+            <button class="vf-asig-btn fals ${sel === 'Falso' ? 'sel-f' : ''} ${bloq} ${yaResp && cor !== 'Falso' ? 'incorrecta-reveal' : ''} ${yaResp && cor === 'Falso' ? 'correcta-reveal' : ''}"
+                    onclick="responderVF('Falso', '${p.id}')">✗ Falso</button>
         </div>`;
     }
 
     if (p.tipo === 'ordenar') {
         const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
-        let display = yaResp
-            ? (typeof yaResp.valor === 'string' ? JSON.parse(yaResp.valor) : yaResp.valor)
-            : (() => { const s=[...opts]; for(let k=s.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[s[k],s[j]]=[s[j],s[k]];} return s; })();
-        const extraCls = yaResp ? (yaResp.esCorrecta ? 'correcta-reveal' : 'incorrecta-reveal') : '';
-        return `<div style="margin-bottom:10px;color:rgba(255,255,255,0.45);font-size:0.82em;">Arrastrá las casillas para definir el orden correcto.</div>
-        <div class="opciones-asig" id="ordenarContainerAsig" style="display:flex;flex-direction:column;">
-            ${display.map(op => `
-                <div class="opc-asig opcion-ordenar-asig ${bloq} ${extraCls}"
-                     style="cursor:${yaResp?'default':'grab'};display:flex;justify-content:space-between;"
-                     draggable="${!yaResp}" data-valor="${sanitize(op)}"
-                     ondragstart="dragStartAsig(event)" ondragover="dragOverAsig(event)" ondrop="dropAsig(event)">
+        
+        let displayOpts;
+        if (yaResp) {
+            // Si ya respondió, mostramos el orden que guardó
+            displayOpts = typeof yaResp.valor === 'string' ? JSON.parse(yaResp.valor) : yaResp.valor;
+        } else {
+            // Mezclamos
+            displayOpts = [...opts];
+            for (let k = displayOpts.length - 1; k > 0; k--) {
+                const j = Math.floor(Math.random() * (k + 1));
+                [displayOpts[k], displayOpts[j]] = [displayOpts[j], displayOpts[k]];
+            }
+        }
+
+        const esCorrectoGlobal = yaResp && yaResp.esCorrecta;
+        const extraCls = yaResp ? (esCorrectoGlobal ? 'correcta-reveal' : 'incorrecta-reveal') : '';
+        
+        return `<div style="margin-bottom:10px; color:rgba(255,255,255,0.45); font-size:0.82em;">Arrastrá las casillas para definir el orden correcto.</div><div class="opciones-asig" id="ordenarContainerAsig" style="display:flex; flex-direction:column;">
+            ${displayOpts.map((op, i) => `
+                <div class="opc-asig opcion-ordenar-asig ${bloq} ${extraCls}" style="cursor:${yaResp ? 'default' : 'grab'}; display:flex; justify-content:space-between; touch-action:none; user-select:none;"
+                     data-valor="${sanitize(op)}"
+                     onpointerdown="ordenarPointerDownAsig(event)">
                     <span>${sanitize(op)}</span>
+                    ${!yaResp ? `<span style="opacity:0.45; font-size:1.1em;">☰</span>` : ''}
                 </div>`).join('')}
         </div>
-        ${!yaResp ? `<button class="btn-enviar-asig" style="margin-top:20px;width:100%;" onclick="enviarOrdenAsig('${p.id}')">Enviar Orden →</button>` : ''}`;
+        ${!yaResp ? `<button class="btn-enviar-asig" style="margin-top:20px; width:100%;" onclick="enviarOrdenAsig('${p.id}')">Enviar Orden →</button>` : ''}`;
     }
 
     if (p.tipo === 'relacionar_columnas') {
-        const opts  = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
-        const paresVal = yaResp ? (typeof yaResp.valor==='string' ? JSON.parse(yaResp.valor) : yaResp.valor) : [];
-        const left  = opts.map((o,i) => ({id:i,text:o.izq}));
-        const right = opts.map((o,i) => ({id:i,text:o.der}));
-        for(let k=left.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[left[k],left[j]]=[left[j],left[k]];}
-        for(let k=right.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[right[k],right[j]]=[right[j],right[k]];}
-        return `<div class="opciones-asig" style="display:flex;gap:20px;" id="relacionarContainerAsig">
-            <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
-                ${left.map(l => {
-                    const par = paresVal.find(pv => pv.izqId===l.id);
-                    const cls = par ? (par.izqId===par.derId ? 'correcta-reveal conectado' : 'incorrecta-reveal conectado') : '';
-                    return `<div class="opc-asig rel-izq-asig ${bloq} ${cls}" data-id="${l.id}" onclick="selectRelIzqAsig(this,${l.id})"><span>${sanitize(l.text)}</span></div>`;
+        const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+        
+        let paresVal = [];
+        if (yaResp) {
+            paresVal = typeof yaResp.valor === 'string' ? JSON.parse(yaResp.valor) : yaResp.valor;
+        }
+
+        const leftSide = opts.map((o, i) => ({ id: i, text: o.izq }));
+        for (let k = leftSide.length - 1; k > 0; k--) {
+            const j = Math.floor(Math.random() * (k + 1));
+            [leftSide[k], leftSide[j]] = [leftSide[j], leftSide[k]];
+        }
+
+        const rightSide = opts.map((o, i) => ({ id: i, text: o.der }));
+        for (let k = rightSide.length - 1; k > 0; k--) {
+            const j = Math.floor(Math.random() * (k + 1));
+            [rightSide[k], rightSide[j]] = [rightSide[j], rightSide[k]];
+        }
+
+        return `<div class="opciones-asig" style="display:flex; gap:20px; justify-content:space-between;" id="relacionarContainerAsig">
+            <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
+                ${leftSide.map(l => {
+                    const parGuardado = paresVal.find(pv => pv.izqId === l.id);
+                    const isConnected = !!parGuardado;
+                    const esCorrecto = isConnected && parGuardado.izqId === parGuardado.derId;
+                    const extra = yaResp ? (isConnected ? (esCorrecto ? 'correcta-reveal conectado' : 'incorrecta-reveal conectado') : '') : '';
+                    return `
+                    <div class="opc-asig rel-izq-asig ${bloq} ${extra}" data-id="${l.id}" onclick="selectRelIzqAsig(this, ${l.id})">
+                        <span>${sanitize(l.text)}</span>
+                    </div>`;
                 }).join('')}
             </div>
-            <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
-                ${right.map(r => {
-                    const par = paresVal.find(pv => pv.derId===r.id);
-                    const cls = par ? (par.izqId===par.derId ? 'correcta-reveal conectado' : 'incorrecta-reveal conectado') : '';
-                    return `<div class="opc-asig rel-der-asig ${bloq} ${cls}" data-id="${r.id}" onclick="selectRelDerAsig(this,${r.id})"><span>${sanitize(r.text)}</span></div>`;
+            <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
+                ${rightSide.map(r => {
+                    const parGuardado = paresVal.find(pv => pv.derId === r.id);
+                    const isConnected = !!parGuardado;
+                    const esCorrecto = isConnected && parGuardado.izqId === parGuardado.derId;
+                    const extra = yaResp ? (isConnected ? (esCorrecto ? 'correcta-reveal conectado' : 'incorrecta-reveal conectado') : '') : '';
+                    return `
+                    <div class="opc-asig rel-der-asig ${bloq} ${extra}" data-id="${r.id}" onclick="selectRelDerAsig(this, ${r.id})">
+                        <span>${sanitize(r.text)}</span>
+                    </div>`;
                 }).join('')}
             </div>
         </div>
-        ${!yaResp ? `<button class="btn-enviar-asig" style="margin-top:20px;width:100%;" onclick="enviarRelacionarAsig('${p.id}')">Enviar Relaciones →</button>` : ''}`;
+        ${!yaResp ? `<button class="btn-enviar-asig" style="margin-top:20px; width:100%;" onclick="enviarRelacionarAsig('${p.id}')">Enviar Relaciones →</button>` : ''}`;
     }
 
     if (p.tipo === 'imagen_click') {
-        const url     = p.imagen_url || '';
-        const marcaVal = yaResp ? (typeof yaResp.valor==='string' ? JSON.parse(yaResp.valor) : yaResp.valor) : null;
-        const corr    = typeof p.respuesta_correcta==='string' ? JSON.parse(p.respuesta_correcta) : p.respuesta_correcta;
-        return `<div class="opciones-asig" style="display:flex;justify-content:center;flex-direction:column;align-items:center;">
-            <div style="position:relative;display:inline-block;max-width:100%;border-radius:8px;overflow:hidden;cursor:${yaResp?'default':'crosshair'};"
-                 onclick="marcarImagenClickAsig(event,'${p.id}')">
-                <img src="${sanitize(url)}" style="display:block;max-width:100%;height:auto;" id="imagenClickMapAsig_${p.id}">
-                <div id="marcadorImagenAsig_${p.id}" style="position:absolute;width:16px;height:16px;background:${yaResp&&yaResp.esCorrecta?'#4ade80':'var(--teal)'};border:2px solid white;border-radius:50%;transform:translate(-50%,-50%);display:${marcaVal?'block':'none'};pointer-events:none;left:${marcaVal?marcaVal.x:0}%;top:${marcaVal?marcaVal.y:0}%;"></div>
-                ${yaResp && corr ? `<div style="position:absolute;top:${corr.y}%;left:${corr.x}%;width:${(corr.r||10)*2}%;height:${(corr.r||10)*2}%;background:rgba(38,212,199,0.2);border:2px dashed var(--teal);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;"></div>` : ''}
+        const url = p.imagen_url || '';
+        
+        let marcaVal = null;
+        if (yaResp) {
+            marcaVal = typeof yaResp.valor === 'string' ? JSON.parse(yaResp.valor) : yaResp.valor;
+        }
+
+        const corr = typeof p.respuesta_correcta === 'string' ? JSON.parse(p.respuesta_correcta) : p.respuesta_correcta;
+
+        return `
+        <div class="opciones-asig" style="display:flex; justify-content:center; flex-direction:column; align-items:center;">
+            <div style="position:relative; display:inline-block; max-width:100%; border-radius:8px; overflow:hidden; cursor:${yaResp ? 'default' : 'crosshair'};" onclick="marcarImagenClickAsig(event, '${p.id}')">
+                <img src="${sanitize(url)}" style="display:block; max-width:100%; height:auto;" id="imagenClickMapAsig_${p.id}">
+                <div id="marcadorImagenAsig_${p.id}" style="position:absolute; width:16px; height:16px; background:${yaResp && yaResp.esCorrecta ? '#4ade80' : 'var(--teal)'}; border:2px solid white; border-radius:50%; transform:translate(-50%, -50%); display:${marcaVal ? 'block' : 'none'}; pointer-events:none; box-shadow:0 0 10px rgba(0,0,0,0.5); left:${marcaVal ? marcaVal.x : 0}%; top:${marcaVal ? marcaVal.y : 0}%;"></div>
+                
+                ${yaResp ? `
+                    <div style="position:absolute; top:${corr.y}%; left:${corr.x}%; width:${corr.r*2}%; height:${corr.r*2}%; background:rgba(38,212,199,0.2); border:2px dashed var(--teal); border-radius:50%; transform:translate(-50%, -50%); pointer-events:none;"></div>
+                ` : ''}
             </div>
         </div>
-        ${!yaResp ? `<button class="btn-enviar-asig" style="margin-top:20px;width:100%;" onclick="enviarImagenClickAsig('${p.id}')">Enviar Marca →</button>` : ''}`;
+        ${!yaResp ? `<button class="btn-enviar-asig" style="margin-top:20px; width:100%;" onclick="enviarImagenClickAsig('${p.id}')">Enviar Marca →</button>` : ''}`;
     }
 
     if (p.tipo === 'libre_imagen') {
-        return `<div style="display:flex;flex-direction:column;gap:14px;">
-            ${p.imagen_url ? `<img src="${sanitize(p.imagen_url)}" style="display:block;max-width:100%;max-height:320px;margin:0 auto;border-radius:12px;">` : ''}
-            <div class="texto-wrap">
-                <input type="text" class="texto-input" id="textoInput"
-                       placeholder="Escribí qué es..."
-                       ${yaResp ? `value="${sanitize(yaResp.valor)}" disabled` : ''}
-                       onkeydown="if(event.key==='Enter')responderTexto('${p.id}','${p.tipo}')">
-                ${!yaResp ? `<button class="btn-enviar-asig" onclick="responderTexto('${p.id}','${p.tipo}')">Enviar</button>` : ''}
-            </div>
-        </div>`;
+        return `<div style="display:flex; flex-direction:column; gap:14px;">
+        ${p.imagen_url ? `<img src="${sanitize(p.imagen_url)}" style="display:block; max-width:100%; max-height:320px; margin:0 auto; border-radius:12px;">` : ''}
+        <div class="texto-wrap">
+            <input type="text"
+                   class="texto-input"
+                   id="textoInput"
+                   placeholder="Escribí qué es..."
+                   ${yaResp ? `value="${sanitize(yaResp.valor)}" disabled` : ''}
+                   onkeydown="if(event.key==='Enter')responderTexto('${p.id}','${p.tipo}')">
+            ${!yaResp ? `<button class="btn-enviar-asig" onclick="responderTexto('${p.id}','${p.tipo}')">Enviar</button>` : ''}
+        </div>
+    </div>`;
     }
 
-    let ph = 'Tu respuesta...', type = 'text';
-    if (p.tipo === 'numerica')         { type = 'number'; ph = 'Número...'; }
+    // Numérica / corta / completar
+    let ph = 'Tu respuesta...';
+    let type = 'text';
+    if (p.tipo === 'numerica') { type = 'number'; ph = 'Número...'; }
     if (p.tipo === 'completar_espacio') ph = 'Completá la palabra...';
+
     return `<div class="texto-wrap">
-        <input type="${type}" class="texto-input" id="textoInput" placeholder="${ph}"
-               ${yaResp ? `value="${sanitize(String(yaResp.valor))}" disabled` : ''}
+        <input type="${type}"
+               class="texto-input"
+               id="textoInput"
+               placeholder="${ph}"
+               ${yaResp ? `value="${sanitize(yaResp.valor)}" disabled` : ''}
                onkeydown="if(event.key==='Enter')responderTexto('${p.id}','${p.tipo}')">
         ${!yaResp ? `<button class="btn-enviar-asig" onclick="responderTexto('${p.id}','${p.tipo}')">Enviar</button>` : ''}
     </div>`;
 }
 
-// ── Drag & drop ordenar ──────────────────────────────────────────────────────
+// ── Ordenar Asig ──────────────────────────────────────────
 let draggedItemAsig = null;
-function dragStartAsig(e) { if(e.target.classList.contains('bloqueada'))return; draggedItemAsig=e.target; e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',''); }
-function dragOverAsig(e)  { if(draggedItemAsig?.classList.contains('bloqueada'))return; e.preventDefault(); }
+
+function dragStartAsig(e) {
+    if (e.target.classList.contains('bloqueada')) return;
+    draggedItemAsig = e.target;
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", "");
+}
+
+function dragOverAsig(e) {
+    if (draggedItemAsig && draggedItemAsig.classList.contains('bloqueada')) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+}
+
 function dropAsig(e) {
     e.preventDefault();
-    const target = e.target.closest('.opcion-ordenar-asig');
-    if (!target || target.classList.contains('bloqueada') || draggedItemAsig === target) return;
-    const container = document.getElementById('ordenarContainerAsig');
-    const all = [...container.querySelectorAll('.opcion-ordenar-asig')];
-    if (all.indexOf(draggedItemAsig) < all.indexOf(target)) target.after(draggedItemAsig);
-    else target.before(draggedItemAsig);
+    if (e.target.closest('.opcion-ordenar-asig')) {
+        const target = e.target.closest('.opcion-ordenar-asig');
+        if (target.classList.contains('bloqueada')) return;
+        
+        const container = document.getElementById('ordenarContainerAsig');
+        const allItems = [...container.querySelectorAll('.opcion-ordenar-asig')];
+        
+        if (draggedItemAsig && draggedItemAsig !== target) {
+            const draggedIdx = allItems.indexOf(draggedItemAsig);
+            const targetIdx = allItems.indexOf(target);
+            if (draggedIdx < targetIdx) {
+                target.after(draggedItemAsig);
+            } else {
+                target.before(draggedItemAsig);
+            }
+        }
+    }
 }
+
+function ordenarPointerDownAsig(e) {
+    if (e.button > 0) return;
+    const item = e.currentTarget;
+    if (item.classList.contains('bloqueada')) return;
+    draggedItemAsig = item;
+    item.classList.add('seleccionada');
+    item.setPointerCapture?.(e.pointerId);
+    item.addEventListener('pointermove', ordenarPointerMoveAsig);
+    item.addEventListener('pointerup', ordenarPointerEndAsig, { once: true });
+    item.addEventListener('pointercancel', ordenarPointerEndAsig, { once: true });
+}
+
+function ordenarPointerMoveAsig(e) {
+    if (!draggedItemAsig || draggedItemAsig.classList.contains('bloqueada')) return;
+    e.preventDefault();
+    const container = document.getElementById('ordenarContainerAsig');
+    if (!container) return;
+    const afterElement = getOrdenarAfterElementAsig(container, e.clientY, '.opcion-ordenar-asig:not(.seleccionada)');
+    if (!afterElement) container.appendChild(draggedItemAsig);
+    else container.insertBefore(draggedItemAsig, afterElement);
+}
+
+function ordenarPointerEndAsig(e) {
+    if (!draggedItemAsig) return;
+    draggedItemAsig.releasePointerCapture?.(e.pointerId);
+    draggedItemAsig.removeEventListener('pointermove', ordenarPointerMoveAsig);
+    draggedItemAsig.classList.remove('seleccionada');
+    draggedItemAsig = null;
+}
+
+function getOrdenarAfterElementAsig(container, y, selector) {
+    return [...container.querySelectorAll(selector)].reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+            return { offset, element: child };
+        }
+        return closest;
+    }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+}
+
+function moveItemUpAsig(el) {
+    if (el.classList.contains('bloqueada')) return;
+    const prev = el.previousElementSibling;
+    if (prev) prev.before(el);
+}
+
+function moveItemDownAsig(el) {
+    if (el.classList.contains('bloqueada')) return;
+    const next = el.nextElementSibling;
+    if (next) next.after(el);
+}
+
 function enviarOrdenAsig(pregId) {
     if (respuestas[pregId]) return;
-    const p = preguntas.find(q => q.id === pregId); if (!p) return;
+    const p = preguntas.find(q => q.id === pregId);
+    if (!p) return;
+    
     const items = [...document.querySelectorAll('.opcion-ordenar-asig')];
     const orden = items.map(i => i.dataset.valor);
+    
     const correctaArr = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : p.opciones;
-    guardarRespuesta(pregId, JSON.stringify(orden), JSON.stringify(orden) === JSON.stringify(correctaArr), p.puntos || 100);
+    const esCorrecta = JSON.stringify(orden) === JSON.stringify(correctaArr);
+    
+    guardarRespuesta(pregId, JSON.stringify(orden), esCorrecta, p.puntos || 100);
 }
 
-// ── Selección múltiple ───────────────────────────────────────────────────────
 let seleccionadasMultiplesAsig = [];
+
 function toggleOpcionMultipleAsig(el, letra) {
     if (el.classList.contains('bloqueada')) return;
-    if (seleccionadasMultiplesAsig.includes(letra)) { seleccionadasMultiplesAsig=seleccionadasMultiplesAsig.filter(l=>l!==letra); el.classList.remove('seleccionada'); }
-    else { seleccionadasMultiplesAsig.push(letra); el.classList.add('seleccionada'); }
-}
-function enviarSeleccionMultipleAsig(pregId) {
-    if (respuestas[pregId] || seleccionadasMultiplesAsig.length === 0) return;
-    const p = preguntas.find(q => q.id === pregId); if (!p) return;
-    const correctas = Array.isArray(p.respuesta_correcta) ? p.respuesta_correcta : [];
-    const valSorted = [...seleccionadasMultiplesAsig].sort();
-    guardarRespuesta(pregId, JSON.stringify(valSorted),
-        JSON.stringify(valSorted) === JSON.stringify([...correctas].sort()), p.puntos || 100);
+    if (seleccionadasMultiplesAsig.includes(letra)) {
+        seleccionadasMultiplesAsig = seleccionadasMultiplesAsig.filter(l => l !== letra);
+        el.classList.remove('seleccionada');
+    } else {
+        seleccionadasMultiplesAsig.push(letra);
+        el.classList.add('seleccionada');
+    }
 }
 
-// ── Relacionar columnas ──────────────────────────────────────────────────────
-let selectedIzqAsig = null, selectedDerAsig = null, paresConectadosAsig = [];
+function enviarSeleccionMultipleAsig(pregId) {
+    if (respuestas[pregId] || seleccionadasMultiplesAsig.length === 0) return;
+    const p = preguntas.find(q => q.id === pregId);
+    if (!p) return;
+    
+    const correctas = Array.isArray(p.respuesta_correcta) ? p.respuesta_correcta : [];
+    const valSorted = [...seleccionadasMultiplesAsig].sort();
+    const corrSorted = [...correctas].sort();
+    
+    const esCorrecta = JSON.stringify(valSorted) === JSON.stringify(corrSorted);
+    const valorGuardar = JSON.stringify(valSorted);
+    
+    guardarRespuesta(pregId, valorGuardar, esCorrecta, p.puntos || 100);
+}
+
+// ── Relacionar Asig ─────────────────────────────────────────
+let selectedIzqAsig = null;
+let selectedDerAsig = null;
+let paresConectadosAsig = []; // {izqId, derId}
+
 function selectRelIzqAsig(el, id) {
     if (el.classList.contains('bloqueada') || el.classList.contains('conectado')) return;
     document.querySelectorAll('.rel-izq-asig').forEach(e => e.classList.remove('seleccionada'));
-    el.classList.add('seleccionada'); selectedIzqAsig={el,id}; checkRelacionAsig();
+    el.classList.add('seleccionada');
+    selectedIzqAsig = { el, id };
+    checkRelacionAsig();
 }
+
 function selectRelDerAsig(el, id) {
     if (el.classList.contains('bloqueada') || el.classList.contains('conectado')) return;
     document.querySelectorAll('.rel-der-asig').forEach(e => e.classList.remove('seleccionada'));
-    el.classList.add('seleccionada'); selectedDerAsig={el,id}; checkRelacionAsig();
-}
-function checkRelacionAsig() {
-    if (!selectedIzqAsig || !selectedDerAsig) return;
-    paresConectadosAsig.push({izqId:selectedIzqAsig.id, derId:selectedDerAsig.id});
-    selectedIzqAsig.el.classList.add('conectado'); selectedDerAsig.el.classList.add('conectado');
-    selectedIzqAsig.el.classList.remove('seleccionada'); selectedDerAsig.el.classList.remove('seleccionada');
-    const c=`hsl(${Math.random()*360},70%,40%)`;
-    selectedIzqAsig.el.style.borderLeft=`4px solid ${c}`; selectedDerAsig.el.style.borderLeft=`4px solid ${c}`;
-    selectedIzqAsig=null; selectedDerAsig=null;
-}
-function enviarRelacionarAsig(pregId) {
-    if (respuestas[pregId]) return;
-    const p = preguntas.find(q => q.id === pregId); if (!p) return;
-    const opts = typeof p.opciones==='string' ? JSON.parse(p.opciones) : (p.opciones||[]);
-    const esCorrecta = paresConectadosAsig.length === opts.length &&
-        paresConectadosAsig.every(par => par.izqId === par.derId);
-    guardarRespuesta(pregId, JSON.stringify(paresConectadosAsig), esCorrecta, p.puntos||100);
+    el.classList.add('seleccionada');
+    selectedDerAsig = { el, id };
+    checkRelacionAsig();
 }
 
-// ── Imagen click ─────────────────────────────────────────────────────────────
+function checkRelacionAsig() {
+    if (selectedIzqAsig && selectedDerAsig) {
+        paresConectadosAsig.push({ izqId: selectedIzqAsig.id, derId: selectedDerAsig.id });
+        
+        selectedIzqAsig.el.classList.add('conectado');
+        selectedDerAsig.el.classList.add('conectado');
+        selectedIzqAsig.el.classList.remove('seleccionada');
+        selectedDerAsig.el.classList.remove('seleccionada');
+        
+        const color = `hsl(${Math.random() * 360}, 70%, 40%)`;
+        selectedIzqAsig.el.style.borderLeft = `4px solid ${color}`;
+        selectedDerAsig.el.style.borderLeft = `4px solid ${color}`;
+        
+        selectedIzqAsig = null;
+        selectedDerAsig = null;
+    }
+}
+
+function enviarRelacionarAsig(pregId) {
+    if (respuestas[pregId]) return;
+    const p = preguntas.find(q => q.id === pregId);
+    if (!p) return;
+    
+    const opts = typeof p.opciones === 'string' ? JSON.parse(p.opciones) : (p.opciones || []);
+    
+    // esCorrecta only if all pairs are made and they all match
+    let esCorrecta = false;
+    if (paresConectadosAsig.length === opts.length) {
+        esCorrecta = paresConectadosAsig.every(par => par.izqId === par.derId);
+    }
+    
+    guardarRespuesta(pregId, JSON.stringify(paresConectadosAsig), esCorrecta, p.puntos || 100);
+}
+
+// ── Imagen Click Asig ──────────────────────────────────────
 let marcaImagenClickAsig = {};
+
 function marcarImagenClickAsig(e, pregId) {
     if (respuestas[pregId]) return;
     const img = document.getElementById(`imagenClickMapAsig_${pregId}`);
     const rect = img.getBoundingClientRect();
-    const x = ((e.clientX-rect.left)/rect.width)*100;
-    const y = ((e.clientY-rect.top)/rect.height)*100;
-    marcaImagenClickAsig[pregId] = {x,y};
-    const m = document.getElementById(`marcadorImagenAsig_${pregId}`);
-    m.style.left=`${x}%`; m.style.top=`${y}%`; m.style.display='block';
-}
-function enviarImagenClickAsig(pregId) {
-    if (respuestas[pregId] || !marcaImagenClickAsig[pregId]) return;
-    const p = preguntas.find(q => q.id === pregId); if (!p) return;
-    const marca = marcaImagenClickAsig[pregId];
-    const corr  = typeof p.respuesta_correcta==='string' ? JSON.parse(p.respuesta_correcta) : p.respuesta_correcta;
-    let esCorrecta=false, ptsGanados=0;
-    if (corr) {
-        const dist = Math.sqrt((marca.x-corr.x)**2 + (marca.y-corr.y)**2);
-        const ptsMax = p.puntos || 100;
-        if (dist <= 3)       { ptsGanados = ptsMax; esCorrecta = true; }
-        else if (dist <= 20) { ptsGanados = Math.round(ptsMax * ((20-dist)/17)); esCorrecta = ptsGanados > 0; }
-    }
-    guardarRespuesta(pregId, JSON.stringify(marca), esCorrecta, p.puntos||100, ptsGanados);
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    
+    marcaImagenClickAsig[pregId] = { x, y };
+    const marcador = document.getElementById(`marcadorImagenAsig_${pregId}`);
+    marcador.style.left = `${x}%`;
+    marcador.style.top = `${y}%`;
+    marcador.style.display = 'block';
 }
 
-// ── Respuestas simples ───────────────────────────────────────────────────────
+function enviarImagenClickAsig(pregId) {
+    if (respuestas[pregId] || !marcaImagenClickAsig[pregId]) return;
+    const p = preguntas.find(q => q.id === pregId);
+    if (!p) return;
+    
+    const marca = marcaImagenClickAsig[pregId];
+    const corr = typeof p.respuesta_correcta === 'string' ? JSON.parse(p.respuesta_correcta) : p.respuesta_correcta;
+    
+    let esCorrecta = false;
+    let ptsGanados = 0;
+    const ptsMaximos = p.puntos || 100;
+
+    if (corr) {
+        const dx = marca.x - corr.x;
+        const dy = marca.y - corr.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        
+        // Puntaje por cercanía:
+        // dist <= 3%: 100% puntos
+        // dist entre 3% y 20%: decae linealmente
+        // dist > 20%: 0 puntos
+        if (dist <= 3) {
+            ptsGanados = ptsMaximos;
+            esCorrecta = true;
+        } else if (dist <= 20) {
+            ptsGanados = Math.round(ptsMaximos * ((20 - dist) / 17));
+            esCorrecta = ptsGanados > 0;
+        } else {
+            ptsGanados = 0;
+            esCorrecta = false;
+        }
+    }
+    
+    guardarRespuesta(pregId, JSON.stringify(marca), esCorrecta, ptsMaximos, ptsGanados);
+}
+
+// ── Responder ─────────────────────────────────────────────
 function responderMC(letra, pregId) {
     if (respuestas[pregId]) return;
-    const p = preguntas.find(q => q.id === pregId); if (!p) return;
-    // FIX: p.respuesta_correcta ya normalizado → comparación directa funciona
-    guardarRespuesta(pregId, letra, letra === p.respuesta_correcta, p.puntos||100);
+    const p = preguntas.find(q => q.id === pregId);
+    if (!p) return;
+    const esCorrecta = letra === p.respuesta_correcta;
+    guardarRespuesta(pregId, letra, esCorrecta, p.puntos || 100);
 }
 
 function responderVF(valor, pregId) {
     if (respuestas[pregId]) return;
-    const p = preguntas.find(q => q.id === pregId); if (!p) return;
-    guardarRespuesta(pregId, valor, valor === p.respuesta_correcta, p.puntos||100);
+    const p = preguntas.find(q => q.id === pregId);
+    if (!p) return;
+    const esCorrecta = valor === p.respuesta_correcta;
+    guardarRespuesta(pregId, valor, esCorrecta, p.puntos || 100);
 }
 
 function responderTexto(pregId, tipo) {
     if (respuestas[pregId]) return;
     const input = document.getElementById('textoInput');
     if (!input || !input.value.trim()) return;
-    const valor   = input.value.trim();
-    const p       = preguntas.find(q => q.id === pregId); if (!p) return;
-    const correcta = String(p.respuesta_correcta ?? '');
+    const valor = input.value.trim();
+    const p = preguntas.find(q => q.id === pregId);
+    if (!p) return;
+
     let esCorrecta = false;
-    if (tipo === 'numerica')                      esCorrecta = parseFloat(valor) === parseFloat(correcta);
+    const correcta = p.respuesta_correcta?.toString() || '';
+    if (tipo === 'numerica') esCorrecta = parseFloat(valor) === parseFloat(correcta);
     else if (tipo === 'encuesta' || tipo === 'escala') esCorrecta = true;
-    else                                          esCorrecta = valor.toLowerCase() === correcta.toLowerCase();
-    guardarRespuesta(pregId, valor, esCorrecta, p.puntos||100);
+    else esCorrecta = valor.toLowerCase() === correcta.toLowerCase();
+
+    guardarRespuesta(pregId, valor, esCorrecta, p.puntos || 100);
 }
 
 function responderOpinionAsig(valor, pregId) {
@@ -598,42 +1124,59 @@ function responderOpinionAsig(valor, pregId) {
     guardarRespuesta(pregId, valor, true, 0, 0);
 }
 
-function guardarRespuesta(pregId, valor, esCorrecta, ptsMaximos, ptsGanadosDirectos=null) {
+function guardarRespuesta(pregId, valor, esCorrecta, ptsMaximos, ptsGanadosDirectos = null) {
     const puntosGanados = ptsGanadosDirectos !== null ? ptsGanadosDirectos : (esCorrecta ? ptsMaximos : 0);
     respuestas[pregId] = { valor, esCorrecta, puntosGanados };
-    renderPregunta(idx);
+    renderPregunta(idx); // re-render con feedback
 }
 
-// ── Finalizar ────────────────────────────────────────────────────────────────
+// ── Finalizar ─────────────────────────────────────────────
 async function finalizar() {
-    clearInterval(timerInterval); terminado = true;
-    await guardarEnSupabase(); renderResultados();
-}
-async function finalizarForzado() {
-    terminado = true; await guardarEnSupabase(); renderResultados();
-}
-async function guardarEnSupabase() {
-    const puntajeTotal = Object.values(respuestas).reduce((a,r) => a + r.puntosGanados, 0);
-    await AlephAPI.Asignacion.responder({ asignacionId: asignacion.id, respuestas, puntaje: puntajeTotal });
+    clearInterval(timerInterval);
+    terminado = true;
+    await guardarEnSupabase();
+    renderResultados();
 }
 
+async function finalizarForzado() {
+    terminado = true;
+    await guardarEnSupabase();
+    renderResultados();
+}
+
+async function guardarEnSupabase() {
+    const puntajeTotal = Object.values(respuestas).reduce((a, r) => a + r.puntosGanados, 0);
+    await AlephAPI.Asignacion.responder({
+        asignacionId: asignacion.id,
+        respuestas,
+        puntaje: puntajeTotal
+    });
+}
+
+// ── PANTALLA: Resultados ──────────────────────────────────
 function renderResultados() {
-    const correctas   = Object.values(respuestas).filter(r => r.esCorrecta).length;
+    const correctas  = Object.values(respuestas).filter(r => r.esCorrecta).length;
     const incorrectas = Object.values(respuestas).filter(r => !r.esCorrecta).length;
-    const puntaje     = Object.values(respuestas).reduce((a,r) => a + r.puntosGanados, 0);
-    const pct         = Math.round((correctas / preguntas.length) * 100);
-    const emoji       = pct>=80?'🥇':pct>=60?'🎯':pct>=40?'📚':'💪';
+    const sinResp    = preguntas.length - Object.keys(respuestas).length;
+    const puntaje    = Object.values(respuestas).reduce((a, r) => a + r.puntosGanados, 0);
+    const pct        = Math.round((correctas / preguntas.length) * 100);
+
+    let emoji = pct >= 80 ? '🥇' : pct >= 60 ? '🎯' : pct >= 40 ? '📚' : '💪';
 
     document.getElementById('globalProgress').style.width = '100%';
     document.getElementById('asigTimer').textContent = '✓';
 
-    const detalleHTML = preguntas.map(p => {
+    const detalleHTML = preguntas.map((p, i) => {
         const r = respuestas[p.id];
-        if (!r) return `<div class="detalle-item skip"><span class="detalle-icon">⏭</span><span class="detalle-text">${sanitize(p.enunciado)}</span><span class="detalle-pts">—</span></div>`;
-        return `<div class="detalle-item ${r.esCorrecta?'ok':'mal'}">
-            <span class="detalle-icon">${r.esCorrecta?'✅':'❌'}</span>
+        if (!r) return `<div class="detalle-item skip">
+            <span class="detalle-icon">⏭</span>
             <span class="detalle-text">${sanitize(p.enunciado)}</span>
-            <span class="detalle-pts">${r.esCorrecta?'+'+r.puntosGanados:'0'}</span>
+            <span class="detalle-pts">—</span>
+        </div>`;
+        return `<div class="detalle-item ${r.esCorrecta ? 'ok' : 'mal'}">
+            <span class="detalle-icon">${r.esCorrecta ? '✅' : '❌'}</span>
+            <span class="detalle-text">${sanitize(p.enunciado)}</span>
+            <span class="detalle-pts">${r.esCorrecta ? '+'+r.puntosGanados : '0'}</span>
         </div>`;
     }).join('');
 
@@ -644,33 +1187,80 @@ function renderResultados() {
                 <div class="res-titulo">Quiz completado</div>
                 <div class="res-pts">${puntaje} pts</div>
             </div>
+
             <div class="res-stats">
-                <div class="res-stat"><div class="res-stat-val verde">${correctas}</div><div class="res-stat-label">Correctas</div></div>
-                <div class="res-stat"><div class="res-stat-val rojo">${incorrectas}</div><div class="res-stat-label">Incorrectas</div></div>
-                <div class="res-stat"><div class="res-stat-val blanco">${pct}%</div><div class="res-stat-label">Aciertos</div></div>
+                <div class="res-stat">
+                    <div class="res-stat-val verde">${correctas}</div>
+                    <div class="res-stat-label">Correctas</div>
+                </div>
+                <div class="res-stat">
+                    <div class="res-stat-val rojo">${incorrectas}</div>
+                    <div class="res-stat-label">Incorrectas</div>
+                </div>
+                <div class="res-stat">
+                    <div class="res-stat-val blanco">${pct}%</div>
+                    <div class="res-stat-label">Aciertos</div>
+                </div>
             </div>
+
             <div class="detalle-lista">${detalleHTML}</div>
-            <button class="btn btn-primary" style="justify-content:center;" onclick="window.location.href='quizzit.html'">
+
+            <button class="btn btn-primary" style="justify-content:center;"
+                    onclick="window.location.href='quizzit.html'">
                 Volver a Quizzit
             </button>
         </div>`;
 }
 </script>
 
+<!-- BOTTOM NAV (mobile only) -->
 <nav class="bottom-nav bottom-nav-dark" id="bottomNav">
-    <a href="dashboard.html" class="bn-item"><span class="bn-icon">🏠</span><span class="bn-label">Inicio</span></a>
-    <a href="comunicacion.html" class="bn-item"><span class="bn-icon">📢</span><span class="bn-label">Mensajes</span></a>
-    <a href="tareas.html" class="bn-item"><span class="bn-icon">📋</span><span class="bn-label">Tareas</span></a>
-    <button type="button" class="bn-item active" onclick="toggleMasSheet()"><span class="bn-icon">⋯</span><span class="bn-label">Más</span></button>
+    <a href="dashboard.html" class="bn-item">
+        <span class="bn-icon">🏠</span>
+        <span class="bn-label">Inicio</span>
+    </a>
+    <a href="comunicacion.html" class="bn-item">
+        <span class="bn-icon">📢</span>
+        <span class="bn-label">Mensajes</span>
+    </a>
+    <a href="tareas.html" class="bn-item">
+        <span class="bn-icon">📋</span>
+        <span class="bn-label">Tareas</span>
+    </a>
+    <button type="button" class="bn-item active" onclick="toggleMasSheet()">
+        <span class="bn-icon">⋯</span>
+        <span class="bn-label">Más</span>
+    </button>
 </nav>
+
+<!-- SHEET MÁS -->
 <div class="mas-overlay" id="masOverlay" onclick="toggleMasSheet()"></div>
 <div class="mas-sheet mas-sheet-dark" id="masSheet">
     <div class="mas-handle"></div>
-    <a href="horario.html"    class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🗓️</span><span>Horario</span></a>
-    <a href="promedios.html"  class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">📊</span><span>Promedios</span></a>
-    <a href="quizzit.html"    class="mas-item active" onclick="toggleMasSheet()"><span class="mas-icon">🧪</span><span>Quizzit</span></a>
-    <a href="ai-chat.html"    class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🤖</span><span>Fractal AI</span></a>
+    <a href="horario.html" class="mas-item" onclick="toggleMasSheet()">
+        <span class="mas-icon">🗓️</span>
+        <span>Horario</span>
+    </a>
+    <a href="promedios.html" class="mas-item" onclick="toggleMasSheet()">
+        <span class="mas-icon">📊</span>
+        <span>Promedios</span>
+    </a>
+    <a href="quizzit.html" class="mas-item active" onclick="toggleMasSheet()">
+        <span class="mas-icon">🧪</span>
+        <span>Quizzit</span>
+    </a>
+    <a href="ai-chat.html" class="mas-item" onclick="toggleMasSheet()">
+        <span class="mas-icon">🤖</span>
+        <span>Fractal AI</span>
+    </a>
 </div>
-<script> function toggleMasSheet() { document.getElementById('masSheet').classList.toggle('open'); document.getElementById('masOverlay').classList.toggle('open'); } </script>
+
+<script>
+function toggleMasSheet() {
+    document.getElementById('masSheet').classList.toggle('open');
+    document.getElementById('masOverlay').classList.toggle('open');
+}
+</script>
+
 </body>
 </html>
