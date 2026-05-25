@@ -845,12 +845,13 @@
                     [shuffled[k], shuffled[j]] = [shuffled[j], shuffled[k]];
                 }
 
-                return `<div style="margin-bottom:10px; color:rgba(255,255,255,0.45); font-size:0.82em;">Arrastrá las casillas para definir el orden correcto.</div><div class="opciones-alumno" id="ordenarContainer">
+                return `<div style="margin-bottom:10px; color:rgba(255,255,255,0.45); font-size:0.82em;">Arrastrá las casillas para definir el orden correcto.</div><div class="opciones-alumno" id="ordenarContainer" style="display:flex; flex-direction:column;">
             ${shuffled.map((op, i) => `
-                <div class="opcion-alumno opcion-ordenar" style="cursor:grab; display:flex; justify-content:space-between;"
-                     draggable="true" data-valor="${sanitize(op)}"
-                     ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event)">
+                <div class="opcion-alumno opcion-ordenar" style="cursor:grab; display:flex; justify-content:space-between; touch-action:none; user-select:none;"
+                     data-valor="${sanitize(op)}"
+                     onpointerdown="ordenarPointerDown(event)">
                     <span>${sanitize(op)}</span>
+                    <span style="opacity:0.45; font-size:1.1em;">☰</span>
                 </div>`).join('')}
         </div>
         <button class="btn-enviar" onclick="enviarOrden()" style="margin-top:20px; width:100%;">Enviar Orden →</button>`;
@@ -1015,6 +1016,46 @@
                     }
                 }
             }
+        }
+
+        function ordenarPointerDown(e) {
+            if (yaRespondio || e.button > 0) return;
+            const item = e.currentTarget;
+            draggedItem = item;
+            item.classList.add('seleccionada');
+            item.setPointerCapture?.(e.pointerId);
+            item.addEventListener('pointermove', ordenarPointerMove);
+            item.addEventListener('pointerup', ordenarPointerEnd, { once: true });
+            item.addEventListener('pointercancel', ordenarPointerEnd, { once: true });
+        }
+
+        function ordenarPointerMove(e) {
+            if (yaRespondio || !draggedItem) return;
+            e.preventDefault();
+            const container = document.getElementById('ordenarContainer');
+            if (!container) return;
+            const afterElement = getOrdenarAfterElement(container, e.clientY, '.opcion-ordenar:not(.seleccionada)');
+            if (!afterElement) container.appendChild(draggedItem);
+            else container.insertBefore(draggedItem, afterElement);
+        }
+
+        function ordenarPointerEnd(e) {
+            if (!draggedItem) return;
+            draggedItem.releasePointerCapture?.(e.pointerId);
+            draggedItem.removeEventListener('pointermove', ordenarPointerMove);
+            draggedItem.classList.remove('seleccionada');
+            draggedItem = null;
+        }
+
+        function getOrdenarAfterElement(container, y, selector) {
+            return [...container.querySelectorAll(selector)].reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset, element: child };
+                }
+                return closest;
+            }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
         }
 
         function moveItemUp(el) {
