@@ -106,13 +106,17 @@ button{border:0;background:none;cursor:pointer}
 .sidebar{
   width:220px;flex-shrink:0;padding:78px 12px 20px;
   display:flex;flex-direction:column;gap:4px;
-  transition:width 420ms var(--e-out),padding 420ms var(--e-out);
-  /* width/padding sí disparan layout (es el efecto visual buscado: el
-     sidebar se angosta). contain:layout evita que ese reflow se propague
-     al resto del documento — el navegador solo recalcula esta caja.
-     will-change se aplica/retira por JS solo durante la transición
-     (ver expandDashboard) en vez de quedar fijo acá, para no promover
-     una capa de composición en memoria todo el tiempo sin necesidad. */
+  /* Solo width anima. El padding (220->64px vs 12->8px) salta directo:
+     la diferencia es de 4px y no se percibe, pero animar dos propiedades
+     de layout en paralelo duplica el trabajo de recálculo por frame. */
+  transition:width 420ms var(--e-out);
+  /* width sí dispara layout (es el efecto visual buscado: el sidebar se
+     angosta y .main reflowa para ocupar el espacio). contain:layout evita
+     que ese reflow se propague al resto del documento — el navegador solo
+     recalcula esta caja. will-change se aplica/retira por JS solo durante
+     la transición (ver expandDashboard) en vez de quedar fijo acá, para no
+     promover una capa de composición en memoria todo el tiempo sin
+     necesidad. */
   contain:layout style;
 }
 .shell.collapsed .sidebar{width:64px;padding:78px 8px 20px}
@@ -211,6 +215,25 @@ button{border:0;background:none;cursor:pointer}
      del borde de la card, cambiando el look actual). */
   contain:layout style;
 }
+/* Modo "lite": se activa solo mientras el sidebar está animando su ancho
+   (ver expandDashboard). backdrop-filter es, con diferencia, la operación
+   más cara de toda la interfaz — cada card con blur+saturate tiene que
+   volver a muestrear todo lo que hay detrás en cada frame. Mientras el
+   sidebar cambia de ancho, TODAS las glass cards de .main se redimensionan
+   a la vez (porque .main reflowa junto con el sidebar), así que el
+   navegador recalcula ese blur en cada uno de los ~25 frames que dura la
+   transición, para cada card, simultáneamente. Eso es lo que se siente
+   como lag incluso en hardware rápido: no es CPU, es que backdrop-filter
+   no tiene una ruta barata para "el contenido de abajo solo se movió",
+   tiene que re-muestrear igual que si hubiera cambiado de verdad. Bajarlo
+   a un blur mínimo durante esos ~500ms (que además están parcialmente
+   tapados por el dim-flash) elimina ese costo sin cambiar el resultado
+   final una vez que el layout se asienta. */
+body.sidebar-transitioning .glass{
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+}
+
 .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .card-title{font-family:'Syne',sans-serif;font-size:0.86rem;font-weight:800;display:flex;align-items:center;gap:7px}
 .card-title .ic{width:14px;height:14px;flex-shrink:0}
@@ -438,13 +461,35 @@ function expandDashboard(){
   if (!shell.classList.contains('collapsed')) return;
   const dim = document.getElementById('dimFlash');
   const sidebar = document.getElementById('sidebar');
+
   dim.classList.add('on');
+
   // will-change se activa justo antes de la transición de layout del
-  // sidebar y se retira al terminar (transitionend), en vez de vivir
-  // permanentemente en el CSS: así el compositor se prepara para el
-  // cambio sin mantener una capa promovida en memoria sin necesidad.
+  // sidebar y se retira al terminar, en vez de vivir permanentemente en
+  // el CSS: así el compositor se prepara para el cambio sin mantener una
+  // capa promovida en memoria sin necesidad.
   sidebar.style.willChange = 'width';
-  sidebar.addEventListener('transitionend', () => { sidebar.style.willChange = 'auto'; }, { once: true });
+
+  // Modo lite: baja el backdrop-filter de las cards mientras el sidebar
+  // anima su ancho (ver la regla body.sidebar-transitioning .glass más
+  // arriba). Esto es lo que elimina el lag real al expandir.
+  document.body.classList.add('sidebar-transitioning');
+
+  let cleared = false;
+  const clearLiteMode = () => {
+    if (cleared) return;
+    cleared = true;
+    document.body.classList.remove('sidebar-transitioning');
+    sidebar.style.willChange = 'auto';
+  };
+
+  sidebar.addEventListener('transitionend', (event) => {
+    if (event.propertyName === 'width') clearLiteMode();
+  }, { once: true });
+  // Red de seguridad: si transitionend no dispara (p.ej. la transición
+  // se interrumpe con otro click rápido), igual restauramos el blur.
+  setTimeout(clearLiteMode, 560);
+
   setTimeout(() => {
     shell.classList.remove('collapsed');
     setTimeout(() => dim.classList.remove('on'), 60);
