@@ -41,9 +41,14 @@ button{border:0;background:none;cursor:pointer}
 
 /* ═══ BACKGROUND ═══ */
 .bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.glow{position:absolute;border-radius:50%;filter:blur(58px)}
-.g1{width:520px;height:520px;background:radial-gradient(circle,rgba(var(--primary-rgb),0.30),transparent 68%);top:-140px;left:-90px;animation:g1m 54s ease-in-out infinite}
-.g2{width:420px;height:420px;background:radial-gradient(circle,rgba(var(--secondary-rgb),0.20),transparent 68%);bottom:-100px;right:-60px;animation:g2m 62s ease-in-out infinite}
+.glow{position:absolute;border-radius:50%;filter:blur(58px);will-change:transform}
+.g1{width:520px;height:520px;background:radial-gradient(circle,rgba(var(--primary-rgb),0.30),transparent 68%);top:-140px;left:-90px;
+  /* steps() en vez de interpolación continua: el ojo no distingue la
+     diferencia en un desplazamiento de 20-24px repartido en 54-62s, pero
+     el navegador deja de recalcular la textura detrás de cada card con
+     backdrop-filter en cada uno de los ~60 frames por segundo. */
+  animation:g1m 54s steps(30,end) infinite;}
+.g2{width:420px;height:420px;background:radial-gradient(circle,rgba(var(--secondary-rgb),0.20),transparent 68%);bottom:-100px;right:-60px;animation:g2m 62s steps(30,end) infinite}
 @keyframes g1m{0%,100%{transform:translate(0,0)}50%{transform:translate(24px,-20px)}}
 @keyframes g2m{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,22px)}}
 .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.02;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
@@ -53,6 +58,7 @@ button{border:0;background:none;cursor:pointer}
   position:fixed;inset:0;z-index:900;
   background:linear-gradient(155deg,var(--bg) 0%,var(--bg-2) 55%,var(--bg-3) 100%);
   transition:opacity 380ms var(--e-out);
+  will-change:opacity;
 }
 #introOverlay.hide{opacity:0;pointer-events:none}
 
@@ -62,15 +68,23 @@ button{border:0;background:none;cursor:pointer}
   font-family:'Syne',sans-serif;font-weight:800;color:var(--secondary);
   font-size:2.4rem;line-height:1;
   text-shadow:0 0 26px rgba(var(--primary-rgb),0.4);
-  position:fixed;z-index:950;
-  transition:top 640ms var(--e-out),left 640ms var(--e-out),font-size 640ms var(--e-out),transform 640ms var(--e-out);
+  position:fixed;top:0;left:0;z-index:950;
+  transform-origin:0 0;
+  /* Antes esto animaba top/left/font-size (layout + reflow de texto en
+     cada frame). Ahora TODO el movimiento y el escalado pasan por
+     transform, que es compositor-only: 0 reflow, 0 repaint por frame. */
+  transition:transform 640ms var(--e-out);
 }
-.intro-mark.centered{top:50%;left:50%;transform:translate(-50%,-50%);font-size:2.4rem}
-.intro-mark.grown{top:50%;left:50%;transform:translate(-50%,-50%) scale(2.15);font-size:2.4rem}
-/* Docka a la izquierda, donde vive el wordmark "AlephOne" — y como ahora
-   usamos left en TODAS las etapas (nunca right), la transición de top+left
-   es continua y el movimiento se ve diagonal en vez de saltar. */
-.intro-mark.docked{top:20px;left:22px;transform:translate(0,0) scale(1);font-size:1.5rem;cursor:pointer}
+/* translate(50vw,50vh) ubica la esquina superior-izq. del glifo en el centro
+   del viewport (equivalente al viejo top:50%;left:50%); el segundo
+   translate(-50%,-50%) centra usando el tamaño propio del elemento
+   (los porcentajes en transform son relativos a la caja, no al viewport). */
+.intro-mark.centered{transform:translate(50vw,50vh) translate(-50%,-50%) scale(1)}
+.intro-mark.grown{transform:translate(50vw,50vh) translate(-50%,-50%) scale(2.15)}
+/* Docka a la izquierda, donde vive el wordmark "AlephOne". El font-size real
+   nunca cambia (sigue en 2.4rem) — el tamaño final de 1.5rem se logra con
+   scale(0.625), así el navegador jamás recalcula métricas de texto. */
+.intro-mark.docked{transform:translate(22px,20px) scale(0.625);cursor:pointer}
 
 .intro-loading{
   position:fixed;top:calc(50% + 62px);left:50%;transform:translate(-50%,0);z-index:910;
@@ -79,7 +93,7 @@ button{border:0;background:none;cursor:pointer}
 }
 .intro-loading.gone{opacity:0}
 .intro-text{font-family:'Syne',sans-serif;font-size:0.92rem;font-weight:700;color:var(--muted);letter-spacing:0.02em}
-.intro-spinner{width:22px;height:22px;border-radius:50%;border:2.5px solid rgba(var(--primary-rgb),0.18);border-top-color:var(--primary);animation:spin 800ms linear infinite}
+.intro-spinner{width:22px;height:22px;border-radius:50%;border:2.5px solid rgba(var(--primary-rgb),0.18);border-top-color:var(--primary);animation:spin 800ms linear infinite;will-change:transform}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 #dimFlash{position:fixed;inset:0;z-index:800;background:rgba(4,7,14,0.72);opacity:0;pointer-events:none;transition:opacity 340ms var(--e-out)}
@@ -93,14 +107,19 @@ button{border:0;background:none;cursor:pointer}
   width:220px;flex-shrink:0;padding:78px 12px 20px;
   display:flex;flex-direction:column;gap:4px;
   transition:width 420ms var(--e-out),padding 420ms var(--e-out);
+  /* width/padding sí disparan layout (es el efecto visual buscado: el
+     sidebar se angosta). contain:layout evita que ese reflow se propague
+     al resto del documento — el navegador solo recalcula esta caja. */
+  contain:layout style;
 }
 .shell.collapsed .sidebar{width:64px;padding:78px 8px 20px}
 .nav-link{
   display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:12px;
   color:var(--muted);font-size:0.86rem;font-weight:600;white-space:nowrap;overflow:hidden;
-  transition:background 160ms var(--e-out),color 160ms ease;
+  transition:background 160ms var(--e-out),color 160ms ease,transform 80ms var(--e-out);
 }
 .nav-link:hover{background:var(--glass);color:var(--text)}
+.nav-link:active{transform:scale(0.97)}
 .nav-link.active{background:rgba(var(--primary-rgb),0.16);color:var(--primary)}
 .nav-icon{width:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .nav-icon svg{width:17px;height:17px}
@@ -136,13 +155,15 @@ button{border:0;background:none;cursor:pointer}
 }
 .icon-btn{
   width:34px;height:34px;border-radius:10px;background:var(--glass);border:1px solid var(--glass-border);
-  display:flex;align-items:center;justify-content:center;color:var(--muted);transition:background 150ms ease,color 150ms ease;
+  display:flex;align-items:center;justify-content:center;color:var(--muted);
+  transition:background 150ms ease,color 150ms ease,transform 80ms var(--e-out);
 }
 .icon-btn:hover{background:var(--glass-strong);color:var(--text)}
+.icon-btn:active{transform:scale(0.92)}
 .icon-btn svg{width:16px;height:16px}
 
 /* Main */
-.main{flex:1;min-width:0;padding:84px 26px 40px;transition:padding 420ms var(--e-out);position:relative}
+.main{flex:1;min-width:0;padding:84px 26px 40px;position:relative;contain:layout style}
 
 /* ═══ AMBIENT TOD — luz de fondo, no un rectángulo ═══
    Vive detrás del texto del saludo, sin bordes ni color sólido delimitado:
