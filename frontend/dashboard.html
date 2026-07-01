@@ -109,7 +109,10 @@ button{border:0;background:none;cursor:pointer}
   transition:width 420ms var(--e-out),padding 420ms var(--e-out);
   /* width/padding sí disparan layout (es el efecto visual buscado: el
      sidebar se angosta). contain:layout evita que ese reflow se propague
-     al resto del documento — el navegador solo recalcula esta caja. */
+     al resto del documento — el navegador solo recalcula esta caja.
+     will-change se aplica/retira por JS solo durante la transición
+     (ver expandDashboard) en vez de quedar fijo acá, para no promover
+     una capa de composición en memoria todo el tiempo sin necesidad. */
   contain:layout style;
 }
 .shell.collapsed .sidebar{width:64px;padding:78px 8px 20px}
@@ -200,9 +203,17 @@ button{border:0;background:none;cursor:pointer}
   background:var(--glass);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);
   border:1px solid var(--glass-border);border-radius:18px;
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,0.14),0 8px 28px rgba(0,0,0,0.20);
+  /* Las cards se repueblan de forma asíncrona (ver renderNecesitoSaber /
+     renderMensajesDestacados), lo que cambia su altura y podía disparar
+     un reflow del resto de la grilla en cada carga. contain:layout style
+     aísla ese recálculo a la card misma, sin tocar box-shadow/blur (no
+     usamos contain:paint acá porque cortaría la sombra externa que sale
+     del borde de la card, cambiando el look actual). */
+  contain:layout style;
 }
 .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .card-title{font-family:'Syne',sans-serif;font-size:0.86rem;font-weight:800;display:flex;align-items:center;gap:7px}
+.card-title .ic{width:14px;height:14px;flex-shrink:0}
 .card-link{font-size:0.76rem;font-weight:700;color:var(--primary)}
 
 /* Quick start */
@@ -282,7 +293,7 @@ button{border:0;background:none;cursor:pointer}
     </div>
     <div class="topbar-right">
       <button class="icon-btn" id="settingsBtn" title="Ajustes">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
       <div class="pill">
         <div class="pill-avatar" id="userAvatar">?</div>
@@ -292,7 +303,7 @@ button{border:0;background:none;cursor:pointer}
   </header>
 
   <nav class="sidebar" id="sidebar">
-    <a href="dashboard.html" class="nav-link active">
+    <a href="dashboard.html" class="nav-link active" id="navDashboard" onclick="return handleHomeClick(event)">
       <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></span>
       <span class="nav-text">Dashboard</span>
     </a>
@@ -324,7 +335,12 @@ button{border:0;background:none;cursor:pointer}
     </section>
 
     <div class="quickstart glass">
-      <div class="card-head"><span class="card-title">⚡ Quick Start</span></div>
+      <div class="card-head">
+        <span class="card-title">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
+          Quick Start
+        </span>
+      </div>
       <div class="qs-row">
         <input class="qs-input" id="gameCode" placeholder="Código de sala" maxlength="8" onkeydown="if(event.key==='Enter')joinGame()">
         <button class="qs-btn" onclick="joinGame()">Unirme</button>
@@ -334,7 +350,12 @@ button{border:0;background:none;cursor:pointer}
     <div class="grid">
       <div class="col">
         <div class="glass card-pad">
-          <div class="card-head"><span class="card-title" id="knowTitle">🎯 Necesito saber</span></div>
+          <div class="card-head">
+            <span class="card-title" id="knowTitle">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>
+              Necesito saber
+            </span>
+          </div>
           <div class="know-list" id="knowList">
             <div class="empty">Cargando…</div>
           </div>
@@ -342,7 +363,12 @@ button{border:0;background:none;cursor:pointer}
       </div>
       <div class="col">
         <div class="glass msg-panel">
-          <div class="card-head"><span class="card-title">📣 Mensajes destacados</span></div>
+          <div class="card-head">
+            <span class="card-title">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10v4a1.5 1.5 0 0 0 1.5 1.5H6l5 4.5v-15L6 9H4.5A1.5 1.5 0 0 0 3 10Z"/><path d="M15 8.5a5 5 0 0 1 0 7"/><path d="M18 6a8.5 8.5 0 0 1 0 12"/></svg>
+              Mensajes destacados
+            </span>
+          </div>
           <div id="msgList">
             <div class="empty">Cargando…</div>
           </div>
@@ -362,7 +388,16 @@ button{border:0;background:none;cursor:pointer}
    3) vuela y se achica a la esquina sup. derecha
    4) dashboard queda COLAPSADO (solo íconos)
    5) click en el ℵ -> dim flash -> expande labels
+
+   Estado de la intro: se guarda en sessionStorage para que corra UNA
+   sola vez por sesión de pestaña. Como cada link del sidebar navega a
+   un archivo .html distinto (no es una SPA), "volver" al dashboard antes
+   implicaba un reload completo -> DOMContentLoaded de nuevo -> intro
+   entera de nuevo. El flag evita repetir la animación de crecer/volar
+   en visitas subsiguientes dentro de la misma sesión.
 ══════════════════════════════════════════ */
+const INTRO_KEY = 'alephone_intro_played';
+
 function runIntroGrowAndDock(){
   const mark = document.getElementById('introMark');
   const overlay = document.getElementById('introOverlay');
@@ -382,15 +417,51 @@ function runIntroGrowAndDock(){
   }, 1000);
 }
 
+/* Salto directo al estado final, sin overlay ni animación: usado cuando
+   la intro ya corrió en esta sesión. Elimina el overlay/spinner del DOM
+   de inmediato en vez de esperar transiciones que no tienen sentido acá. */
+function skipIntro(){
+  const mark = document.getElementById('introMark');
+  const overlay = document.getElementById('introOverlay');
+  const loading = document.getElementById('introLoading');
+  overlay.remove();
+  loading.remove();
+  mark.classList.remove('centered');
+  mark.style.transition = 'none';
+  mark.classList.add('docked');
+  mark.onclick = expandDashboard;
+  requestAnimationFrame(() => { mark.style.transition = ''; });
+}
+
 function expandDashboard(){
   const shell = document.getElementById('shell');
   if (!shell.classList.contains('collapsed')) return;
   const dim = document.getElementById('dimFlash');
+  const sidebar = document.getElementById('sidebar');
   dim.classList.add('on');
+  // will-change se activa justo antes de la transición de layout del
+  // sidebar y se retira al terminar (transitionend), en vez de vivir
+  // permanentemente en el CSS: así el compositor se prepara para el
+  // cambio sin mantener una capa promovida en memoria sin necesidad.
+  sidebar.style.willChange = 'width';
+  sidebar.addEventListener('transitionend', () => { sidebar.style.willChange = 'auto'; }, { once: true });
   setTimeout(() => {
     shell.classList.remove('collapsed');
     setTimeout(() => dim.classList.remove('on'), 60);
-  }, 180);
+  }, 120);
+}
+
+/* El link "Dashboard" del sidebar apunta a esta misma página. Sin este
+   guard, cada click ahí disparaba una recarga completa del documento
+   (no una navegación de SPA), lo que reiniciaba toda la secuencia de
+   intro — ese era el bug reportado. Si ya estamos acá, no navegamos:
+   como mucho, expandimos el sidebar si estaba colapsado. */
+function handleHomeClick(event){
+  event.preventDefault();
+  if (document.getElementById('shell').classList.contains('collapsed')) {
+    expandDashboard();
+  }
+  return false;
 }
 
 document.getElementById('settingsBtn').addEventListener('click', () => {
@@ -576,7 +647,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderMensajesDestacados(user)
   ]);
 
-  runIntroGrowAndDock();
+  if (sessionStorage.getItem(INTRO_KEY) === '1') {
+    skipIntro();
+  } else {
+    sessionStorage.setItem(INTRO_KEY, '1');
+    runIntroGrowAndDock();
+  }
 });
 </script>
 </body>
