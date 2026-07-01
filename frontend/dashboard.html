@@ -51,25 +51,36 @@ button{border:0;background:none;cursor:pointer}
 /* ═══ INTRO — "preparando tu ambiente" ═══ */
 #introOverlay{
   position:fixed;inset:0;z-index:900;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
   background:linear-gradient(155deg,var(--bg) 0%,var(--bg-2) 55%,var(--bg-3) 100%);
   transition:opacity 380ms var(--e-out);
 }
 #introOverlay.hide{opacity:0;pointer-events:none}
+
+/* El símbolo vive solo, centrado, y la carga se ubica claramente DEBAJO de él
+   (no comparten el mismo punto central como antes). */
 .intro-mark{
   font-family:'Syne',sans-serif;font-weight:800;color:var(--secondary);
   font-size:2.4rem;line-height:1;
   text-shadow:0 0 26px rgba(var(--primary-rgb),0.4);
   position:fixed;z-index:950;
-  transition:top 620ms var(--e-out),left 620ms var(--e-out),font-size 620ms var(--e-out),transform 620ms var(--e-out);
+  transition:top 640ms var(--e-out),left 640ms var(--e-out),font-size 640ms var(--e-out),transform 640ms var(--e-out);
 }
 .intro-mark.centered{top:50%;left:50%;transform:translate(-50%,-50%);font-size:2.4rem}
 .intro-mark.grown{top:50%;left:50%;transform:translate(-50%,-50%) scale(2.15);font-size:2.4rem}
-.intro-mark.docked{top:22px;right:26px;left:auto;transform:translate(0,0) scale(1);font-size:1.5rem;cursor:pointer}
+/* Docka a la izquierda, donde vive el wordmark "AlephOne" — y como ahora
+   usamos left en TODAS las etapas (nunca right), la transición de top+left
+   es continua y el movimiento se ve diagonal en vez de saltar. */
+.intro-mark.docked{top:20px;left:22px;transform:translate(0,0) scale(1);font-size:1.5rem;cursor:pointer}
+
+.intro-loading{
+  position:fixed;top:calc(50% + 62px);left:50%;transform:translate(-50%,0);z-index:910;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  transition:opacity 200ms ease;
+}
+.intro-loading.gone{opacity:0}
 .intro-text{font-family:'Syne',sans-serif;font-size:0.92rem;font-weight:700;color:var(--muted);letter-spacing:0.02em}
 .intro-spinner{width:22px;height:22px;border-radius:50%;border:2.5px solid rgba(var(--primary-rgb),0.18);border-top-color:var(--primary);animation:spin 800ms linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.intro-spinner.gone,.intro-text.gone{opacity:0;transition:opacity 200ms ease}
 
 #dimFlash{position:fixed;inset:0;z-index:800;background:rgba(4,7,14,0.72);opacity:0;pointer-events:none;transition:opacity 340ms var(--e-out)}
 #dimFlash.on{opacity:1}
@@ -102,7 +113,7 @@ button{border:0;background:none;cursor:pointer}
   height:64px;display:flex;align-items:center;justify-content:space-between;
   padding:0 24px 0 20px;
 }
-.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-left{display:flex;align-items:center;gap:10px;padding-left:38px}
 .topbar-mark{
   font-family:'Syne',sans-serif;font-weight:800;color:var(--secondary);font-size:1.5rem;line-height:1;
   cursor:pointer;text-shadow:0 0 18px rgba(var(--primary-rgb),0.35);
@@ -131,28 +142,37 @@ button{border:0;background:none;cursor:pointer}
 .icon-btn svg{width:16px;height:16px}
 
 /* Main */
-.main{flex:1;min-width:0;padding:84px 26px 40px;transition:padding 420ms var(--e-out)}
+.main{flex:1;min-width:0;padding:84px 26px 40px;transition:padding 420ms var(--e-out);position:relative}
 
-/* ═══ GREETING — fondo, no card ═══ */
-.greeting{
-  position:relative;border-radius:22px;overflow:hidden;padding:34px 30px 26px;margin-bottom:18px;
-  transition:background 500ms ease;
+/* ═══ AMBIENT TOD — luz de fondo, no un rectángulo ═══
+   Vive detrás del texto del saludo, sin bordes ni color sólido delimitado:
+   un resplandor grande y difuminado que se funde con el resto del fondo. */
+.ambient-tod{
+  position:absolute;top:-84px;left:-26px;right:-26px;height:460px;z-index:0;
+  pointer-events:none;filter:blur(64px);opacity:0.85;
+  transition:background 700ms ease,opacity 700ms ease;
 }
-.greeting::after{content:'ℵ';position:absolute;font-family:'Syne',sans-serif;font-size:11em;font-weight:800;
-  color:rgba(255,255,255,0.045);right:-0.08em;top:-0.2em;pointer-events:none;user-select:none}
-.greeting-eyebrow{font-size:0.7rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.6;margin-bottom:6px;font-family:'Syne',sans-serif}
-.greeting-msg{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;margin-bottom:4px}
-.greeting-date{font-size:0.82rem;opacity:0.55}
-.greeting-badges{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
-.gbadge{padding:4px 12px;border-radius:999px;font-size:0.75rem;font-weight:700;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.18);font-family:'Syne',sans-serif}
-.gbadge.urgent{background:rgba(240,80,80,0.22);border-color:rgba(240,80,80,0.35)}
+.ambient-tod.tod-morning{background:
+  radial-gradient(ellipse 55% 60% at 22% 8%,rgba(224,120,52,0.55),transparent 72%),
+  radial-gradient(ellipse 45% 55% at 78% 0%,rgba(190,86,40,0.30),transparent 75%);}
+.ambient-tod.tod-afternoon{background:
+  radial-gradient(ellipse 55% 60% at 22% 8%,rgba(224,178,52,0.50),transparent 72%),
+  radial-gradient(ellipse 45% 55% at 78% 0%,rgba(190,142,40,0.28),transparent 75%);}
+.ambient-tod.tod-evening{background:
+  radial-gradient(ellipse 55% 60% at 22% 8%,rgba(58,111,158,0.52),transparent 72%),
+  radial-gradient(ellipse 45% 55% at 78% 0%,rgba(39,77,118,0.30),transparent 75%);}
+.ambient-tod.tod-night{background:
+  radial-gradient(ellipse 55% 60% at 22% 8%,rgba(90,58,158,0.52),transparent 72%),
+  radial-gradient(ellipse 45% 55% at 78% 0%,rgba(58,42,112,0.30),transparent 75%);}
 
-/* time-of-day tints (texto siempre claro, se aplica sobre overlay oscuro propio) */
-.greeting{color:#fff}
-.greeting.tod-morning{background:linear-gradient(120deg,#c96a2e 0%,#a8502a 55%,#0f1729 130%)}
-.greeting.tod-afternoon{background:linear-gradient(120deg,#c9a22e 0%,#a8802a 55%,#0f1729 130%)}
-.greeting.tod-evening{background:linear-gradient(120deg,#3a6f9e 0%,#274d76 55%,#0f1729 130%)}
-.greeting.tod-night{background:linear-gradient(120deg,#5a3a9e 0%,#3a2a70 55%,#0f1729 130%)}
+/* ═══ GREETING — texto flotando sobre el ambiente, sin card ═══ */
+.greeting{position:relative;z-index:1;padding:40px 4px 26px;margin-bottom:18px;color:#fff}
+.greeting-eyebrow{font-size:0.7rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.62;margin-bottom:6px;font-family:'Syne',sans-serif}
+.greeting-msg{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;margin-bottom:4px;text-shadow:0 2px 18px rgba(0,0,0,0.28)}
+.greeting-date{font-size:0.82rem;opacity:0.58}
+.greeting-badges{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.gbadge{padding:4px 12px;border-radius:999px;font-size:0.75rem;font-weight:700;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.18);font-family:'Syne',sans-serif;backdrop-filter:blur(6px)}
+.gbadge.urgent{background:rgba(240,80,80,0.22);border-color:rgba(240,80,80,0.35)}
 
 /* ═══ GLASS CARD base ═══ */
 .glass{
@@ -225,11 +245,12 @@ button{border:0;background:none;cursor:pointer}
 <div class="grain"></div>
 
 <!-- INTRO -->
-<div id="introOverlay">
-  <div class="intro-spinner" id="introSpinner"></div>
-  <p class="intro-text" id="introText">Preparando tu ambiente...</p>
-</div>
+<div id="introOverlay"></div>
 <span class="intro-mark centered" id="introMark">ℵ</span>
+<div class="intro-loading" id="introLoading">
+  <div class="intro-spinner"></div>
+  <p class="intro-text">Preparando tu ambiente...</p>
+</div>
 <div id="dimFlash"></div>
 
 <!-- SHELL -->
@@ -273,7 +294,8 @@ button{border:0;background:none;cursor:pointer}
   </nav>
 
   <main class="main">
-    <section class="greeting tod-morning" id="greeting">
+    <div class="ambient-tod tod-morning" id="ambientTod"></div>
+    <section class="greeting" id="greeting">
       <div class="greeting-eyebrow" id="greetDia">HOY ES —</div>
       <div class="greeting-msg" id="greetMsg">Hola 👋</div>
       <div class="greeting-date" id="greetDate">—</div>
@@ -323,11 +345,9 @@ button{border:0;background:none;cursor:pointer}
 function runIntroGrowAndDock(){
   const mark = document.getElementById('introMark');
   const overlay = document.getElementById('introOverlay');
-  const spinner = document.getElementById('introSpinner');
-  const text = document.getElementById('introText');
+  const loading = document.getElementById('introLoading');
 
-  spinner.classList.add('gone');
-  text.classList.add('gone');
+  loading.classList.add('gone');
 
   mark.classList.remove('centered');
   mark.classList.add('grown');
@@ -337,7 +357,7 @@ function runIntroGrowAndDock(){
     mark.classList.remove('grown');
     mark.classList.add('docked');
     mark.onclick = expandDashboard;
-    setTimeout(() => overlay.remove(), 400);
+    setTimeout(() => { overlay.remove(); loading.remove(); }, 400);
   }, 1000);
 }
 
@@ -376,9 +396,9 @@ function renderGreeting(user){
   const now = new Date();
   const hora = now.getHours();
   const band = timeOfDayBand(hora);
-  const el = document.getElementById('greeting');
-  el.classList.remove('tod-morning','tod-afternoon','tod-evening','tod-night');
-  el.classList.add(band.cls);
+  const ambient = document.getElementById('ambientTod');
+  ambient.classList.remove('tod-morning','tod-afternoon','tod-evening','tod-night');
+  ambient.classList.add(band.cls);
 
   document.getElementById('greetDia').textContent = 'HOY ES ' + DIAS_ES[now.getDay()].toUpperCase();
   document.getElementById('greetMsg').textContent = `${user.username} — ${band.msg}`;
