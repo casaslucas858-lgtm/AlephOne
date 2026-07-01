@@ -1,611 +1,542 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — AlephOne</title>
-    <meta name="description" content="AlephOne Dashboard — Tu resumen diario de clases, tareas y comunicación escolar.">
-    <link rel="stylesheet" href="css/style.css">
-    <style>
-        /* ─── SETTINGS PANEL ──────────────────────────────────── */
-        .greeting-row {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 12px;
-        }
-        .greeting-content { flex: 1; min-width: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — AlephOne</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;min-height:100%}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:linear-gradient(155deg,var(--bg) 0%,var(--bg-2) 55%,var(--bg-3) 100%);
+  color:var(--text);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  transition:background 200ms ease,color 200ms ease;
+  overflow-x:hidden;
+}
 
-        .settings-trigger {
-            flex-shrink: 0;
-            width: 36px; height: 36px;
-            border-radius: 10px;
-            border: 1.5px solid rgba(255,255,255,0.12);
-            background: rgba(255,255,255,0.06);
-            color: rgba(255,255,255,0.45);
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            transition: background 0.2s, color 0.2s;
-            margin-top: 4px;
-        }
-        .settings-trigger:hover { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8); }
-        .settings-trigger.active { background: var(--teal); color: #0a0a0a; border-color: transparent; }
-        .settings-trigger svg {
-            width: 16px; height: 16px;
-            transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
-        }
-        .settings-trigger.active svg { transform: rotate(60deg); }
+:root{
+  --bg:#0f1729; --bg-2:#0c1322; --bg-3:#091020;
+  --primary:#4ab8c8; --primary-rgb:74,184,200;
+  --secondary:#6dd4e8; --secondary-rgb:109,212,232;
+  --text:#f7fbff; --muted:rgba(247,251,255,0.56); --faint:rgba(247,251,255,0.24);
+  --glass:rgba(255,255,255,0.08); --glass-strong:rgba(255,255,255,0.13); --glass-border:rgba(255,255,255,0.16);
+  --danger:#f08080; --warn:#f0b880; --ok:#6bd99a;
+  --e-out:cubic-bezier(0.16,1,0.3,1);
+  --e-snap:cubic-bezier(0.34,1.56,0.64,1);
+}
+body.theme-light{
+  --bg:#eef8fb; --bg-2:#dfeff6; --bg-3:#d3e8f2;
+  --glass:rgba(255,255,255,0.55); --glass-strong:rgba(255,255,255,0.72); --glass-border:rgba(15,30,45,0.10);
+  --text:#0f1729; --muted:rgba(15,23,41,0.56); --faint:rgba(15,23,41,0.28);
+}
+button,input,select{font:inherit;color:inherit}
+button{border:0;background:none;cursor:pointer}
+::selection{background:rgba(var(--primary-rgb),0.30)}
 
-        .settings-panel {
-            overflow: hidden;
-            max-height: 0;
-            opacity: 0;
-            transition: max-height 0.38s cubic-bezier(0.4,0,0.2,1), opacity 0.28s ease, margin-top 0.3s ease;
-            margin-top: 0;
-        }
-        .settings-panel.open { max-height: 900px; opacity: 1; margin-top: 18px; }
+/* ═══ BACKGROUND ═══ */
+.bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.glow{position:absolute;border-radius:50%;filter:blur(58px)}
+.g1{width:520px;height:520px;background:radial-gradient(circle,rgba(var(--primary-rgb),0.30),transparent 68%);top:-140px;left:-90px;animation:g1m 54s ease-in-out infinite}
+.g2{width:420px;height:420px;background:radial-gradient(circle,rgba(var(--secondary-rgb),0.20),transparent 68%);bottom:-100px;right:-60px;animation:g2m 62s ease-in-out infinite}
+@keyframes g1m{0%,100%{transform:translate(0,0)}50%{transform:translate(24px,-20px)}}
+@keyframes g2m{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,22px)}}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.02;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 
-        .settings-inner {
-            background: rgba(255,255,255,0.05);
-            border: 1.5px solid rgba(255,255,255,0.09);
-            border-radius: 14px;
-            padding: 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
+/* ═══ INTRO — "preparando tu ambiente" ═══ */
+#introOverlay{
+  position:fixed;inset:0;z-index:900;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  background:linear-gradient(155deg,var(--bg) 0%,var(--bg-2) 55%,var(--bg-3) 100%);
+  transition:opacity 380ms var(--e-out);
+}
+#introOverlay.hide{opacity:0;pointer-events:none}
+.intro-mark{
+  font-family:'Syne',sans-serif;font-weight:800;color:var(--secondary);
+  font-size:2.4rem;line-height:1;
+  text-shadow:0 0 26px rgba(var(--primary-rgb),0.4);
+  position:fixed;z-index:950;
+  transition:top 620ms var(--e-out),left 620ms var(--e-out),font-size 620ms var(--e-out),transform 620ms var(--e-out);
+}
+.intro-mark.centered{top:50%;left:50%;transform:translate(-50%,-50%);font-size:2.4rem}
+.intro-mark.grown{top:50%;left:50%;transform:translate(-50%,-50%) scale(2.15);font-size:2.4rem}
+.intro-mark.docked{top:22px;right:26px;left:auto;transform:translate(0,0) scale(1);font-size:1.5rem;cursor:pointer}
+.intro-text{font-family:'Syne',sans-serif;font-size:0.92rem;font-weight:700;color:var(--muted);letter-spacing:0.02em}
+.intro-spinner{width:22px;height:22px;border-radius:50%;border:2.5px solid rgba(var(--primary-rgb),0.18);border-top-color:var(--primary);animation:spin 800ms linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.intro-spinner.gone,.intro-text.gone{opacity:0;transition:opacity 200ms ease}
 
-        /* Tabs */
-        .stabs {
-            display: flex; gap: 4px;
-            background: rgba(0,0,0,0.25);
-            padding: 3px; border-radius: 10px;
-        }
-        .stab {
-            flex: 1; padding: 6px 8px;
-            border-radius: 8px; border: none;
-            background: transparent;
-            color: rgba(255,255,255,0.4);
-            font-size: 0.73rem; font-weight: 600;
-            cursor: pointer;
-            transition: all 0.18s ease;
-            font-family: var(--font-display);
-        }
-        .stab.active { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.9); }
-        .stab:hover:not(.active) { color: rgba(255,255,255,0.65); }
+#dimFlash{position:fixed;inset:0;z-index:800;background:rgba(4,7,14,0.72);opacity:0;pointer-events:none;transition:opacity 340ms var(--e-out)}
+#dimFlash.on{opacity:1}
 
-        .spane { display: none; flex-direction: column; gap: 12px; }
-        .spane.active { display: flex; }
+/* ═══ LAYOUT ═══ */
+.shell{position:relative;z-index:5;display:flex;min-height:100vh}
 
-        .slabel {
-            font-size: 0.67rem; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 0.09em;
-            color: rgba(255,255,255,0.28);
-        }
+/* Sidebar */
+.sidebar{
+  width:220px;flex-shrink:0;padding:78px 12px 20px;
+  display:flex;flex-direction:column;gap:4px;
+  transition:width 420ms var(--e-out),padding 420ms var(--e-out);
+}
+.shell.collapsed .sidebar{width:64px;padding:78px 8px 20px}
+.nav-link{
+  display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:12px;
+  color:var(--muted);font-size:0.86rem;font-weight:600;white-space:nowrap;overflow:hidden;
+  transition:background 160ms var(--e-out),color 160ms ease;
+}
+.nav-link:hover{background:var(--glass);color:var(--text)}
+.nav-link.active{background:rgba(var(--primary-rgb),0.16);color:var(--primary)}
+.nav-icon{width:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.nav-icon svg{width:17px;height:17px}
+.nav-text{opacity:1;transition:opacity 200ms ease}
+.shell.collapsed .nav-text{opacity:0;pointer-events:none}
 
-        /* Perfil */
-        .s-profile-row { display: flex; align-items: center; gap: 12px; }
-        .s-avatar {
-            width: 42px; height: 42px; border-radius: 11px;
-            background: var(--teal); color: #0a0a0a;
-            font-weight: 800; font-size: 1.05rem;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; font-family: var(--font-display);
-        }
-        .s-profile-info strong { display: block; font-size: 0.88rem; font-weight: 600; color: rgba(255,255,255,0.9); }
-        .s-profile-info span { font-size: 0.74rem; color: rgba(255,255,255,0.35); }
-        .s-actions { display: flex; flex-direction: column; gap: 6px; }
-        .s-action-btn {
-            display: flex; align-items: center; gap: 9px;
-            padding: 8px 11px; border-radius: 9px;
-            border: 1.5px solid rgba(255,255,255,0.07);
-            background: rgba(255,255,255,0.04);
-            color: rgba(255,255,255,0.75);
-            cursor: pointer; font-size: 0.8rem; font-weight: 500;
-            text-align: left; width: 100%;
-            transition: background 0.16s;
-            font-family: var(--font-body);
-        }
-        .s-action-btn:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.95); }
-        .s-action-btn.danger { color: #f87171; border-color: rgba(248,113,113,0.15); }
-        .s-action-btn.danger:hover { background: rgba(248,113,113,0.09); }
-        .s-action-btn svg { width: 14px; height: 14px; opacity: 0.7; flex-shrink: 0; }
+/* Topbar */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:120;
+  height:64px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px 0 20px;
+}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-mark{
+  font-family:'Syne',sans-serif;font-weight:800;color:var(--secondary);font-size:1.5rem;line-height:1;
+  cursor:pointer;text-shadow:0 0 18px rgba(var(--primary-rgb),0.35);
+  transition:transform 150ms var(--e-out);
+}
+.topbar-mark:active{transform:scale(0.92)}
+.topbar-word{
+  font-family:'Syne',sans-serif;font-weight:800;font-size:1.12rem;color:var(--text);
+  opacity:0;transform:translateX(-6px);transition:opacity 320ms var(--e-out) 80ms,transform 320ms var(--e-out) 80ms;
+}
+.shell:not(.collapsed) .topbar-word{opacity:1;transform:translateX(0)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.pill{
+  display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:999px;
+  background:var(--glass);border:1px solid var(--glass-border);font-size:0.78rem;font-weight:600;
+}
+.pill-avatar{
+  width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));
+  display:flex;align-items:center;justify-content:center;color:#06121a;font-weight:800;font-family:'Syne',sans-serif;font-size:0.78em;
+}
+.icon-btn{
+  width:34px;height:34px;border-radius:10px;background:var(--glass);border:1px solid var(--glass-border);
+  display:flex;align-items:center;justify-content:center;color:var(--muted);transition:background 150ms ease,color 150ms ease;
+}
+.icon-btn:hover{background:var(--glass-strong);color:var(--text)}
+.icon-btn svg{width:16px;height:16px}
 
-        /* Tema */
-        .theme-row { display: flex; gap: 6px; }
-        .theme-btn {
-            flex: 1; padding: 8px 4px; border-radius: 9px;
-            border: 1.5px solid rgba(255,255,255,0.08);
-            background: rgba(255,255,255,0.04);
-            color: rgba(255,255,255,0.45);
-            cursor: pointer; font-size: 0.76rem; font-weight: 600;
-            display: flex; flex-direction: column; align-items: center; gap: 5px;
-            transition: all 0.16s;
-        }
-        .theme-btn:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.8); }
-        .theme-btn.active { border-color: var(--teal); background: rgba(38,212,199,0.12); color: var(--teal); }
-        .theme-btn svg { width: 17px; height: 17px; }
+/* Main */
+.main{flex:1;min-width:0;padding:84px 26px 40px;transition:padding 420ms var(--e-out)}
 
-        .font-size-row {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 8px 10px; border-radius: 9px;
-            border: 1.5px solid rgba(255,255,255,0.06);
-            background: rgba(255,255,255,0.03);
-        }
-        .font-size-row span { font-size: 0.8rem; color: rgba(255,255,255,0.75); font-weight: 500; }
-        .fs-controls { display: flex; align-items: center; gap: 8px; }
-        .fs-controls button {
-            width: 24px; height: 24px; border-radius: 6px;
-            border: 1.5px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.8);
-            cursor: pointer; font-size: 0.9rem;
-            display: flex; align-items: center; justify-content: center;
-            transition: background 0.15s; line-height: 1;
-        }
-        .fs-controls button:hover { background: rgba(255,255,255,0.14); }
-        .fs-val { font-size: 0.78rem; font-weight: 700; color: var(--teal); min-width: 30px; text-align: center; }
+/* ═══ GREETING — fondo, no card ═══ */
+.greeting{
+  position:relative;border-radius:22px;overflow:hidden;padding:34px 30px 26px;margin-bottom:18px;
+  transition:background 500ms ease;
+}
+.greeting::after{content:'ℵ';position:absolute;font-family:'Syne',sans-serif;font-size:11em;font-weight:800;
+  color:rgba(255,255,255,0.045);right:-0.08em;top:-0.2em;pointer-events:none;user-select:none}
+.greeting-eyebrow{font-size:0.7rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.6;margin-bottom:6px;font-family:'Syne',sans-serif}
+.greeting-msg{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;margin-bottom:4px}
+.greeting-date{font-size:0.82rem;opacity:0.55}
+.greeting-badges{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.gbadge{padding:4px 12px;border-radius:999px;font-size:0.75rem;font-weight:700;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.18);font-family:'Syne',sans-serif}
+.gbadge.urgent{background:rgba(240,80,80,0.22);border-color:rgba(240,80,80,0.35)}
 
-        /* Visión */
-        .vision-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .vision-btn {
-            padding: 9px 8px; border-radius: 9px;
-            border: 1.5px solid rgba(255,255,255,0.07);
-            background: rgba(255,255,255,0.04);
-            color: rgba(255,255,255,0.55);
-            cursor: pointer; font-size: 0.76rem; font-weight: 600;
-            text-align: center; transition: all 0.16s;
-            font-family: var(--font-display); line-height: 1.3;
-        }
-        .vision-btn:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.9); }
-        .vision-btn.active { border-color: var(--teal); background: rgba(38,212,199,0.1); color: var(--teal); }
-        .vision-btn small { display: block; font-size: 0.67rem; font-weight: 400; opacity: 0.5; margin-top: 1px; }
+/* time-of-day tints (texto siempre claro, se aplica sobre overlay oscuro propio) */
+.greeting{color:#fff}
+.greeting.tod-morning{background:linear-gradient(120deg,#c96a2e 0%,#a8502a 55%,#0f1729 130%)}
+.greeting.tod-afternoon{background:linear-gradient(120deg,#c9a22e 0%,#a8802a 55%,#0f1729 130%)}
+.greeting.tod-evening{background:linear-gradient(120deg,#3a6f9e 0%,#274d76 55%,#0f1729 130%)}
+.greeting.tod-night{background:linear-gradient(120deg,#5a3a9e 0%,#3a2a70 55%,#0f1729 130%)}
 
-        /* Accesibilidad — toggles */
-        .toggle-list { display: flex; flex-direction: column; gap: 5px; }
-        .toggle-row {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 8px 10px; border-radius: 9px;
-            border: 1.5px solid rgba(255,255,255,0.06);
-            background: rgba(255,255,255,0.03);
-            cursor: pointer; transition: background 0.16s;
-        }
-        .toggle-row:hover { background: rgba(255,255,255,0.07); }
-        .toggle-row-label { display: flex; flex-direction: column; gap: 1px; }
-        .toggle-row-label strong { font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.8); }
-        .toggle-row-label small { font-size: 0.67rem; color: rgba(255,255,255,0.28); }
-        .tswitch {
-            width: 36px; height: 20px; border-radius: 10px;
-            background: rgba(255,255,255,0.1);
-            position: relative; transition: background 0.2s; flex-shrink: 0;
-        }
-        .tswitch.on { background: var(--teal); }
-        .tswitch::after {
-            content: ''; width: 14px; height: 14px;
-            border-radius: 50%; background: #fff;
-            position: absolute; top: 3px; left: 3px;
-            transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
-        }
-        .tswitch.on::after { transform: translateX(16px); }
-    </style>
+/* ═══ GLASS CARD base ═══ */
+.glass{
+  background:var(--glass);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);
+  border:1px solid var(--glass-border);border-radius:18px;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,0.14),0 8px 28px rgba(0,0,0,0.20);
+}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-family:'Syne',sans-serif;font-size:0.86rem;font-weight:800;display:flex;align-items:center;gap:7px}
+.card-link{font-size:0.76rem;font-weight:700;color:var(--primary)}
+
+/* Quick start */
+.quickstart{padding:20px 22px;margin-bottom:18px}
+.qs-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.qs-input{
+  flex:1;min-width:160px;padding:11px 14px;border-radius:12px;background:rgba(255,255,255,0.07);
+  border:1px solid var(--glass-border);color:var(--text);font-size:0.92rem;letter-spacing:0.08em;text-transform:uppercase;
+}
+.qs-input::placeholder{color:var(--faint);text-transform:none;letter-spacing:normal}
+.qs-input:focus{outline:none;border-color:rgba(var(--primary-rgb),0.5);box-shadow:0 0 0 3px rgba(var(--primary-rgb),0.12)}
+.qs-btn{
+  padding:11px 20px;border-radius:12px;background:rgba(var(--primary-rgb),0.88);color:#06121a;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:0.84rem;transition:background 150ms ease,transform 120ms var(--e-out);
+}
+.qs-btn:hover{background:var(--primary)}
+.qs-btn:active{transform:scale(0.97)}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
+.col{display:flex;flex-direction:column;gap:16px}
+
+/* Necesito saber */
+.know-list{display:flex;flex-direction:column;gap:8px}
+.know-item{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border)}
+.know-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.know-dot.bad{background:var(--danger)}
+.know-dot.warn{background:var(--warn)}
+.know-dot.ok{background:var(--ok)}
+.know-body{flex:1;min-width:0}
+.know-title{font-size:0.85rem;font-weight:700}
+.know-sub{font-size:0.74rem;color:var(--muted)}
+.know-val{font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem}
+
+/* Mensajes destacados (ex "clases de hoy", crece) */
+.msg-panel{padding:18px 18px 16px;min-height:340px}
+.msg-item{display:flex;gap:11px;padding:12px 4px;border-bottom:1px solid var(--glass-border)}
+.msg-item:last-child{border-bottom:none}
+.msg-avatar{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--secondary));
+  display:flex;align-items:center;justify-content:center;color:#06121a;font-weight:800;font-family:'Syne',sans-serif;font-size:0.78em;flex-shrink:0}
+.msg-body{flex:1;min-width:0}
+.msg-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.msg-name{font-size:0.82rem;font-weight:700}
+.msg-role{font-size:0.68rem;color:var(--muted)}
+.msg-time{font-size:0.7rem;color:var(--faint);flex-shrink:0}
+.msg-text{font-size:0.8rem;color:var(--muted);line-height:1.4;margin-top:2px}
+
+.card-pad{padding:18px 20px}
+.empty{text-align:center;padding:26px 10px;color:var(--muted);font-size:0.85rem}
+
+@media(max-width:900px){
+  .sidebar{display:none}
+  .main{padding:78px 16px 90px}
+  .grid{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body>
 
-<!-- SVG filters para visión de color -->
-<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
-    <defs>
-        <filter id="filter-deuteranopia" color-interpolation-filters="linearRGB">
-            <feColorMatrix type="matrix" values="0.367 0.861 -0.228 0 0  0.280 0.673 0.047 0 0  -0.012 0.043 0.969 0 0  0 0 0 1 0"/>
-        </filter>
-        <filter id="filter-protanopia" color-interpolation-filters="linearRGB">
-            <feColorMatrix type="matrix" values="0.152 1.053 -0.205 0 0  0.115 0.786 0.099 0 0  -0.004 -0.048 1.052 0 0  0 0 0 1 0"/>
-        </filter>
-        <filter id="filter-tritanopia" color-interpolation-filters="linearRGB">
-            <feColorMatrix type="matrix" values="1.256 -0.077 -0.179 0 0  -0.078 0.931 0.148 0 0  0.005 0.691 0.304 0 0  0 0 0 1 0"/>
-        </filter>
-    </defs>
-</svg>
+<div class="bg-layer"><div class="glow g1"></div><div class="glow g2"></div></div>
+<div class="grain"></div>
 
-<div class="app-shell">
+<!-- INTRO -->
+<div id="introOverlay">
+  <div class="intro-spinner" id="introSpinner"></div>
+  <p class="intro-text" id="introText">Preparando tu ambiente...</p>
+</div>
+<span class="intro-mark centered" id="introMark">ℵ</span>
+<div id="dimFlash"></div>
 
-    <header class="topbar">
-        <div class="topbar-left">
-            <button class="mobile-nav-btn" id="mobileNavBtn" onclick="toggleMobileNav()">☰</button>
-            <span class="topbar-logo">ℵ AlephOne</span>
+<!-- SHELL -->
+<div class="shell collapsed" id="shell">
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-word">AlephOne</span>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="settingsBtn" title="Ajustes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <div class="pill">
+        <div class="pill-avatar" id="userAvatar">?</div>
+        <span id="username">—</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="sidebar" id="sidebar">
+    <a href="dashboard.html" class="nav-link active">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></span>
+      <span class="nav-text">Dashboard</span>
+    </a>
+    <a href="#" class="nav-link" onclick="return false;">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+      <span class="nav-text">Ajustes</span>
+    </a>
+    <a href="tareas.html" class="nav-link">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+      <span class="nav-text">Actividades</span>
+    </a>
+    <a href="schools.html" class="nav-link">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></span>
+      <span class="nav-text">Escuela</span>
+    </a>
+    <a href="comunicacion.html" class="nav-link">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+      <span class="nav-text">Comunidad</span>
+    </a>
+  </nav>
+
+  <main class="main">
+    <section class="greeting tod-morning" id="greeting">
+      <div class="greeting-eyebrow" id="greetDia">HOY ES —</div>
+      <div class="greeting-msg" id="greetMsg">Hola 👋</div>
+      <div class="greeting-date" id="greetDate">—</div>
+      <div class="greeting-badges" id="greetBadges"></div>
+    </section>
+
+    <div class="quickstart glass">
+      <div class="card-head"><span class="card-title">⚡ Quick Start</span></div>
+      <div class="qs-row">
+        <input class="qs-input" id="gameCode" placeholder="Código de sala" maxlength="8" onkeydown="if(event.key==='Enter')joinGame()">
+        <button class="qs-btn" onclick="joinGame()">Unirme</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="col">
+        <div class="glass card-pad">
+          <div class="card-head"><span class="card-title" id="knowTitle">🎯 Necesito saber</span></div>
+          <div class="know-list" id="knowList">
+            <div class="empty">Cargando…</div>
+          </div>
         </div>
-        <div class="topbar-right">
-            <button class="dark-mode-toggle" id="darkModeBtn" title="Cambiar tema">🌙</button>
-            <div class="user-pill">
-                <div class="user-avatar" id="userAvatar">?</div>
-                <span id="username">—</span>
-                <span class="role-badge" id="userRole">—</span>
-            </div>
-            <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+      </div>
+      <div class="col">
+        <div class="glass msg-panel">
+          <div class="card-head"><span class="card-title">📣 Mensajes destacados</span></div>
+          <div id="msgList">
+            <div class="empty">Cargando…</div>
+          </div>
         </div>
-    </header>
-
-    <nav class="sidebar" id="sidebar">
-        <span class="nav-section-label">Principal</span>
-        <a href="dashboard.html" class="nav-link active"><span class="nav-icon">🏠</span> Dashboard</a>
-        <a href="comunicacion.html" class="nav-link">
-            <span class="nav-icon">📢</span> Comunicación
-            <span class="nav-badge" id="navBadgeMensajes" style="display:none;">0</span>
-        </a>
-        <a href="tareas.html" class="nav-link">
-            <span class="nav-icon">📋</span> Tareas
-            <span class="nav-badge" id="navBadgeTareas" style="display:none;">0</span>
-        </a>
-        <span class="nav-section-label">Académico</span>
-        <a href="horario.html" class="nav-link"><span class="nav-icon">🗓️</span> Horario</a>
-        <a href="promedios.html" class="nav-link"><span class="nav-icon">📊</span> Promedios</a>
-        <span class="nav-section-label">Herramientas</span>
-        <a href="quizzit.html" class="nav-link"><span class="nav-icon">🧪</span> Quizzit</a>
-        <a href="ai-chat.html" class="nav-link"><span class="nav-icon">🤖</span> Fractal AI</a>
-        <span class="nav-section-label">Escuelas</span>
-        <a href="schools.html" class="nav-link"><span class="nav-icon">🏫</span> Mis Escuelas</a>
-        <div class="sidebar-footer">
-            <button class="btn btn-ghost btn-sm" onclick="logout()" style="width:100%;">← Cerrar sesión</button>
-        </div>
-    </nav>
-
-    <main class="main-content">
-
-        <div class="day-greeting fade-up" id="dayGreeting">
-            <div class="greeting-row">
-                <div class="greeting-content">
-                    <div class="greeting-label">HOY ES <span id="greetingDia"></span></div>
-                    <h2 id="greetingMsg">Hola 👋</h2>
-                    <div class="greeting-date" id="greetingDate"></div>
-                    <div class="greeting-badges" id="greetingBadges"></div>
-                </div>
-                <button class="settings-trigger" id="settingsToggle" title="Ajustes y perfil"
-                    onclick="toggleSettingsPanel()" aria-expanded="false" aria-controls="settingsPanel">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                    </svg>
-                </button>
-            </div>
-
-            <div class="settings-panel" id="settingsPanel" role="region" aria-label="Ajustes">
-                <div class="settings-inner">
-
-                    <div class="stabs">
-                        <button class="stab active" onclick="switchStab('perfil')">Perfil</button>
-                        <button class="stab" onclick="switchStab('tema')">Tema</button>
-                        <button class="stab" onclick="switchStab('vision')">Visión</button>
-                        <button class="stab" onclick="switchStab('accesibilidad')">Accesibilidad</button>
-                    </div>
-
-                    <!-- Perfil -->
-                    <div class="spane active" id="spane-perfil">
-                        <div class="s-profile-row">
-                            <div class="s-avatar" id="settingsAvatar">?</div>
-                            <div class="s-profile-info">
-                                <strong id="settingsUsername">—</strong>
-                                <span id="settingsRole">—</span>
-                            </div>
-                        </div>
-                        <div class="s-actions">
-                            <button class="s-action-btn" onclick="copyUsername()">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                                Copiar nombre de usuario
-                            </button>
-                            <button class="s-action-btn danger" onclick="logout()">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                                Cerrar sesión
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Tema -->
-                    <div class="spane" id="spane-tema">
-                        <div class="slabel">Modo</div>
-                        <div class="theme-row">
-                            <button class="theme-btn" id="themeBtnLight" onclick="setTheme('light')">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                                Claro
-                            </button>
-                            <button class="theme-btn active" id="themeBtnDark" onclick="setTheme('dark')">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                                Oscuro
-                            </button>
-                            <button class="theme-btn" id="themeBtnAuto" onclick="setTheme('auto')">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                                Auto
-                            </button>
-                        </div>
-                        <div class="slabel">Tamaño de texto</div>
-                        <div class="font-size-row">
-                            <span>Letra</span>
-                            <div class="fs-controls">
-                                <button onclick="changeFontSize(-1)" aria-label="Reducir">−</button>
-                                <span class="fs-val" id="fontSizeVal">100%</span>
-                                <button onclick="changeFontSize(1)" aria-label="Aumentar">+</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Visión -->
-                    <div class="spane" id="spane-vision">
-                        <div class="slabel">Modo de visión de color</div>
-                        <div class="vision-grid">
-                            <button class="vision-btn active" id="visionNormal" onclick="setVision('normal')">
-                                Normal <small>Sin filtro</small>
-                            </button>
-                            <button class="vision-btn" id="visionDeuteranopia" onclick="setVision('deuteranopia')">
-                                Deuteranopia <small>Déficit verde</small>
-                            </button>
-                            <button class="vision-btn" id="visionProtanopia" onclick="setVision('protanopia')">
-                                Protanopia <small>Déficit rojo</small>
-                            </button>
-                            <button class="vision-btn" id="visionTritanopia" onclick="setVision('tritanopia')">
-                                Tritanopia <small>Déficit azul</small>
-                            </button>
-                            <button class="vision-btn" id="visionGrayscale" onclick="setVision('grayscale')" style="grid-column:1/-1;">
-                                Escala de grises <small>Sin color</small>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Accesibilidad -->
-                    <div class="spane" id="spane-accesibilidad">
-                        <div class="toggle-list">
-                            <div class="toggle-row" onclick="toggleA11y('reduce-motion')" role="switch" id="row-reduce-motion" aria-checked="false">
-                                <div class="toggle-row-label"><strong>Reducir movimiento</strong><small>Desactiva animaciones y transiciones</small></div>
-                                <div class="tswitch" id="sw-reduce-motion"></div>
-                            </div>
-                            <div class="toggle-row" onclick="toggleA11y('reduce-transparency')" role="switch" id="row-reduce-transparency" aria-checked="false">
-                                <div class="toggle-row-label"><strong>Reducir transparencias</strong><small>Elimina efectos blur y glass</small></div>
-                                <div class="tswitch" id="sw-reduce-transparency"></div>
-                            </div>
-                            <div class="toggle-row" onclick="toggleA11y('high-contrast')" role="switch" id="row-high-contrast" aria-checked="false">
-                                <div class="toggle-row-label"><strong>Alto contraste</strong><small>Mayor diferencia entre fondo y texto</small></div>
-                                <div class="tswitch" id="sw-high-contrast"></div>
-                            </div>
-                            <div class="toggle-row" onclick="toggleA11y('font-dyslexic')" role="switch" id="row-font-dyslexic" aria-checked="false">
-                                <div class="toggle-row-label"><strong>Fuente para dislexia</strong><small>OpenDyslexic con mayor espaciado</small></div>
-                                <div class="tswitch" id="sw-font-dyslexic"></div>
-                            </div>
-                            <div class="toggle-row" onclick="toggleA11y('letter-spacing-wide')" role="switch" id="row-letter-spacing-wide" aria-checked="false">
-                                <div class="toggle-row-label"><strong>Espaciado de letras</strong><small>Más espacio entre caracteres</small></div>
-                                <div class="tswitch" id="sw-letter-spacing-wide"></div>
-                            </div>
-                            <div class="toggle-row" onclick="toggleA11y('line-height-wide')" role="switch" id="row-line-height-wide" aria-checked="false">
-                                <div class="toggle-row-label"><strong>Interlineado amplio</strong><small>Más espacio entre líneas de texto</small></div>
-                                <div class="tswitch" id="sw-line-height-wide"></div>
-                            </div>
-                            <div class="toggle-row" onclick="toggleA11y('underline-links')" role="switch" id="row-underline-links" aria-checked="false">
-                                <div class="toggle-row-label"><strong>Subrayar links</strong><small>Todos los enlaces siempre subrayados</small></div>
-                                <div class="tswitch" id="sw-underline-links"></div>
-                            </div>
-                            <div class="toggle-row" onclick="toggleA11y('enhanced-focus')" role="switch" id="row-enhanced-focus" aria-checked="false">
-                                <div class="toggle-row-label"><strong>Focus visible mejorado</strong><small>Indicador de foco más visible al navegar con teclado</small></div>
-                                <div class="tswitch" id="sw-enhanced-focus"></div>
-                            </div>
-                            <div class="toggle-row" onclick="toggleA11y('large-targets')" role="switch" id="row-large-targets" aria-checked="false">
-                                <div class="toggle-row-label"><strong>Área de toque ampliada</strong><small>Botones e inputs más grandes</small></div>
-                                <div class="tswitch" id="sw-large-targets"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
-        <div class="stats-grid" id="statsGrid">
-            <div class="stat-card fade-up"><div class="spinner" style="margin:12px auto;"></div></div>
-            <div class="stat-card fade-up"><div class="spinner" style="margin:12px auto;"></div></div>
-            <div class="stat-card fade-up"><div class="spinner" style="margin:12px auto;"></div></div>
-            <div class="stat-card fade-up"><div class="spinner" style="margin:12px auto;"></div></div>
-        </div>
-
-        <div class="dashboard-grid">
-            <div class="dashboard-main">
-                <div class="card fade-up" id="teacherPanel" style="display:none;">
-                    <div class="card-header"><span class="card-title">⚡ Acciones rápidas</span></div>
-                    <div class="teacher-actions">
-                        <a href="comunicacion.html" class="action-card"><div class="action-icon">📢</div><div class="action-label">Anuncio</div><div class="action-sub">Comunicar</div></a>
-                        <a href="tareas.html" class="action-card"><div class="action-icon">📋</div><div class="action-label">Tarea</div><div class="action-sub">Asignar</div></a>
-                        <a href="horario.html" class="action-card"><div class="action-icon">🗓️</div><div class="action-label">Horario</div><div class="action-sub">Editar</div></a>
-                        <a href="promedios.html" class="action-card"><div class="action-icon">📊</div><div class="action-label">Notas</div><div class="action-sub">Calificar</div></a>
-                        <a href="schools.html" class="action-card"><div class="action-icon">🏫</div><div class="action-label">Escuelas</div><div class="action-sub">Gestionar</div></a>
-                    </div>
-                </div>
-                <div class="card fade-up">
-                    <div class="card-header"><span class="card-title">📋 Tareas pendientes</span><a href="tareas.html" class="btn btn-ghost btn-sm">Ver todas →</a></div>
-                    <div id="tareasList" class="item-list"><div style="padding:24px 0;text-align:center;"><div class="spinner"></div></div></div>
-                </div>
-                <div class="card fade-up">
-                    <div class="card-header"><span class="card-title">📢 Mensajes recientes</span><a href="comunicacion.html" class="btn btn-ghost btn-sm">Ver todos →</a></div>
-                    <div id="mensajesList"><div style="padding:24px 0;text-align:center;"><div class="spinner"></div></div></div>
-                </div>
-            </div>
-            <div class="dashboard-side">
-                <div class="card fade-up">
-                    <div class="card-header"><span class="card-title">🏫 Clases de hoy</span></div>
-                    <div id="clasesHoy" class="today-schedule"><div style="padding:24px 0;text-align:center;"><div class="spinner"></div></div></div>
-                </div>
-                <div class="card fade-up">
-                    <div class="card-header"><span class="card-title">📅 Próximos eventos</span><a href="horario.html" class="btn btn-ghost btn-sm">Ver →</a></div>
-                    <div id="eventosList"><div style="padding:24px 0;text-align:center;"><div class="spinner"></div></div></div>
-                </div>
-            </div>
-        </div>
-    </main>
+      </div>
+    </div>
+  </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/api.js"></script>
-<script src="js/app.js"></script>
-<script src="js/dashboard.js"></script>
-
-<nav class="bottom-nav" id="bottomNav">
-    <a href="dashboard.html" class="bn-item active"><span class="bn-icon">🏠</span><span class="bn-label">Inicio</span></a>
-    <a href="comunicacion.html" class="bn-item"><span class="bn-icon">📢</span><span class="bn-label">Mensajes</span></a>
-    <a href="tareas.html" class="bn-item"><span class="bn-icon">📋</span><span class="bn-label">Tareas</span></a>
-    <button type="button" class="bn-item" onclick="toggleMasSheet()"><span class="bn-icon">⋯</span><span class="bn-label">Más</span></button>
-</nav>
-
-<div class="mas-overlay" id="masOverlay" onclick="toggleMasSheet()"></div>
-<div class="mas-sheet" id="masSheet">
-    <div class="mas-handle"></div>
-    <a href="horario.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🗓️</span><span>Horario</span></a>
-    <a href="promedios.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">📊</span><span>Promedios</span></a>
-    <a href="quizzit.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🧪</span><span>Quizzit</span></a>
-    <a href="ai-chat.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🤖</span><span>Fractal AI</span></a>
-    <a href="schools.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🏫</span><span>Mis Escuelas</span></a>
-</div>
-
 <script>
-function toggleMasSheet() {
-    document.getElementById('masSheet').classList.toggle('open');
-    document.getElementById('masOverlay').classList.toggle('open');
+/* ══════════════════════════════════════════
+   INTRO SEQUENCE
+   1) "Preparando tu ambiente..." + spinner
+   2) al terminar de cargar datos: el ℵ crece 1s
+   3) vuela y se achica a la esquina sup. derecha
+   4) dashboard queda COLAPSADO (solo íconos)
+   5) click en el ℵ -> dim flash -> expande labels
+══════════════════════════════════════════ */
+function runIntroGrowAndDock(){
+  const mark = document.getElementById('introMark');
+  const overlay = document.getElementById('introOverlay');
+  const spinner = document.getElementById('introSpinner');
+  const text = document.getElementById('introText');
+
+  spinner.classList.add('gone');
+  text.classList.add('gone');
+
+  mark.classList.remove('centered');
+  mark.classList.add('grown');
+
+  setTimeout(() => {
+    overlay.classList.add('hide');
+    mark.classList.remove('grown');
+    mark.classList.add('docked');
+    mark.onclick = expandDashboard;
+    setTimeout(() => overlay.remove(), 400);
+  }, 1000);
 }
 
-// ─── SETTINGS ────────────────────────────────────────────────
-function toggleSettingsPanel() {
-    const panel = document.getElementById('settingsPanel');
-    const btn   = document.getElementById('settingsToggle');
-    const isOpen = panel.classList.contains('open');
-    panel.classList.toggle('open');
-    btn.classList.toggle('active');
-    btn.setAttribute('aria-expanded', String(!isOpen));
-    if (!isOpen) syncSettingsProfile();
+function expandDashboard(){
+  const shell = document.getElementById('shell');
+  if (!shell.classList.contains('collapsed')) return;
+  const dim = document.getElementById('dimFlash');
+  dim.classList.add('on');
+  setTimeout(() => {
+    shell.classList.remove('collapsed');
+    setTimeout(() => dim.classList.remove('on'), 60);
+  }, 180);
 }
 
-document.addEventListener('click', e => {
-    const greeting = document.getElementById('dayGreeting');
-    if (!greeting?.contains(e.target)) {
-        document.getElementById('settingsPanel').classList.remove('open');
-        const btn = document.getElementById('settingsToggle');
-        btn.classList.remove('active');
-        btn.setAttribute('aria-expanded', 'false');
-    }
+document.getElementById('settingsBtn').addEventListener('click', () => {
+  if (document.getElementById('shell').classList.contains('collapsed')) expandDashboard();
+  // TODO: abrir panel de ajustes (perfil / tema / visión / accesibilidad) reutilizando
+  // el mismo settings-panel que ya existía en dashboard.html — se reconecta cuando
+  // se termine de migrar esa pieza al lenguaje visual nuevo.
 });
 
-function switchStab(id) {
-    const ids = ['perfil','tema','vision','accesibilidad'];
-    document.querySelectorAll('.stab').forEach((b,i) => b.classList.toggle('active', ids[i] === id));
-    document.querySelectorAll('.spane').forEach(p => p.classList.toggle('active', p.id === 'spane-' + id));
+/* ══════════════════════════════════════════
+   SALUDO COMO FONDO — franja de luz por horario
+══════════════════════════════════════════ */
+const DIAS_ES = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const MESES_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+function timeOfDayBand(hora){
+  if (hora >= 6 && hora < 13)  return { cls:'tod-morning',   msg:'Empezando el día.' };
+  if (hora >= 13 && hora < 19) return { cls:'tod-afternoon', msg:'Aún queda tarde por delante.' };
+  if (hora >= 19 && hora < 24) return { cls:'tod-evening',   msg:'La luna ya está arriba.' };
+  return { cls:'tod-night', msg:'El mundo duerme, tú no.' };
 }
 
-function syncSettingsProfile() {
-    const user = window._alephUser;
-    if (!user) return;
-    const el = document.getElementById('settingsAvatar');
-    if (el) el.textContent = (user.username || '?')[0].toUpperCase();
-    const uEl = document.getElementById('settingsUsername');
-    if (uEl) uEl.textContent = user.username || '—';
-    const roles = { student: 'Estudiante', teacher: 'Docente', director: 'Director' };
-    const rEl = document.getElementById('settingsRole');
-    if (rEl) rEl.textContent = roles[user.role] || user.role || '—';
+function renderGreeting(user){
+  const now = new Date();
+  const hora = now.getHours();
+  const band = timeOfDayBand(hora);
+  const el = document.getElementById('greeting');
+  el.classList.remove('tod-morning','tod-afternoon','tod-evening','tod-night');
+  el.classList.add(band.cls);
+
+  document.getElementById('greetDia').textContent = 'HOY ES ' + DIAS_ES[now.getDay()].toUpperCase();
+  document.getElementById('greetMsg').textContent = `${user.username} — ${band.msg}`;
+  document.getElementById('greetDate').textContent = `${now.getDate()} de ${MESES_ES[now.getMonth()]} de ${now.getFullYear()}`;
 }
 
-// ─── TEMA ────────────────────────────────────────────────────
-const FONT_SIZES = [85, 92, 100, 107, 115];
-let fontSizeIdx = 2;
+/* ══════════════════════════════════════════
+   NECESITO SABER — por rol
+   Alumno: materias con menor nota / próx. exámenes / próx. actividades
+   Profe, director y superadmin: rendimiento del curso / próx. exámenes / notas
+══════════════════════════════════════════ */
+async function renderNecesitoSaber(user){
+  const el = document.getElementById('knowList');
+  const CURSO = user.curso || '3A';
 
-function setTheme(theme) {
-    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-    const darkBtn = document.getElementById('darkModeBtn');
-    if (theme === 'light') {
-        document.body.classList.remove('dark-mode');
-        document.getElementById('themeBtnLight').classList.add('active');
-        if (darkBtn) darkBtn.textContent = '🌙';
-    } else if (theme === 'dark') {
-        document.body.classList.add('dark-mode');
-        document.getElementById('themeBtnDark').classList.add('active');
-        if (darkBtn) darkBtn.textContent = '☀️';
+  try {
+    if (user.role === 'student') {
+      const [notas, eventos, tareas] = await Promise.all([
+        AlephAPI.Promedios.getDeAlumno(user.username),
+        AlephAPI.Calendario.getProximos(CURSO, 14),
+        AlephAPI.Tareas.getParaCurso(CURSO)
+      ]);
+
+      const porMateria = {};
+      notas.forEach(n => {
+        (porMateria[n.materia] ||= []).push(Number(n.valor));
+      });
+      const promedios = Object.entries(porMateria)
+        .map(([materia, vals]) => ({ materia, prom: vals.reduce((a,b)=>a+b,0)/vals.length }))
+        .sort((a,b) => a.prom - b.prom)
+        .slice(0, 3);
+
+      const examenes = eventos.filter(e => e.tipo === 'examen').slice(0, 3);
+      const actividadesPend = tareas
+        .filter(t => !t.entregas?.find(e => e.alumno_username === user.username))
+        .slice(0, 3);
+
+      const rows = [];
+      promedios.forEach(p => rows.push(knowRow(
+        p.prom < 6 ? 'bad' : p.prom < 7.5 ? 'warn' : 'ok',
+        p.materia, 'Promedio actual', p.prom.toFixed(1)
+      )));
+      examenes.forEach(e => rows.push(knowRow('warn', e.titulo, 'Examen próximo', fmtFecha(e.fecha))));
+      actividadesPend.forEach(t => rows.push(knowRow('bad', t.titulo, 'Actividad pendiente', fmtFecha(t.fechaCierre))));
+
+      el.innerHTML = rows.length ? rows.join('') : '<div class="empty">Estás al día en todo 🎉</div>';
+
     } else {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.body.classList.toggle('dark-mode', prefersDark);
-        document.getElementById('themeBtnAuto').classList.add('active');
-        if (darkBtn) darkBtn.textContent = prefersDark ? '☀️' : '🌙';
+      // teacher, director y superadmin ven la MISMA vista que el profesor
+      const [tareasDoc, notasCurso, eventos] = await Promise.all([
+        AlephAPI.Tareas.getDelDocente(user.username),
+        AlephAPI.Promedios.getDeAlumno(user.username).catch(() => []),
+        AlephAPI.Calendario.getProximos(CURSO, 14)
+      ]);
+
+      const examenes = eventos.filter(e => e.tipo === 'examen').slice(0, 3);
+      const rows = [];
+      rows.push(knowRow('ok', `Curso ${CURSO}`, 'Rendimiento general', notasCurso.length ? (notasCurso.reduce((a,n)=>a+Number(n.valor),0)/notasCurso.length).toFixed(1) : '—'));
+      examenes.forEach(e => rows.push(knowRow('warn', e.titulo, 'Examen próximo', fmtFecha(e.fecha))));
+      rows.push(knowRow('warn', 'Tareas por calificar', 'Pendientes de revisión', String(tareasDoc.filter(t => (t.entregas||[]).some(e => e.nota == null)).length)));
+
+      el.innerHTML = rows.join('');
     }
-    localStorage.setItem('aleph_theme', theme);
-    localStorage.setItem('aleph_dark_mode', document.body.classList.contains('dark-mode'));
+  } catch (err) {
+    console.error('Necesito saber:', err);
+    el.innerHTML = '<div class="empty">No se pudo cargar esta sección.</div>';
+  }
 }
 
-function syncThemeButtons() {
-    const saved = localStorage.getItem('aleph_theme') || 'dark';
-    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-    if (saved === 'light')     document.getElementById('themeBtnLight')?.classList.add('active');
-    else if (saved === 'auto') document.getElementById('themeBtnAuto')?.classList.add('active');
-    else                       document.getElementById('themeBtnDark')?.classList.add('active');
+function knowRow(dot, title, sub, val){
+  return `<div class="know-item">
+    <span class="know-dot ${dot}"></span>
+    <div class="know-body"><div class="know-title">${sanitizeLocal(title)}</div><div class="know-sub">${sanitizeLocal(sub)}</div></div>
+    <div class="know-val">${sanitizeLocal(String(val))}</div>
+  </div>`;
 }
 
-function changeFontSize(dir) {
-    fontSizeIdx = Math.max(0, Math.min(FONT_SIZES.length - 1, fontSizeIdx + dir));
-    const size = FONT_SIZES[fontSizeIdx];
-    document.documentElement.style.fontSize = size + '%';
-    document.getElementById('fontSizeVal').textContent = size + '%';
-    localStorage.setItem('aleph_font_size_idx', fontSizeIdx);
-}
+/* ══════════════════════════════════════════
+   MENSAJES DESTACADOS — ex "Clases de hoy"
+   TODO: la fuente definitiva de "figuras relevantes" (director/profes)
+   todavía no está definida. Por ahora se muestran los mensajes más
+   recientes de Comunicación que vengan de un autor con rol docente/director,
+   sin scroll (máx. 4).
+══════════════════════════════════════════ */
+async function renderMensajesDestacados(user){
+  const el = document.getElementById('msgList');
+  try {
+    const CURSO = user.curso || '3A';
+    const mensajes = await AlephAPI.Comunicacion.getParaUsuario(user.username, CURSO);
+    const destacados = mensajes.slice(0, 4);
 
-// ─── VISIÓN ──────────────────────────────────────────────────
-const VISION_MODES = ['deuteranopia','protanopia','tritanopia','grayscale'];
-
-function setVision(mode) {
-    VISION_MODES.forEach(m => document.body.classList.remove('vision-' + m));
-    document.querySelectorAll('.vision-btn').forEach(b => b.classList.remove('active'));
-    if (mode !== 'normal') document.body.classList.add('vision-' + mode);
-    const id = 'vision' + mode.charAt(0).toUpperCase() + mode.slice(1);
-    document.getElementById(id)?.classList.add('active');
-    localStorage.setItem('aleph_vision', mode);
-}
-
-// ─── ACCESIBILIDAD ───────────────────────────────────────────
-const A11Y_KEYS = [
-    'reduce-motion','reduce-transparency','high-contrast',
-    'font-dyslexic','letter-spacing-wide','line-height-wide',
-    'underline-links','enhanced-focus','large-targets'
-];
-
-function toggleA11y(key) {
-    const isOn = document.body.classList.toggle(key);
-    document.getElementById('sw-' + key)?.classList.toggle('on', isOn);
-    document.getElementById('row-' + key)?.setAttribute('aria-checked', String(isOn));
-    localStorage.setItem('aleph_a11y_' + key, isOn);
-}
-
-// ─── COPIAR USUARIO ──────────────────────────────────────────
-function copyUsername() {
-    const user = window._alephUser;
-    if (!user?.username) return;
-    navigator.clipboard.writeText(user.username).then(() => {
-        if (typeof showToast === 'function') showToast('Usuario copiado', 'success');
-    });
-}
-
-// ─── INIT ────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-    syncThemeButtons();
-
-    // Font size
-    const savedFS = localStorage.getItem('aleph_font_size_idx');
-    if (savedFS !== null) {
-        fontSizeIdx = parseInt(savedFS);
-        const size = FONT_SIZES[fontSizeIdx] || 100;
-        document.documentElement.style.fontSize = size + '%';
-        const el = document.getElementById('fontSizeVal');
-        if (el) el.textContent = size + '%';
+    if (!destacados.length) {
+      el.innerHTML = '<div class="empty">No hay mensajes destacados por ahora.</div>';
+      return;
     }
 
-    // Vision
-    const savedV = localStorage.getItem('aleph_vision') || 'normal';
-    setVision(savedV);
+    el.innerHTML = destacados.map(m => `
+      <div class="msg-item">
+        <div class="msg-avatar">${(m.autor || '?').charAt(0).toUpperCase()}</div>
+        <div class="msg-body">
+          <div class="msg-top">
+            <span class="msg-name">${sanitizeLocal(m.autor || 'AlephOne')}</span>
+            <span class="msg-time">${fmtFechaHora(m.fechaCreacion)}</span>
+          </div>
+          <div class="msg-text">${sanitizeLocal(m.titulo)}</div>
+        </div>
+      </div>`).join('');
+  } catch (err) {
+    console.error('Mensajes destacados:', err);
+    el.innerHTML = '<div class="empty">No se pudo cargar esta sección.</div>';
+  }
+}
 
-    // A11y toggles
-    A11Y_KEYS.forEach(key => {
-        if (localStorage.getItem('aleph_a11y_' + key) === 'true') {
-            document.body.classList.add(key);
-            document.getElementById('sw-' + key)?.classList.add('on');
-            document.getElementById('row-' + key)?.setAttribute('aria-checked', 'true');
-        }
-    });
+function joinGame(){
+  const code = document.getElementById('gameCode').value.trim().toUpperCase();
+  if (!code) return;
+  window.location.href = `sala.html?code=${encodeURIComponent(code)}`;
+}
+
+function fmtFecha(iso){
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return `${d.getDate()} ${MESES_ES[d.getMonth()].slice(0,3)}`;
+}
+function fmtFechaHora(iso){
+  if (!iso) return '';
+  const d = new Date(iso);
+  return `${d.getDate()} ${MESES_ES[d.getMonth()].slice(0,3)} · ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function sanitizeLocal(str){
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+
+function renderAvatar(user){
+  document.getElementById('userAvatar').textContent = (user.username || '?').charAt(0).toUpperCase();
+  document.getElementById('username').textContent = user.username || '—';
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', async () => {
+  await AlephAPI.Auth.init();
+  const user = AlephAPI.Auth.getCurrentUser();
+  if (!user) { window.location.href = './index.html'; return; }
+
+  renderAvatar(user);
+
+  await Promise.all([
+    renderGreeting(user),
+    renderNecesitoSaber(user),
+    renderMensajesDestacados(user)
+  ]);
+
+  runIntroGrowAndDock();
 });
 </script>
-
 </body>
 </html>
