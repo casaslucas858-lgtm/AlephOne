@@ -80,9 +80,6 @@ button{border:0;background:none;cursor:pointer}
 .intro-spinner{width:22px;height:22px;border-radius:50%;border:2.5px solid rgba(var(--primary-rgb),0.18);border-top-color:var(--primary);animation:spin 800ms linear infinite;will-change:transform}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-#dimFlash{position:fixed;inset:0;z-index:800;background:rgba(4,7,14,0.72);opacity:0;pointer-events:none;transition:opacity 340ms var(--e-out)}
-#dimFlash.on{opacity:1}
-
 /* ═══ LAYOUT ═══ */
 .shell{position:relative;z-index:5;display:flex;min-height:100vh}
 
@@ -254,7 +251,6 @@ body.sidebar-transitioning .glass{
   <div class="intro-spinner"></div>
   <p class="intro-text">Preparando tu ambiente...</p>
 </div>
-<div id="dimFlash"></div>
 
 <!-- SHELL -->
 <div class="shell collapsed" id="shell">
@@ -378,7 +374,6 @@ const AlephUIState = {
 const els = {
   shell: document.getElementById('shell'),
   sidebar: document.getElementById('sidebar'),
-  dimFlash: document.getElementById('dimFlash'),
   introOverlay: document.getElementById('introOverlay'),
   introMark: document.getElementById('introMark'),
   introLoading: document.getElementById('introLoading'),
@@ -423,22 +418,20 @@ function skipIntro(){
   requestAnimationFrame(() => { mark.style.transition = ''; });
 }
 
-/* Expandir el sidebar es la interacción más repetida del dashboard:
-   - Antes: click -> esperar 120ms sin que pase nada visible -> recién ahí
-     arrancar el layout -> esperar otros 60ms más para destapar el dim.
-     Ese hueco de espera pura era justo el tipo de "retraso entre apretar
-     el botón y ver la respuesta" que había que sacar.
-   - Ahora: todo lo que puede arrancar en el mismo tick del click, arranca
-     en el mismo tick (el dim empieza a oscurecer Y el sidebar empieza a
-     expandirse a la vez). Lo único que se espera de verdad es el evento
-     real transitionend del ancho del sidebar — no un número inventado —
-     con un setTimeout de 560ms solo como red de seguridad por si el
-     navegador no llega a disparar el evento. */
+/* Expandir el sidebar es la interacción más repetida del dashboard.
+   Antes tapaba la transición completa con un velo casi negro (#dimFlash)
+   para esconder la reflow mientras el sidebar cambiaba de ancho — hacía
+   falta cuando el blur de las cards pesaba 22px. Con el blur bajado a
+   14px + modo lite (4px) durante la transición + contain:layout, la
+   reflow ya es lo bastante barata como para animarse a la vista sin
+   necesidad de un flash oscuro tapándola. Lo que queda es solo la lógica
+   real: activar el modo lite mientras dura la transición y apagarlo
+   cuando el navegador confirma (transitionend) que terminó — con un
+   timeout de seguridad por si ese evento no llega a disparar. */
 function expandDashboard(){
-  const { shell, sidebar, dimFlash: dim } = els;
+  const { shell, sidebar } = els;
   if (!shell.classList.contains('collapsed')) return;
 
-  dim.classList.add('on');
   document.body.classList.add('sidebar-transitioning');
   sidebar.style.willChange = 'width';
   shell.classList.remove('collapsed');
@@ -449,7 +442,6 @@ function expandDashboard(){
     done = true;
     document.body.classList.remove('sidebar-transitioning');
     sidebar.style.willChange = 'auto';
-    dim.classList.remove('on');
   };
   sidebar.addEventListener('transitionend', (event) => {
     if (event.propertyName === 'width') finish();
