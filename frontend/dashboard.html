@@ -43,10 +43,6 @@ button{border:0;background:none;cursor:pointer}
 .bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .glow{position:absolute;border-radius:50%;filter:blur(58px);will-change:transform}
 .g1{width:520px;height:520px;background:radial-gradient(circle,rgba(var(--primary-rgb),0.30),transparent 68%);top:-140px;left:-90px;
-  /* steps() en vez de interpolación continua: el ojo no distingue la
-     diferencia en un desplazamiento de 20-24px repartido en 54-62s, pero
-     el navegador deja de recalcular la textura detrás de cada card con
-     backdrop-filter en cada uno de los ~60 frames por segundo. */
   animation:g1m 54s steps(30,end) infinite;}
 .g2{width:420px;height:420px;background:radial-gradient(circle,rgba(var(--secondary-rgb),0.20),transparent 68%);bottom:-100px;right:-60px;animation:g2m 62s steps(30,end) infinite}
 @keyframes g1m{0%,100%{transform:translate(0,0)}50%{transform:translate(24px,-20px)}}
@@ -62,28 +58,16 @@ button{border:0;background:none;cursor:pointer}
 }
 #introOverlay.hide{opacity:0;pointer-events:none}
 
-/* El símbolo vive solo, centrado, y la carga se ubica claramente DEBAJO de él
-   (no comparten el mismo punto central como antes). */
 .intro-mark{
   font-family:'Syne',sans-serif;font-weight:800;color:var(--secondary);
   font-size:2.4rem;line-height:1;
   text-shadow:0 0 26px rgba(var(--primary-rgb),0.4);
   position:fixed;top:0;left:0;z-index:950;
   transform-origin:0 0;
-  /* Antes esto animaba top/left/font-size (layout + reflow de texto en
-     cada frame). Ahora TODO el movimiento y el escalado pasan por
-     transform, que es compositor-only: 0 reflow, 0 repaint por frame. */
   transition:transform 640ms var(--e-out);
 }
-/* translate(50vw,50vh) ubica la esquina superior-izq. del glifo en el centro
-   del viewport (equivalente al viejo top:50%;left:50%); el segundo
-   translate(-50%,-50%) centra usando el tamaño propio del elemento
-   (los porcentajes en transform son relativos a la caja, no al viewport). */
 .intro-mark.centered{transform:translate(50vw,50vh) translate(-50%,-50%) scale(1)}
 .intro-mark.grown{transform:translate(50vw,50vh) translate(-50%,-50%) scale(2.15)}
-/* Docka a la izquierda, donde vive el wordmark "AlephOne". El font-size real
-   nunca cambia (sigue en 2.4rem) — el tamaño final de 1.5rem se logra con
-   scale(0.625), así el navegador jamás recalcula métricas de texto. */
 .intro-mark.docked{transform:translate(22px,20px) scale(0.625);cursor:pointer}
 
 .intro-loading{
@@ -106,17 +90,7 @@ button{border:0;background:none;cursor:pointer}
 .sidebar{
   width:220px;flex-shrink:0;padding:78px 12px 20px;
   display:flex;flex-direction:column;gap:4px;
-  /* Solo width anima. El padding (220->64px vs 12->8px) salta directo:
-     la diferencia es de 4px y no se percibe, pero animar dos propiedades
-     de layout en paralelo duplica el trabajo de recálculo por frame. */
   transition:width 420ms var(--e-out);
-  /* width sí dispara layout (es el efecto visual buscado: el sidebar se
-     angosta y .main reflowa para ocupar el espacio). contain:layout evita
-     que ese reflow se propague al resto del documento — el navegador solo
-     recalcula esta caja. will-change se aplica/retira por JS solo durante
-     la transición (ver expandDashboard) en vez de quedar fijo acá, para no
-     promover una capa de composición en memoria todo el tiempo sin
-     necesidad. */
   contain:layout style;
 }
 .shell.collapsed .sidebar{width:64px;padding:78px 8px 20px}
@@ -172,9 +146,6 @@ button{border:0;background:none;cursor:pointer}
 /* Main */
 .main{flex:1;min-width:0;padding:84px 26px 40px;position:relative;contain:layout style}
 
-/* ═══ AMBIENT TOD — luz de fondo, no un rectángulo ═══
-   Vive detrás del texto del saludo, sin bordes ni color sólido delimitado:
-   un resplandor grande y difuminado que se funde con el resto del fondo. */
 .ambient-tod{
   position:absolute;top:-84px;left:-26px;right:-26px;height:460px;z-index:0;
   pointer-events:none;filter:blur(64px);opacity:0.85;
@@ -193,7 +164,6 @@ button{border:0;background:none;cursor:pointer}
   radial-gradient(ellipse 55% 60% at 22% 8%,rgba(90,58,158,0.52),transparent 72%),
   radial-gradient(ellipse 45% 55% at 78% 0%,rgba(58,42,112,0.30),transparent 75%);}
 
-/* ═══ GREETING — texto flotando sobre el ambiente, sin card ═══ */
 .greeting{position:relative;z-index:1;padding:40px 4px 26px;margin-bottom:18px;color:#fff}
 .greeting-eyebrow{font-size:0.7rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.62;margin-bottom:6px;font-family:'Syne',sans-serif}
 .greeting-msg{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;margin-bottom:4px;text-shadow:0 2px 18px rgba(0,0,0,0.28)}
@@ -202,33 +172,15 @@ button{border:0;background:none;cursor:pointer}
 .gbadge{padding:4px 12px;border-radius:999px;font-size:0.75rem;font-weight:700;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.18);font-family:'Syne',sans-serif;backdrop-filter:blur(6px)}
 .gbadge.urgent{background:rgba(240,80,80,0.22);border-color:rgba(240,80,80,0.35)}
 
-/* ═══ GLASS CARD base ═══ */
 .glass{
-  background:var(--glass);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);
+  background:var(--glass);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);
   border:1px solid var(--glass-border);border-radius:18px;
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,0.14),0 8px 28px rgba(0,0,0,0.20);
-  /* Las cards se repueblan de forma asíncrona (ver renderNecesitoSaber /
-     renderMensajesDestacados), lo que cambia su altura y podía disparar
-     un reflow del resto de la grilla en cada carga. contain:layout style
-     aísla ese recálculo a la card misma, sin tocar box-shadow/blur (no
-     usamos contain:paint acá porque cortaría la sombra externa que sale
-     del borde de la card, cambiando el look actual). */
   contain:layout style;
 }
-/* Modo "lite": se activa solo mientras el sidebar está animando su ancho
-   (ver expandDashboard). backdrop-filter es, con diferencia, la operación
-   más cara de toda la interfaz — cada card con blur+saturate tiene que
-   volver a muestrear todo lo que hay detrás en cada frame. Mientras el
-   sidebar cambia de ancho, TODAS las glass cards de .main se redimensionan
-   a la vez (porque .main reflowa junto con el sidebar), así que el
-   navegador recalcula ese blur en cada uno de los ~25 frames que dura la
-   transición, para cada card, simultáneamente. Eso es lo que se siente
-   como lag incluso en hardware rápido: no es CPU, es que backdrop-filter
-   no tiene una ruta barata para "el contenido de abajo solo se movió",
-   tiene que re-muestrear igual que si hubiera cambiado de verdad. Bajarlo
-   a un blur mínimo durante esos ~500ms (que además están parcialmente
-   tapados por el dim-flash) elimina ese costo sin cambiar el resultado
-   final una vez que el layout se asienta. */
+@media(max-width:900px){
+  .glass{backdrop-filter:blur(9px) saturate(1.15);-webkit-backdrop-filter:blur(9px) saturate(1.15)}
+}
 body.sidebar-transitioning .glass{
   backdrop-filter:blur(4px);
   -webkit-backdrop-filter:blur(4px);
@@ -239,7 +191,6 @@ body.sidebar-transitioning .glass{
 .card-title .ic{width:14px;height:14px;flex-shrink:0}
 .card-link{font-size:0.76rem;font-weight:700;color:var(--primary)}
 
-/* Quick start */
 .quickstart{padding:20px 22px;margin-bottom:18px}
 .qs-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .qs-input{
@@ -250,16 +201,14 @@ body.sidebar-transitioning .glass{
 .qs-input:focus{outline:none;border-color:rgba(var(--primary-rgb),0.5);box-shadow:0 0 0 3px rgba(var(--primary-rgb),0.12)}
 .qs-btn{
   padding:11px 20px;border-radius:12px;background:rgba(var(--primary-rgb),0.88);color:#06121a;
-  font-family:'Syne',sans-serif;font-weight:800;font-size:0.84rem;transition:background 150ms ease,transform 120ms var(--e-out);
+  font-family:'Syne',sans-serif;font-weight:800;font-size:0.84rem;transition:background 150ms ease,transform 90ms var(--e-out);
 }
 .qs-btn:hover{background:var(--primary)}
 .qs-btn:active{transform:scale(0.97)}
 
-/* Grid */
 .grid{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
 .col{display:flex;flex-direction:column;gap:16px}
 
-/* Necesito saber */
 .know-list{display:flex;flex-direction:column;gap:8px}
 .know-item{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border)}
 .know-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
@@ -271,7 +220,6 @@ body.sidebar-transitioning .glass{
 .know-sub{font-size:0.74rem;color:var(--muted)}
 .know-val{font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem}
 
-/* Mensajes destacados (ex "clases de hoy", crece) */
 .msg-panel{padding:18px 18px 16px;min-height:340px}
 .msg-item{display:flex;gap:11px;padding:12px 4px;border-bottom:1px solid var(--glass-border)}
 .msg-item:last-child{border-bottom:none}
@@ -327,23 +275,23 @@ body.sidebar-transitioning .glass{
 
   <nav class="sidebar" id="sidebar">
     <a href="dashboard.html" class="nav-link active" id="navDashboard" onclick="return handleHomeClick(event)">
-      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></span>
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></span>
       <span class="nav-text">Dashboard</span>
     </a>
     <a href="#" class="nav-link" onclick="return false;">
-      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
       <span class="nav-text">Ajustes</span>
     </a>
     <a href="tareas.html" class="nav-link">
-      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
       <span class="nav-text">Actividades</span>
     </a>
     <a href="schools.html" class="nav-link">
-      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></span>
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></span>
       <span class="nav-text">Escuela</span>
     </a>
     <a href="comunicacion.html" class="nav-link">
-      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
       <span class="nav-text">Comunidad</span>
     </a>
   </nav>
@@ -405,26 +353,48 @@ body.sidebar-transitioning .glass{
 <script src="js/api.js"></script>
 <script>
 /* ══════════════════════════════════════════
+   ESTADO — separado en 3 categorías:
+
+   1) Carga inicial: si la intro (crecer + volar a la esquina) ya corrió
+      en esta pestaña. Vive en sessionStorage porque tiene que sobrevivir
+      a un reload completo del documento (app multi-página, no SPA: cada
+      link navega con un <a href> normal).
+   2) Navegación: a qué página se está yendo el click, o si es "quedate
+      acá" (mismo documento). Vive en el DOM (clase collapsed del shell).
+   3) Transición: si hay una animación de layout en curso ahora mismo
+      (sidebar expandiéndose). Vive en memoria y se limpia sola cuando
+      termina la transición real (transitionend), con un timeout de
+      seguridad como red por si el evento no llega a disparar.
+══════════════════════════════════════════ */
+const AlephUIState = {
+  INTRO_KEY: 'alephone_intro_played',
+  introAlreadyPlayed(){ return sessionStorage.getItem(this.INTRO_KEY) === '1'; },
+  markIntroPlayed(){ sessionStorage.setItem(this.INTRO_KEY, '1'); }
+};
+
+// Referencias DOM cacheadas una sola vez: este script va al final del
+// <body>, así que todos estos nodos ya existen cuando corre. Evita repetir
+// document.getElementById() en cada click.
+const els = {
+  shell: document.getElementById('shell'),
+  sidebar: document.getElementById('sidebar'),
+  dimFlash: document.getElementById('dimFlash'),
+  introOverlay: document.getElementById('introOverlay'),
+  introMark: document.getElementById('introMark'),
+  introLoading: document.getElementById('introLoading'),
+  settingsBtn: document.getElementById('settingsBtn'),
+};
+
+/* ══════════════════════════════════════════
    INTRO SEQUENCE
    1) "Preparando tu ambiente..." + spinner
    2) al terminar de cargar datos: el ℵ crece 1s
-   3) vuela y se achica a la esquina sup. derecha
+   3) vuela y se achica a la esquina sup. izquierda
    4) dashboard queda COLAPSADO (solo íconos)
    5) click en el ℵ -> dim flash -> expande labels
-
-   Estado de la intro: se guarda en sessionStorage para que corra UNA
-   sola vez por sesión de pestaña. Como cada link del sidebar navega a
-   un archivo .html distinto (no es una SPA), "volver" al dashboard antes
-   implicaba un reload completo -> DOMContentLoaded de nuevo -> intro
-   entera de nuevo. El flag evita repetir la animación de crecer/volar
-   en visitas subsiguientes dentro de la misma sesión.
 ══════════════════════════════════════════ */
-const INTRO_KEY = 'alephone_intro_played';
-
 function runIntroGrowAndDock(){
-  const mark = document.getElementById('introMark');
-  const overlay = document.getElementById('introOverlay');
-  const loading = document.getElementById('introLoading');
+  const { introMark: mark, introOverlay: overlay, introLoading: loading } = els;
 
   loading.classList.add('gone');
 
@@ -441,12 +411,9 @@ function runIntroGrowAndDock(){
 }
 
 /* Salto directo al estado final, sin overlay ni animación: usado cuando
-   la intro ya corrió en esta sesión. Elimina el overlay/spinner del DOM
-   de inmediato en vez de esperar transiciones que no tienen sentido acá. */
+   la intro ya corrió en esta sesión. */
 function skipIntro(){
-  const mark = document.getElementById('introMark');
-  const overlay = document.getElementById('introOverlay');
-  const loading = document.getElementById('introLoading');
+  const { introMark: mark, introOverlay: overlay, introLoading: loading } = els;
   overlay.remove();
   loading.remove();
   mark.classList.remove('centered');
@@ -456,61 +423,53 @@ function skipIntro(){
   requestAnimationFrame(() => { mark.style.transition = ''; });
 }
 
+/* Expandir el sidebar es la interacción más repetida del dashboard:
+   - Antes: click -> esperar 120ms sin que pase nada visible -> recién ahí
+     arrancar el layout -> esperar otros 60ms más para destapar el dim.
+     Ese hueco de espera pura era justo el tipo de "retraso entre apretar
+     el botón y ver la respuesta" que había que sacar.
+   - Ahora: todo lo que puede arrancar en el mismo tick del click, arranca
+     en el mismo tick (el dim empieza a oscurecer Y el sidebar empieza a
+     expandirse a la vez). Lo único que se espera de verdad es el evento
+     real transitionend del ancho del sidebar — no un número inventado —
+     con un setTimeout de 560ms solo como red de seguridad por si el
+     navegador no llega a disparar el evento. */
 function expandDashboard(){
-  const shell = document.getElementById('shell');
+  const { shell, sidebar, dimFlash: dim } = els;
   if (!shell.classList.contains('collapsed')) return;
-  const dim = document.getElementById('dimFlash');
-  const sidebar = document.getElementById('sidebar');
 
   dim.classList.add('on');
-
-  // will-change se activa justo antes de la transición de layout del
-  // sidebar y se retira al terminar, en vez de vivir permanentemente en
-  // el CSS: así el compositor se prepara para el cambio sin mantener una
-  // capa promovida en memoria sin necesidad.
-  sidebar.style.willChange = 'width';
-
-  // Modo lite: baja el backdrop-filter de las cards mientras el sidebar
-  // anima su ancho (ver la regla body.sidebar-transitioning .glass más
-  // arriba). Esto es lo que elimina el lag real al expandir.
   document.body.classList.add('sidebar-transitioning');
+  sidebar.style.willChange = 'width';
+  shell.classList.remove('collapsed');
 
-  let cleared = false;
-  const clearLiteMode = () => {
-    if (cleared) return;
-    cleared = true;
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
     document.body.classList.remove('sidebar-transitioning');
     sidebar.style.willChange = 'auto';
+    dim.classList.remove('on');
   };
-
   sidebar.addEventListener('transitionend', (event) => {
-    if (event.propertyName === 'width') clearLiteMode();
-  }, { once: true });
-  // Red de seguridad: si transitionend no dispara (p.ej. la transición
-  // se interrumpe con otro click rápido), igual restauramos el blur.
-  setTimeout(clearLiteMode, 560);
-
-  setTimeout(() => {
-    shell.classList.remove('collapsed');
-    setTimeout(() => dim.classList.remove('on'), 60);
-  }, 120);
+    if (event.propertyName === 'width') finish();
+  }, { once:true });
+  setTimeout(finish, 560);
 }
 
 /* El link "Dashboard" del sidebar apunta a esta misma página. Sin este
    guard, cada click ahí disparaba una recarga completa del documento
-   (no una navegación de SPA), lo que reiniciaba toda la secuencia de
-   intro — ese era el bug reportado. Si ya estamos acá, no navegamos:
-   como mucho, expandimos el sidebar si estaba colapsado. */
+   (app no-SPA), lo que reiniciaba TODO — incluida la intro. Ese era el
+   bug reportado: si ya estamos acá, no navegamos, como mucho expandimos
+   el sidebar si estaba colapsado. */
 function handleHomeClick(event){
   event.preventDefault();
-  if (document.getElementById('shell').classList.contains('collapsed')) {
-    expandDashboard();
-  }
+  if (els.shell.classList.contains('collapsed')) expandDashboard();
   return false;
 }
 
-document.getElementById('settingsBtn').addEventListener('click', () => {
-  if (document.getElementById('shell').classList.contains('collapsed')) expandDashboard();
+els.settingsBtn.addEventListener('click', () => {
+  if (els.shell.classList.contains('collapsed')) expandDashboard();
   // TODO: abrir panel de ajustes (perfil / tema / visión / accesibilidad) reutilizando
   // el mismo settings-panel que ya existía en dashboard.html — se reconecta cuando
   // se termine de migrar esa pieza al lenguaje visual nuevo.
@@ -544,8 +503,6 @@ function renderGreeting(user){
 
 /* ══════════════════════════════════════════
    NECESITO SABER — por rol
-   Alumno: materias con menor nota / próx. exámenes / próx. actividades
-   Profe, director y superadmin: rendimiento del curso / próx. exámenes / notas
 ══════════════════════════════════════════ */
 async function renderNecesitoSaber(user){
   const el = document.getElementById('knowList');
@@ -584,7 +541,6 @@ async function renderNecesitoSaber(user){
       el.innerHTML = rows.length ? rows.join('') : '<div class="empty">Estás al día en todo 🎉</div>';
 
     } else {
-      // teacher, director y superadmin ven la MISMA vista que el profesor
       const [tareasDoc, notasCurso, eventos] = await Promise.all([
         AlephAPI.Tareas.getDelDocente(user.username),
         AlephAPI.Promedios.getDeAlumno(user.username).catch(() => []),
@@ -614,11 +570,7 @@ function knowRow(dot, title, sub, val){
 }
 
 /* ══════════════════════════════════════════
-   MENSAJES DESTACADOS — ex "Clases de hoy"
-   TODO: la fuente definitiva de "figuras relevantes" (director/profes)
-   todavía no está definida. Por ahora se muestran los mensajes más
-   recientes de Comunicación que vengan de un autor con rol docente/director,
-   sin scroll (máx. 4).
+   MENSAJES DESTACADOS
 ══════════════════════════════════════════ */
 async function renderMensajesDestacados(user){
   const el = document.getElementById('msgList');
@@ -665,10 +617,15 @@ function fmtFechaHora(iso){
   const d = new Date(iso);
   return `${d.getDate()} ${MESES_ES[d.getMonth()].slice(0,3)} · ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
+
+// Antes creaba un <div> por cada campo sanitizado (y lo tiraba de
+// inmediato) solo para usar su .innerHTML como escape. Cada fila de
+// "Necesito saber" o "Mensajes destacados" dispara 3-4 de estas llamadas,
+// creando y descartando nodos DOM reales sin necesidad en cada render.
+// Reemplazo por tabla de caracteres: mismo resultado, cero nodos DOM.
+const ESCAPE_MAP = { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' };
 function sanitizeLocal(str){
-  const div = document.createElement('div');
-  div.textContent = str ?? '';
-  return div.innerHTML;
+  return String(str ?? '').replace(/[&<>"']/g, ch => ESCAPE_MAP[ch]);
 }
 
 function renderAvatar(user){
@@ -692,10 +649,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderMensajesDestacados(user)
   ]);
 
-  if (sessionStorage.getItem(INTRO_KEY) === '1') {
+  if (AlephUIState.introAlreadyPlayed()) {
     skipIntro();
   } else {
-    sessionStorage.setItem(INTRO_KEY, '1');
+    AlephUIState.markIntroPlayed();
     runIntroGrowAndDock();
   }
 });
