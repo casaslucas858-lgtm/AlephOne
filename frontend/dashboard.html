@@ -35,6 +35,37 @@ body.theme-light{
   --glass:rgba(255,255,255,0.55); --glass-strong:rgba(255,255,255,0.72); --glass-border:rgba(15,30,45,0.10);
   --text:#0f1729; --muted:rgba(15,23,41,0.56); --faint:rgba(15,23,41,0.28);
 }
+
+/* ═══ ACCESIBILIDAD / VISIÓN — compartido con settings.html ═══
+   Estas clases se togglean desde Settings y persisten en localStorage;
+   este bloque es lo que hace que el toggle tenga efecto real acá también,
+   no solo en la propia página de ajustes. */
+body.a11y-reduce-motion *,body.a11y-reduce-motion *::before,body.a11y-reduce-motion *::after{
+  animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important;
+}
+body.a11y-reduce-transparency .glass,body.a11y-reduce-transparency .pill,body.a11y-reduce-transparency .icon-btn,body.a11y-reduce-transparency .gbadge{
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(9,14,26,0.94)!important;
+}
+body.a11y-high-contrast{
+  --bg:#000; --bg-2:#000; --bg-3:#000;
+  --text:#fff; --muted:#ddd; --faint:#aaa;
+  --glass:rgba(255,255,255,0.10); --glass-strong:rgba(255,255,255,0.18); --glass-border:rgba(255,255,255,0.4);
+  --primary:#00ffee; --secondary:#00ffee; --primary-rgb:0,255,238; --secondary-rgb:0,255,238;
+}
+@font-face{font-family:'OpenDyslexic';src:url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/fonts/OpenDyslexic-Regular.otf') format('opentype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'OpenDyslexic';src:url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/fonts/OpenDyslexic-Bold.otf') format('opentype');font-weight:700;font-style:normal;font-display:swap}
+body.a11y-font-dyslexic,body.a11y-font-dyslexic *{font-family:'OpenDyslexic',sans-serif!important;letter-spacing:0.04em}
+body.a11y-letter-spacing-wide{letter-spacing:0.05em}
+body.a11y-line-height-wide *{line-height:1.85!important}
+body.a11y-underline-links a{text-decoration:underline!important;text-underline-offset:3px}
+body.a11y-enhanced-focus *:focus-visible{outline:3px solid var(--primary)!important;outline-offset:3px!important;border-radius:6px}
+body.a11y-large-targets .icon-btn{width:42px;height:42px}
+body.a11y-large-targets .nav-link{padding:14px 12px}
+body.a11y-large-targets button{min-height:42px}
+body.vision-deuteranopia{filter:url('#filter-deuteranopia')}
+body.vision-protanopia{filter:url('#filter-protanopia')}
+body.vision-tritanopia{filter:url('#filter-tritanopia')}
+body.vision-grayscale{filter:grayscale(100%)}
 button,input,select{font:inherit;color:inherit}
 button{border:0;background:none;cursor:pointer}
 ::selection{background:rgba(var(--primary-rgb),0.30)}
@@ -241,6 +272,20 @@ body.sidebar-transitioning .glass{
 </head>
 <body>
 
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+  <defs>
+    <filter id="filter-deuteranopia" color-interpolation-filters="linearRGB">
+      <feColorMatrix type="matrix" values="0.367 0.861 -0.228 0 0  0.280 0.673 0.047 0 0  -0.012 0.043 0.969 0 0  0 0 0 1 0"/>
+    </filter>
+    <filter id="filter-protanopia" color-interpolation-filters="linearRGB">
+      <feColorMatrix type="matrix" values="0.152 1.053 -0.205 0 0  0.115 0.786 0.099 0 0  -0.004 -0.048 1.052 0 0  0 0 0 1 0"/>
+    </filter>
+    <filter id="filter-tritanopia" color-interpolation-filters="linearRGB">
+      <feColorMatrix type="matrix" values="1.256 -0.077 -0.179 0 0  -0.078 0.931 0.148 0 0  0.005 0.691 0.304 0 0  0 0 0 1 0"/>
+    </filter>
+  </defs>
+</svg>
+
 <div class="bg-layer"><div class="glow g1"></div><div class="glow g2"></div></div>
 <div class="grain"></div>
 
@@ -274,7 +319,7 @@ body.sidebar-transitioning .glass{
       <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></span>
       <span class="nav-text">Dashboard</span>
     </a>
-    <a href="#" class="nav-link" onclick="return false;">
+    <a href="settings.html" class="nav-link">
       <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
       <span class="nav-text">Ajustes</span>
     </a>
@@ -454,18 +499,50 @@ function expandDashboard(){
    (app no-SPA), lo que reiniciaba TODO — incluida la intro. Ese era el
    bug reportado: si ya estamos acá, no navegamos, como mucho expandimos
    el sidebar si estaba colapsado. */
-function handleHomeClick(event){
-  event.preventDefault();
-  if (els.shell.classList.contains('collapsed')) expandDashboard();
-  return false;
+/* Generaliza el guard: si el link apunta al MISMO archivo en el que ya
+   estamos, no navegamos (evita el reload completo que reiniciaba la
+   intro); si apunta a otro archivo, se deja pasar la navegación normal. */
+function handleSelfNav(event, fileName){
+  const current = location.pathname.split('/').pop() || 'dashboard.html';
+  if (current === fileName) {
+    event.preventDefault();
+    if (els.shell.classList.contains('collapsed')) expandDashboard();
+    return false;
+  }
+  return true;
 }
+function handleHomeClick(event){ return handleSelfNav(event, 'dashboard.html'); }
 
 els.settingsBtn.addEventListener('click', () => {
-  if (els.shell.classList.contains('collapsed')) expandDashboard();
-  // TODO: abrir panel de ajustes (perfil / tema / visión / accesibilidad) reutilizando
-  // el mismo settings-panel que ya existía en dashboard.html — se reconecta cuando
-  // se termine de migrar esa pieza al lenguaje visual nuevo.
+  window.location.href = 'settings.html';
 });
+
+/* ══════════════════════════════════════════
+   PREFERENCIAS PERSISTIDAS — aplicadas al cargar
+   Mismas claves de localStorage que usa settings.html, así lo que se
+   configura ahí tiene efecto acá sin necesidad de recargar dos veces.
+══════════════════════════════════════════ */
+const A11Y_KEYS = ['reduce-motion','reduce-transparency','high-contrast','font-dyslexic','letter-spacing-wide','line-height-wide','underline-links','enhanced-focus','large-targets'];
+function applyPersistedPreferences(){
+  const themeMode = localStorage.getItem('aleph_theme_mode') || 'dark';
+  const prefersLight = themeMode === 'light' || (themeMode === 'auto' && window.matchMedia('(prefers-color-scheme: light)').matches);
+  document.body.classList.toggle('theme-light', prefersLight);
+
+  const fsIdx = localStorage.getItem('aleph_font_size_idx');
+  if (fsIdx !== null) {
+    const sizes = [85,92,100,107,115];
+    document.documentElement.style.fontSize = (sizes[+fsIdx] || 100) + '%';
+  }
+
+  const vision = localStorage.getItem('aleph_vision') || 'normal';
+  ['deuteranopia','protanopia','tritanopia','grayscale'].forEach(m => document.body.classList.remove('vision-' + m));
+  if (vision !== 'normal') document.body.classList.add('vision-' + vision);
+
+  A11Y_KEYS.forEach(key => {
+    document.body.classList.toggle('a11y-' + key, localStorage.getItem('aleph_a11y_' + key) === 'true');
+  });
+}
+applyPersistedPreferences();
 
 /* ══════════════════════════════════════════
    SALUDO COMO FONDO — franja de luz por horario
