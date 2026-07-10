@@ -12,10 +12,9 @@
 html,body{width:100%;min-height:100%;overflow:hidden}
 
 :root{
-  --bg:#0f1729;
+  --bg:#0a0e1a;
   --bg-2:#0c1322;
   --bg-3:#091020;
-  --bg-2:#091020;
   --primary:#4ab8c8;
   --primary-rgb:74,184,200;
   --secondary:#6dd4e8;
@@ -40,7 +39,7 @@ body{
   height:100vh;
   display:flex;
   align-items:stretch;
-  transition:background 180ms var(--e-out),color 180ms var(--e-out);
+  transition:background 420ms var(--e-out),color 420ms var(--e-out);
 }
 
 body.theme-light,body.lm{
@@ -54,12 +53,48 @@ body.theme-light,body.lm{
   --faint:rgba(15,23,41,0.30);
   background:linear-gradient(155deg,#f5fbfd 0%,#e6f5fa 50%,#dcecf5 100%);
 }
-body.theme-grey{--primary:#64748b;--primary-rgb:100,116,139;--secondary:#94a3b8;--secondary-rgb:148,163,184}
-body.theme-azure{--primary:#0ea5e9;--primary-rgb:14,165,233;--secondary:#38bdf8;--secondary-rgb:56,189,248}
-body.theme-pink{--primary:#ec4899;--primary-rgb:236,72,153;--secondary:#f9a8d4;--secondary-rgb:249,168,212}
-body.theme-andromeda{--primary:#a78bfa;--primary-rgb:167,139,250;--secondary:#22d3ee;--secondary-rgb:34,211,238}
-body.theme-red{--primary:#ef4444;--primary-rgb:239,68,68;--secondary:#fb7185;--secondary-rgb:251,113,133}
-body.theme-green{--primary:#22c55e;--primary-rgb:34,197,94;--secondary:#86efac;--secondary-rgb:134,239,172}
+/* ===== Paletas de identidad (onboarding) ===== */
+body.theme-everest{
+  --bg:#0a0e1a; --bg-2:#0c1322; --bg-3:#091020;
+  --primary:#4ab8c8; --primary-rgb:74,184,200;
+  --secondary:#6dd4e8; --secondary-rgb:109,212,232;
+  --wave-fill:rgba(250,253,255,0.98);
+  --wave-text:#101826; --wave-muted:rgba(16,24,38,0.62); --wave-faint:rgba(16,24,38,0.36);
+}
+body.theme-andes{
+  --bg:#1c1c1e; --bg-2:#242426; --bg-3:#161618;
+  --primary:#4a90d9; --primary-rgb:74,144,217;
+  --secondary:#f4a97f; --secondary-rgb:244,169,127;
+  --wave-fill:#d7dade;
+  --wave-text:#1c1c1e; --wave-muted:rgba(28,28,30,0.62); --wave-faint:rgba(28,28,30,0.36);
+}
+body.theme-amazonas{
+  --bg:#0d1a0f; --bg-2:#152b18; --bg-3:#0a130c;
+  --primary:#3dba5e; --primary-rgb:61,186,94;
+  --secondary:#7fd99a; --secondary-rgb:127,217,154;
+  --wave-fill:#5c3a21;
+  --wave-text:#f7ecd9; --wave-muted:rgba(247,236,217,0.68); --wave-faint:rgba(247,236,217,0.38);
+}
+body.theme-serengeti{
+  --bg:#1a0a00; --bg-2:#2d1200; --bg-3:#140800;
+  --primary:#e85d20; --primary-rgb:232,93,32;
+  --secondary:#f4915a; --secondary-rgb:244,145,90;
+  --wave-fill:#2fae70;
+  --wave-text:#0c1f14; --wave-muted:rgba(12,31,20,0.64); --wave-faint:rgba(12,31,20,0.36);
+}
+body.theme-bondi{
+  --bg:#fefce8; --bg-2:#fef9c3; --bg-3:#fdf6ae;
+  --primary:#0096c7; --primary-rgb:0,150,199;
+  --secondary:#48cae4; --secondary-rgb:72,202,228;
+  --glass:rgba(255,255,255,0.52);
+  --glass-strong:rgba(255,255,255,0.72);
+  --glass-border:rgba(26,20,0,0.14);
+  --text:#1a1400;
+  --muted:rgba(26,20,0,0.60);
+  --faint:rgba(26,20,0,0.32);
+  --wave-fill:#0b2545;
+  --wave-text:#eaf4ff; --wave-muted:rgba(234,244,255,0.68); --wave-faint:rgba(234,244,255,0.38);
+}
 
 button,input,select{font:inherit}
 button{border:0}
@@ -135,6 +170,9 @@ button{border:0}
   flex:1;
   overflow:hidden;
   animation:fadeIn 650ms var(--e-out) 80ms both;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 @keyframes slideIn{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:translateX(0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -148,6 +186,7 @@ button{border:0}
   position:relative;
   overflow:hidden;
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,0.20),inset 0 -1px 0 rgba(0,0,0,0.18),0 8px 32px rgba(0,0,0,0.26);
+  transition:background 420ms var(--e-out),border-color 420ms var(--e-out);
 }
 .glass::after{
   content:'';
@@ -236,7 +275,7 @@ button{border:0}
 .pdot.done{background:rgba(var(--primary-rgb),0.5)}
 .step-num-big{font-family:'Syne',sans-serif;font-size:2.1rem;font-weight:800;color:var(--primary);line-height:1}
 .step-num-big.hidden{visibility:hidden}
-.step-slot{position:relative;overflow:hidden;transition:height 280ms var(--e-out)}
+.step-slot{position:relative;overflow:hidden;min-height:118px;transition:height 280ms var(--e-out)}
 .step-panel{
   position:absolute;
   top:0;
@@ -338,6 +377,64 @@ button{border:0}
 .done-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--text)}
 .done-sub{font-size:0.77rem;color:var(--muted);line-height:1.5}
 
+/* ===== Paso: paleta ===== */
+.paleta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px}
+.paleta-btn{
+  padding:12px 10px;
+  border-radius:13px;
+  cursor:pointer;
+  text-align:left;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  background:rgba(255,255,255,0.06);
+  border:1.5px solid rgba(255,255,255,0.12);
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity 170ms var(--e-out),transform 170ms var(--e-out),border-color 160ms ease,background 160ms ease;
+}
+.paleta-btn.show{opacity:1;transform:translateY(0)}
+.paleta-btn.selected{border-color:var(--primary);background:rgba(255,255,255,0.10)}
+.paleta-swatch{width:100%;height:26px;border-radius:8px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.25)}
+.paleta-name{font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:750;color:var(--text)}
+.paleta-place{font-size:0.66rem;color:var(--muted)}
+
+/* ===== Paso: personalidad ===== */
+.pers-col{display:flex;flex-direction:column;gap:8px;margin-top:2px}
+.pers-btn{
+  padding:12px 13px;
+  border-radius:13px;
+  cursor:pointer;
+  text-align:left;
+  background:rgba(255,255,255,0.06);
+  border:1.5px solid rgba(255,255,255,0.12);
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity 170ms var(--e-out),transform 170ms var(--e-out),border-color 160ms ease,background 160ms ease;
+}
+.pers-btn.show{opacity:1;transform:translateY(0)}
+.pers-btn.selected{border-color:rgba(var(--primary-rgb),0.6);background:rgba(var(--primary-rgb),0.12)}
+.pers-name{font-family:'Syne',sans-serif;font-size:0.86rem;font-weight:800;color:var(--text)}
+.pers-desc{font-size:0.71rem;color:var(--muted);margin-top:2px;line-height:1.4}
+
+/* ===== Paso: objetivos ===== */
+.obj-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:2px;max-height:230px;overflow-y:auto;padding-right:2px}
+.obj-btn{
+  padding:9px 9px;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:0.71rem;
+  font-weight:600;
+  text-align:left;
+  color:var(--muted);
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.10);
+  transition:border-color 140ms ease,background 140ms ease,color 140ms ease;
+  line-height:1.3;
+}
+.obj-btn.selected{color:var(--primary);border-color:rgba(var(--primary-rgb),0.5);background:rgba(var(--primary-rgb),0.12)}
+.obj-count{font-size:0.68rem;color:var(--faint);margin-top:8px}
+
 .btn-iniciar{
   width:100%;
   padding:14px 18px;
@@ -392,34 +489,75 @@ button{border:0}
 @keyframes sweep{0%{transform:translateX(-150%)}55%{transform:translateX(150%)}100%{transform:translateX(150%)}}
 
 .bar{display:flex;justify-content:center;padding-top:1px}
-.theme-btn{
-  appearance:none;
-  min-width:122px;
-  height:34px;
-  padding:0 28px 0 12px;
-  border-radius:12px;
-  border:1px solid var(--glass-border);
-  background:var(--glass);
-  color:var(--muted);
-  font-family:'Syne',sans-serif;
-  font-size:0.78rem;
-  font-weight:750;
-  cursor:pointer;
-  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
-  background-position:calc(100% - 14px) 14px,calc(100% - 9px) 14px;
-  background-size:5px 5px,5px 5px;
-  background-repeat:no-repeat;
-}
 
-.wave-wrap{position:absolute;right:0;top:0;bottom:0;width:80%;pointer-events:none}
-.wave-svg{position:absolute;right:0;top:0;height:100%;width:100%}
-.wave-svg path{fill:rgba(255,255,255,0.95)}
-body:not(.theme-light):not(.lm) .wave-svg path{fill:rgba(246,252,255,0.96)}
+.wave-wrap{position:absolute;inset:0;pointer-events:none}
+#waveMaskDefs{position:absolute;width:0;height:0;overflow:hidden}
+
+:root{
+  --wave-fill:rgba(250,253,255,0.98);
+  --wave-text:#101826;
+  --wave-muted:rgba(16,24,38,0.62);
+  --wave-faint:rgba(16,24,38,0.36);
+}
+#identityWave{
+  position:absolute;
+  inset:0;
+  -webkit-mask:url(#waveMask);
+  mask:url(#waveMask);
+  -webkit-mask-size:100% 100%;
+  mask-size:100% 100%;
+  background:var(--wave-fill);
+  transition:background 420ms var(--e-out);
+  display:flex;
+  align-items:center;
+}
+#identityCard{
+  position:relative;
+  z-index:6;
+  width:100%;
+  padding:26px 10% 26px 40%;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  pointer-events:none;
+}
+#idCardMark{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--primary);transition:color 420ms var(--e-out)}
+#idCardName{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:var(--wave-text);line-height:1.15;min-height:1.15em}
+#idCardRole{font-size:0.72rem;color:var(--wave-muted);text-transform:uppercase;letter-spacing:0.06em}
+#idCardMsg{font-size:0.88rem;color:var(--wave-muted);line-height:1.5;font-style:italic;min-height:1.5em}
+#idCardPers{display:inline-flex;align-self:flex-start;padding:4px 11px;border-radius:100px;background:rgba(var(--primary-rgb),0.14);border:1px solid rgba(var(--primary-rgb),0.34);color:var(--primary);font-size:0.7rem;font-weight:700;font-family:'Syne',sans-serif;transition:color 420ms var(--e-out),background 420ms var(--e-out),border-color 420ms var(--e-out)}
+#idCardObjs{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+.idobj-chip{font-size:0.63rem;padding:3px 8px;border-radius:100px;background:rgba(16,24,38,0.06);color:var(--wave-muted);border:1px solid rgba(16,24,38,0.10)}
+#idCardDivider{height:1px;background:linear-gradient(90deg,transparent,rgba(16,24,38,0.14),transparent);margin:2px 0}
+#idCardPlace{font-size:0.68rem;color:var(--wave-faint)}
 
 .wave-wrap-mobile{display:none;position:fixed;left:0;right:0;bottom:0;height:38vh;z-index:2;pointer-events:none}
-.wave-svg-mobile{width:100%;height:100%;display:block}
-.wave-svg-mobile path{fill:rgba(255,255,255,0.95)}
-body:not(.theme-light):not(.lm) .wave-svg-mobile path{fill:rgba(246,252,255,0.96)}
+#identityWaveMobile{
+  position:absolute;
+  inset:0;
+  -webkit-mask:url(#waveMaskMobile);
+  mask:url(#waveMaskMobile);
+  -webkit-mask-size:100% 100%;
+  mask-size:100% 100%;
+  background:var(--wave-fill);
+  transition:background 420ms var(--e-out);
+}
+#identityCardMobile{
+  display:none;
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  height:38vh;
+  z-index:3;
+  padding:16px 20px calc(18px + env(safe-area-inset-bottom));
+  flex-direction:column;
+  justify-content:flex-end;
+  gap:6px;
+  pointer-events:none;
+}
+#identityCardMobile #idCardNameM{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--wave-text)}
+#identityCardMobile #idCardMsgM{font-size:0.76rem;color:var(--wave-muted);font-style:italic}
 
 #wt{position:fixed;inset:0;z-index:300;pointer-events:none;display:none}
 #wt svg{position:absolute;width:100%;height:100%}
@@ -445,6 +583,7 @@ body:not(.theme-light):not(.lm) .wave-svg-mobile path{fill:rgba(246,252,255,0.96
   .left{width:100%;max-width:430px;min-width:0;padding:22px;justify-content:center}
   .right{display:none}
   .wave-wrap-mobile{display:block}
+  #identityCardMobile{display:flex}
 }
 
 @media(max-width:440px){
@@ -452,16 +591,17 @@ body:not(.theme-light):not(.lm) .wave-svg-mobile path{fill:rgba(246,252,255,0.96
   .logo-card{padding:15px 17px 13px}
   #viewB{padding:15px}
   .wave-wrap-mobile{height:32vh}
+  #identityCardMobile{height:32vh}
+  .obj-grid{max-height:180px}
 }
 
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:1ms!important;animation-iteration-count:1!important;transition-duration:1ms!important;scroll-behavior:auto!important}
   .blob,.glow{animation:none!important}
-  .btn-iniciar::before{display:none}
 }
 </style>
 </head>
-<body>
+<body class="theme-everest">
 <div class="bg-layer" aria-hidden="true">
   <div class="glow g1"></div>
   <div class="glow g2"></div>
@@ -487,8 +627,8 @@ body:not(.theme-light):not(.lm) .wave-svg-mobile path{fill:rgba(246,252,255,0.96
 
   <section class="flow-card glass" id="flowCard">
     <div id="viewA">
-      <button class="act-btn act-reg" type="button" onclick="startFlow('reg')">Registrate</button>
-      <button class="act-btn act-login" type="button" onclick="startFlow('login')">Iniciar Sesión</button>
+      <button class="act-btn act-reg" type="button" onclick="startFlow('reg')">¿Comenzamos?</button>
+      <button class="act-btn act-login" type="button" onclick="startFlow('login')">Ya tengo una cuenta</button>
     </div>
 
     <div id="viewB">
@@ -508,18 +648,40 @@ body:not(.theme-light):not(.lm) .wave-svg-mobile path{fill:rgba(246,252,255,0.96
   <span class="btn-iniciar-hint">Completá el registro o inicio de sesión para continuar</span>
 </main>
 
+<svg id="waveMaskDefs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <mask id="waveMask" maskContentUnits="objectBoundingBox">
+      <path fill="#fff" d="M0.2903,0 C0.2903,0 0.2903,0 0.2903,0 C0.2258,0.0667 0.1290,0.1778 0.1290,0.3111 C0.1290,0.4 0.1774,0.4444 0.2419,0.5 C0.3065,0.5556 0.3548,0.6 0.3548,0.6889 C0.3548,0.8222 0.2903,0.9333 0.2903,1 L1,1 L1,0 Z"/>
+    </mask>
+    <mask id="waveMaskMobile" maskContentUnits="objectBoundingBox">
+      <path fill="#fff" d="M0,0.4091 C0.15,0.1818 0.25,0.6364 0.4,0.4545 C0.55,0.2727 0.6,0.5909 0.75,0.4091 C0.85,0.3 0.925,0.4545 1,0.3636 L1,1 L0,1 Z"/>
+    </mask>
+  </defs>
+</svg>
+
 <aside class="right" aria-hidden="true">
   <div class="wave-wrap">
-    <svg class="wave-svg" viewBox="0 0 620 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-      <path d="M 180,0 C 180,0 180,0 180,0 C 140,60 80,160 80,280 C 80,360 110,400 150,450 C 190,500 220,540 220,620 C 220,740 180,840 180,900 L 620,900 L 620,0 Z"/>
-    </svg>
+    <div id="identityWave">
+      <div id="identityCard">
+        <span id="idCardMark">ℵ</span>
+        <div id="idCardName">Tu espacio</div>
+        <div id="idCardRole">AlephOne</div>
+        <div id="idCardDivider"></div>
+        <div id="idCardMsg">Se va a construir mientras avanzás.</div>
+        <span id="idCardPers" style="display:none"></span>
+        <div id="idCardObjs"></div>
+        <div id="idCardPlace"></div>
+      </div>
+    </div>
   </div>
 </aside>
 
 <div class="wave-wrap-mobile" aria-hidden="true">
-  <svg class="wave-svg-mobile" viewBox="0 0 400 220" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0,90 C60,40 100,140 160,100 C220,60 240,130 300,90 C340,66 370,100 400,80 L400,220 L0,220 Z"/>
-  </svg>
+  <div id="identityWaveMobile"></div>
+</div>
+<div id="identityCardMobile" aria-hidden="true">
+  <span id="idCardNameM"></span>
+  <span id="idCardMsgM"></span>
 </div>
 
 <div id="loadingOverlay" role="status" aria-live="polite">
@@ -546,12 +708,54 @@ const ICON_EYE_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 const ICON_TEACHER='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/><line x1="9" y1="8" x2="15" y2="8"/></svg>';
 const ICON_STUDENT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5"/></svg>';
 
+const PALETAS = [
+  { id:'everest', name:'Everest', place:'Nepal', theme:'theme-everest', swatch:'linear-gradient(135deg,#0a0e1a,#4ab8c8)' },
+  { id:'andes', name:'Andes', place:'Argentina/Chile', theme:'theme-andes', swatch:'linear-gradient(135deg,#1c1c1e,#4a90d9,#f4a97f)' },
+  { id:'amazonas', name:'Amazonas', place:'Perú/Brasil/Colombia', theme:'theme-amazonas', swatch:'linear-gradient(135deg,#0d1a0f,#3dba5e)' },
+  { id:'bondi', name:'Bondi Beach', place:'Australia', theme:'theme-bondi', swatch:'linear-gradient(135deg,#fefce8,#0096c7)' },
+  { id:'serengeti', name:'Serengeti', place:'Tanzania', theme:'theme-serengeti', swatch:'linear-gradient(135deg,#1a0a00,#e85d20)' },
+];
+
+const PERSONALIDADES = [
+  { id:'curiosidad', name:'Curiosidad', desc:'Para cuando querés entender, no solo terminar.',
+    msgs:{ morning:'El día comienza. La curiosidad también.', afternoon:'El atardecer siempre trae nuevas preguntas.', evening:'La noche abre preguntas que el día no hace.', night:'Algunas preguntas no esperan.' } },
+  { id:'claridad', name:'Claridad', desc:'Para cuando sabés lo que hay que hacer y querés hacerlo.',
+    msgs:{ morning:'Tiempo de empezar.', afternoon:'Queda tiempo por delante.', evening:'Estamos llegando al final del día.', night:'Es de madrugada.' } },
+  { id:'momentum', name:'Momentum', desc:'Para cuando necesitás que algo te empuje a seguir.',
+    msgs:{ morning:'Comencemos. Queda mucho por delante.', afternoon:'El día avanza. Avancemos con él.', evening:'El día está por terminar. Podemos continuar.', night:'Descansá cuando termines.' } },
+];
+
+const OBJETIVOS = [
+  { id:'proposito', label:'Aprender con propósito' },
+  { id:'conectado', label:'Mantenerme conectado con mi escuela' },
+  { id:'progreso', label:'Conocer mi progreso' },
+  { id:'aldia', label:'Mantener mis actividades al día' },
+  { id:'metas', label:'Alcanzar mis metas académicas' },
+  { id:'comunidad', label:'Trabajar mejor con mi comunidad' },
+  { id:'descubrir', label:'Descubrir nuevas formas de aprender' },
+  { id:'organizar', label:'Organizar mi vida escolar' },
+  { id:'noperder', label:'No perderme nada importante' },
+  { id:'crecer', label:'Crecer cada día' },
+  { id:'equilibrio', label:'Encontrar un mejor equilibrio' },
+  { id:'potencial', label:'Aprovechar todo mi potencial' },
+];
+
+function timeOfDayKey(hora){
+  if (hora >= 6 && hora < 13) return 'morning';
+  if (hora >= 13 && hora < 19) return 'afternoon';
+  if (hora >= 19 && hora < 24) return 'evening';
+  return 'night';
+}
+
 const FLOWS = {
   reg: [
     { n: 1, q: '¿Cómo querés\nque te llamen?', type: 'text', ph: 'Tu nombre', key: 'username', autocomplete: 'username' },
-    { n: 2, q: 'Anotá tu correo\nelectrónico.', type: 'email', ph: 'tu@email.com', key: 'email', autocomplete: 'email' },
-    { n: 3, q: 'Creá una\ncontraseña.', type: 'password', ph: 'Mínimo 6 caracteres', key: 'password', autocomplete: 'new-password' },
-    { n: 4, q: 'Sos...', type: 'roles' },
+    { n: 2, q: '¿Cómo se ve\ntu espacio?', type: 'paleta' },
+    { n: 3, q: '¿Cómo querés\nque te hable?', type: 'personalidad' },
+    { n: 4, q: '¿Por qué\nusás AlephOne?', type: 'objetivos' },
+    { n: 5, q: 'Ya casi. ¿Dónde\nguardamos esto?', type: 'email', ph: 'tu@email.com', key: 'email', autocomplete: 'email' },
+    { n: 6, q: 'Último paso.\nCreá tu contraseña.', type: 'password', ph: 'Mínimo 6 caracteres', key: 'password', autocomplete: 'new-password' },
+    { n: 7, q: 'Sos...', type: 'roles' },
     { n: null, type: 'done', title: '¡Listo!', sub: 'Ya podés iniciar sesión\nen AlephOne.' }
   ],
   login: [
@@ -565,7 +769,7 @@ function startFlow(type) {
   if (busy) return;
   flow = type;
   step = 0;
-  data = type === 'reg' ? { role: 'student' } : {};
+  data = type === 'reg' ? { role: 'student', theme: null, personalidad: null, objetivos: [] } : {};
   const vA = document.getElementById('viewA');
   const vB = document.getElementById('viewB');
   vA.classList.add('out');
@@ -573,6 +777,7 @@ function startFlow(type) {
     vA.style.display = 'none';
     vB.classList.add('in');
     renderStep(true);
+    updateIdentityCard();
   }, 210);
 }
 
@@ -581,6 +786,7 @@ function returnToStart() {
   flow = null;
   step = 0;
   data = {};
+  applyTheme('theme-everest');
   const vA = document.getElementById('viewA');
   const vB = document.getElementById('viewB');
   document.getElementById('stepSlot').innerHTML = '';
@@ -600,6 +806,7 @@ function returnToStart() {
     }, 260);
   });
   setReady(false);
+  updateIdentityCard();
 }
 
 function handleBack() {
@@ -642,9 +849,6 @@ function renderStep(first, dir) {
   panel.innerHTML = buildStepHTML(cfg);
   slot.appendChild(panel);
 
-  // Ajusta la altura real del contenedor al contenido de cada paso,
-  // animando el cambio ("shift") en vez de dejar que el overflow
-  // oculto de la card corte el botón "Continuar".
   const applyHeight = () => { slot.style.height = panel.scrollHeight + 'px'; };
   if (first) {
     slot.style.transition = 'none';
@@ -661,6 +865,12 @@ function renderStep(first, dir) {
     if (input) setTimeout(() => input.focus(), 70);
     panel.querySelectorAll('.role-btn').forEach((button, index) => {
       setTimeout(() => button.classList.add('show'), 80 + index * 70);
+    });
+    panel.querySelectorAll('.paleta-btn').forEach((button, index) => {
+      setTimeout(() => button.classList.add('show'), 60 + index * 55);
+    });
+    panel.querySelectorAll('.pers-btn').forEach((button, index) => {
+      setTimeout(() => button.classList.add('show'), 60 + index * 70);
     });
   }));
 }
@@ -683,14 +893,134 @@ function buildStepHTML(cfg) {
       </div>`;
   }
 
+  if (cfg.type === 'paleta') {
+    const opts = PALETAS.map(p => `
+      <button class="paleta-btn ${data.theme === p.theme ? 'selected' : ''}" type="button" data-theme="${p.theme}" onclick="pickPaleta('${p.theme}')">
+        <div class="paleta-swatch" style="background:${p.swatch}"></div>
+        <span class="paleta-name">${p.name}</span>
+        <span class="paleta-place">${p.place}</span>
+      </button>`).join('');
+    return `<div class="step-q">${cfg.q.replace('\n', '<br>')}</div>
+      <div class="paleta-grid">${opts}</div>
+      <button class="step-next" type="button" onclick="nextStep()" ${data.theme ? '' : 'disabled'} id="paletaNext">Continuar →</button>`;
+  }
+
+  if (cfg.type === 'personalidad') {
+    const opts = PERSONALIDADES.map(p => `
+      <button class="pers-btn ${data.personalidad === p.id ? 'selected' : ''}" type="button" onclick="pickPersonalidad('${p.id}')">
+        <div class="pers-name">${p.name}</div>
+        <div class="pers-desc">${p.desc}</div>
+      </button>`).join('');
+    return `<div class="step-q">${cfg.q.replace('\n', '<br>')}</div>
+      <div class="pers-col">${opts}</div>
+      <button class="step-next" type="button" onclick="nextStep()" ${data.personalidad ? '' : 'disabled'} id="persNext">Continuar →</button>`;
+  }
+
+  if (cfg.type === 'objetivos') {
+    const opts = OBJETIVOS.map(o => `
+      <button class="obj-btn ${data.objetivos.includes(o.id) ? 'selected' : ''}" type="button" data-obj="${o.id}" onclick="toggleObjetivo('${o.id}')">${o.label}</button>`).join('');
+    return `<div class="step-q">${cfg.q.replace('\n', '<br>')}</div>
+      <div class="obj-grid">${opts}</div>
+      <div class="obj-count" id="objCount">${data.objetivos.length} seleccionado(s)</div>
+      <button class="step-next" type="button" onclick="nextStep()" ${data.objetivos.length ? '' : 'disabled'} id="objNext">Continuar →</button>`;
+  }
+
   const isPassword = cfg.type === 'password';
   return `<div class="step-q">${cfg.q.replace('\n', '<br>')}</div>
     <div class="step-input-wrap">
-      <input class="step-input" id="stepInp" type="${cfg.type}" placeholder="${cfg.ph}" autocomplete="${cfg.autocomplete || ''}" onkeydown="if(event.key==='Enter')nextStep()">
+      <input class="step-input" id="stepInp" type="${cfg.type}" placeholder="${cfg.ph}" autocomplete="${cfg.autocomplete || ''}" onkeydown="if(event.key==='Enter')nextStep()" oninput="handleLiveInput('${cfg.key}',this.value)">
       ${isPassword ? `<button class="eye-btn" type="button" onclick="toggleEye(this)" tabindex="-1" aria-label="Mostrar contraseña">${ICON_EYE}</button>` : ''}
     </div>
     <div class="step-err" id="stepErr"></div>
     <button class="step-next" type="button" onclick="nextStep()">Continuar →</button>`;
+}
+
+function handleLiveInput(key, value) {
+  if (key === 'username') {
+    data.username = value;
+    updateIdentityCard();
+  }
+}
+
+function pickPaleta(themeClass) {
+  data.theme = themeClass;
+  applyTheme(themeClass);
+  document.querySelectorAll('.paleta-btn').forEach(button => {
+    button.classList.toggle('selected', button.dataset.theme === themeClass);
+  });
+  const btn = document.getElementById('paletaNext');
+  if (btn) btn.disabled = false;
+  updateIdentityCard();
+}
+
+function pickPersonalidad(id) {
+  data.personalidad = id;
+  document.querySelectorAll('.pers-btn').forEach((button, index) => {
+    button.classList.toggle('selected', PERSONALIDADES[index].id === id);
+  });
+  const btn = document.getElementById('persNext');
+  if (btn) btn.disabled = false;
+  updateIdentityCard();
+}
+
+function toggleObjetivo(id) {
+  const idx = data.objetivos.indexOf(id);
+  if (idx === -1) data.objetivos.push(id);
+  else data.objetivos.splice(idx, 1);
+
+  document.querySelectorAll('.obj-btn').forEach(button => {
+    button.classList.toggle('selected', data.objetivos.includes(button.dataset.obj));
+  });
+  const count = document.getElementById('objCount');
+  if (count) count.textContent = `${data.objetivos.length} seleccionado(s)`;
+  const btn = document.getElementById('objNext');
+  if (btn) btn.disabled = data.objetivos.length === 0;
+  updateIdentityCard();
+}
+
+function applyTheme(themeClass) {
+  const body = document.body;
+  ['theme-everest','theme-andes','theme-amazonas','theme-bondi','theme-serengeti'].forEach(name => body.classList.remove(name));
+  body.classList.add(themeClass);
+}
+
+function updateIdentityCard() {
+  const name = (data.username || '').trim();
+  const pers = PERSONALIDADES.find(p => p.id === data.personalidad);
+  const hour = new Date().getHours();
+  const key = timeOfDayKey(hour);
+  const msg = pers ? pers.msgs[key] : 'Se va a construir mientras avanzás.';
+  const paleta = PALETAS.find(p => p.theme === (data.theme || 'theme-everest'));
+  const objChips = (data.objetivos || []).slice(0, 4).map(id => {
+    const objetivo = OBJETIVOS.find(item => item.id === id);
+    return objetivo ? `<span class="idobj-chip">${objetivo.label}</span>` : '';
+  }).join('');
+
+  const nameHTML = name || 'Tu espacio';
+  const roleHTML = pers ? pers.name.toUpperCase() : 'AlephOne';
+  const placeHTML = paleta ? `${paleta.name} · ${paleta.place}` : '';
+
+  ['', 'M'].forEach(suffix => {
+    const nameEl = document.getElementById('idCardName' + suffix);
+    const msgEl = document.getElementById('idCardMsg' + suffix);
+    if (nameEl) nameEl.textContent = nameHTML;
+    if (msgEl) msgEl.textContent = msg;
+  });
+
+  const roleEl = document.getElementById('idCardRole');
+  if (roleEl) roleEl.textContent = roleHTML;
+
+  const persEl = document.getElementById('idCardPers');
+  if (persEl) {
+    persEl.style.display = pers ? 'inline-flex' : 'none';
+    persEl.textContent = pers ? pers.name : '';
+  }
+
+  const objEl = document.getElementById('idCardObjs');
+  if (objEl) objEl.innerHTML = objChips;
+
+  const placeEl = document.getElementById('idCardPlace');
+  if (placeEl) placeEl.textContent = placeHTML;
 }
 
 function nextStep() {
@@ -725,9 +1055,14 @@ function nextStep() {
     data[cfg.key] = value;
   }
 
+  if (cfg.type === 'paleta' && !data.theme) return;
+  if (cfg.type === 'personalidad' && !data.personalidad) return;
+  if (cfg.type === 'objetivos' && data.objetivos.length === 0) return;
+
   step += 1;
   renderStep(false);
   renderDots();
+  updateIdentityCard();
   if (FLOWS[flow][step]?.type === 'done') finishFlow();
 }
 
@@ -783,6 +1118,18 @@ function validateReady() {
   return cfg?.type === 'done';
 }
 
+function persistIdentityDraft() {
+  if (flow !== 'reg') return;
+  const identity = {
+    username: data.username || null,
+    theme: data.theme || 'theme-everest',
+    personalidad: data.personalidad || null,
+    objetivos: data.objetivos || [],
+    saved_at: new Date().toISOString()
+  };
+  localStorage.setItem('aleph_identity', JSON.stringify(identity));
+}
+
 async function handleIniciar() {
   if (busy || !validateReady()) return;
   setBusy(true);
@@ -798,6 +1145,7 @@ async function handleIniciar() {
     return;
   }
 
+  persistIdentityDraft();
   startTakeover();
 }
 
@@ -843,6 +1191,7 @@ document.addEventListener('keydown', event => {
 
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof applyAccessibility === 'function') applyAccessibility();
+  updateIdentityCard();
 });
 </script>
 </body>
