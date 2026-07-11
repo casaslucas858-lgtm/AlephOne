@@ -836,6 +836,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     runIntroGrowAndDock();
   }
 });
+
+/* ══════════════════════════════════════════
+   SINCRONIZACIÓN CON SETTINGS — escucha cambios de localStorage
+   desde otras pestañas (settings.html). El evento 'storage' solo
+   se dispara en pestañas distintas a la que escribió, nunca en
+   la misma — exactamente lo que necesitamos.
+══════════════════════════════════════════ */
+window.addEventListener('storage', async (event) => {
+  if (event.key === 'aleph_identity') {
+    const user = AlephAPI.Auth.getCurrentUser();
+    if (user) renderGreeting(user);
+  }
+  if (event.key === 'aleph_theme_mode' || event.key === 'aleph_font_size_idx' || event.key === 'aleph_vision' || (event.key && event.key.startsWith('aleph_a11y_'))) {
+    applyPersistedPreferences();
+  }
+});
 </script>
 </body>
 </html>
