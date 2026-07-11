@@ -36,6 +36,15 @@ body.theme-light{
   --text:#0f1729; --muted:rgba(15,23,41,0.56); --faint:rgba(15,23,41,0.28);
 }
 
+/* ═══ Paletas de identidad — mismas 5 que index.html y settings.html.
+   Sin esto, elegir una paleta en el onboarding o en Ajustes nunca se
+   reflejaba acá: eran los únicos dos lugares que la conocían. ═══ */
+body.theme-everest{--bg:#0a0e1a;--bg-2:#0c1322;--bg-3:#091020;--primary:#4ab8c8;--primary-rgb:74,184,200;--secondary:#6dd4e8;--secondary-rgb:109,212,232}
+body.theme-andes{--bg:#1c1c1e;--bg-2:#242426;--bg-3:#161618;--primary:#4a90d9;--primary-rgb:74,144,217;--secondary:#f4a97f;--secondary-rgb:244,169,127}
+body.theme-amazonas{--bg:#0d1a0f;--bg-2:#152b18;--bg-3:#0a130c;--primary:#3dba5e;--primary-rgb:61,186,94;--secondary:#7fd99a;--secondary-rgb:127,217,154}
+body.theme-bondi{--bg:#fefce8;--bg-2:#fef9c3;--bg-3:#fdf6ae;--primary:#0096c7;--primary-rgb:0,150,199;--secondary:#48cae4;--secondary-rgb:72,202,228;--glass:rgba(255,255,255,0.52);--glass-strong:rgba(255,255,255,0.72);--glass-border:rgba(26,20,0,0.14);--text:#1a1400;--muted:rgba(26,20,0,0.60);--faint:rgba(26,20,0,0.32)}
+body.theme-serengeti{--bg:#1a0a00;--bg-2:#2d1200;--bg-3:#140800;--primary:#e85d20;--primary-rgb:232,93,32;--secondary:#f4915a;--secondary-rgb:244,145,90}
+
 /* ═══ ACCESIBILIDAD / VISIÓN — compartido con settings.html ═══ */
 body.a11y-reduce-motion *,body.a11y-reduce-motion *::before,body.a11y-reduce-motion *::after{
   animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important;
@@ -568,6 +577,10 @@ const PERSONALIDAD_MSGS = {
 function getStoredIdentity(){
   try { return JSON.parse(localStorage.getItem('aleph_identity') || 'null'); }
   catch { return null; }
+}
+function applyTheme(themeClass){
+  document.body.classList.remove('theme-everest','theme-andes','theme-amazonas','theme-bondi','theme-serengeti');
+  document.body.classList.add(themeClass || 'theme-everest');
 }
 function timeOfDayKey(hora){
   if (hora >= 6 && hora < 13) return 'morning';
