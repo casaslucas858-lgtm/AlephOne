@@ -36,10 +36,7 @@ body.theme-light{
   --text:#0f1729; --muted:rgba(15,23,41,0.56); --faint:rgba(15,23,41,0.28);
 }
 
-/* ═══ ACCESIBILIDAD / VISIÓN — compartido con settings.html ═══
-   Estas clases se togglean desde Settings y persisten en localStorage;
-   este bloque es lo que hace que el toggle tenga efecto real acá también,
-   no solo en la propia página de ajustes. */
+/* ═══ ACCESIBILIDAD / VISIÓN — compartido con settings.html ═══ */
 body.a11y-reduce-motion *,body.a11y-reduce-motion *::before,body.a11y-reduce-motion *::after{
   animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important;
 }
@@ -60,7 +57,7 @@ body.a11y-line-height-wide *{line-height:1.85!important}
 body.a11y-underline-links a{text-decoration:underline!important;text-underline-offset:3px}
 body.a11y-enhanced-focus *:focus-visible{outline:3px solid var(--primary)!important;outline-offset:3px!important;border-radius:6px}
 body.a11y-large-targets .icon-btn{width:42px;height:42px}
-body.a11y-large-targets .nav-link{padding:14px 12px}
+body.a11y-large-targets .nav-link{padding:12px 6px}
 body.a11y-large-targets button{min-height:42px}
 body.vision-deuteranopia{filter:url('#filter-deuteranopia')}
 body.vision-protanopia{filter:url('#filter-protanopia')}
@@ -114,26 +111,28 @@ button{border:0;background:none;cursor:pointer}
 /* ═══ LAYOUT ═══ */
 .shell{position:relative;z-index:5;display:flex;min-height:100vh}
 
-/* Sidebar */
+/* Sidebar — rail compacto: icono + label debajo, siempre visible.
+   No colapsa/expande; 72px es el ancho fijo tanto en desktop como cuando
+   el intro todavía no terminó de correr. */
 .sidebar{
-  width:220px;flex-shrink:0;padding:78px 12px 20px;
-  display:flex;flex-direction:column;gap:4px;
-  transition:width 420ms var(--e-out);
+  width:72px;flex-shrink:0;padding:78px 8px 20px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
   contain:layout style;
 }
-.shell.collapsed .sidebar{width:64px;padding:78px 8px 20px}
 .nav-link{
-  display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:12px;
-  color:var(--muted);font-size:0.86rem;font-weight:600;white-space:nowrap;overflow:hidden;
+  width:100%;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:9px 4px 8px;border-radius:12px;
+  color:var(--muted);
   transition:background 160ms var(--e-out),color 160ms ease,transform 80ms var(--e-out);
 }
 .nav-link:hover{background:var(--glass);color:var(--text)}
-.nav-link:active{transform:scale(0.97)}
-.nav-link.active{background:rgba(var(--primary-rgb),0.16);color:var(--primary)}
-.nav-icon{width:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.nav-link:active{transform:scale(0.95)}
+.nav-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;transition:background 160ms var(--e-out),color 160ms ease}
 .nav-icon svg{width:17px;height:17px}
-.nav-text{opacity:1;transition:opacity 200ms ease}
-.shell.collapsed .nav-text{opacity:0;pointer-events:none}
+.nav-link.active{color:var(--primary)}
+.nav-link.active .nav-icon{background:var(--primary);color:#06121a}
+.nav-text{font-size:9.5px;font-weight:700;letter-spacing:0.01em;text-align:center;line-height:1.15;max-width:64px}
 
 /* Topbar */
 .topbar{
@@ -175,7 +174,7 @@ button{border:0;background:none;cursor:pointer}
 .main{flex:1;min-width:0;padding:84px 26px 40px;position:relative;contain:layout style}
 
 .ambient-tod{
-  position:absolute;top:-84px;left:-26px;right:-26px;height:460px;z-index:0;
+  position:absolute;top:-84px;left:-26px;right:-26px;height:400px;z-index:0;
   pointer-events:none;filter:blur(64px);opacity:0.85;
   transition:background 700ms ease,opacity 700ms ease;
 }
@@ -192,13 +191,10 @@ button{border:0;background:none;cursor:pointer}
   radial-gradient(ellipse 55% 60% at 22% 8%,rgba(90,58,158,0.52),transparent 72%),
   radial-gradient(ellipse 45% 55% at 78% 0%,rgba(58,42,112,0.30),transparent 75%);}
 
-.greeting{position:relative;z-index:1;padding:40px 4px 26px;margin-bottom:18px;color:#fff}
+.greeting{position:relative;z-index:1;padding:34px 4px 22px;margin-bottom:6px;color:#fff}
 .greeting-eyebrow{font-size:0.7rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.62;margin-bottom:6px;font-family:'Syne',sans-serif}
-.greeting-msg{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;margin-bottom:4px;text-shadow:0 2px 18px rgba(0,0,0,0.28)}
-.greeting-date{font-size:0.82rem;opacity:0.58}
-.greeting-badges{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
-.gbadge{padding:4px 12px;border-radius:999px;font-size:0.75rem;font-weight:700;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.18);font-family:'Syne',sans-serif;backdrop-filter:blur(6px)}
-.gbadge.urgent{background:rgba(240,80,80,0.22);border-color:rgba(240,80,80,0.35)}
+.greeting-msg{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;margin-bottom:4px;text-shadow:0 2px 18px rgba(0,0,0,0.28)}
+.greeting-date{font-size:0.8rem;opacity:0.56}
 
 .glass{
   background:var(--glass);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);
@@ -209,33 +205,65 @@ button{border:0;background:none;cursor:pointer}
 @media(max-width:900px){
   .glass{backdrop-filter:blur(9px) saturate(1.15);-webkit-backdrop-filter:blur(9px) saturate(1.15)}
 }
-body.sidebar-transitioning .glass{
-  backdrop-filter:blur(4px);
-  -webkit-backdrop-filter:blur(4px);
-}
+body.sidebar-transitioning .glass{backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 
 .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .card-title{font-family:'Syne',sans-serif;font-size:0.86rem;font-weight:800;display:flex;align-items:center;gap:7px}
 .card-title .ic{width:14px;height:14px;flex-shrink:0}
 .card-link{font-size:0.76rem;font-weight:700;color:var(--primary)}
 
-.quickstart{padding:20px 22px;margin-bottom:18px}
-.qs-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.qs-input{
-  flex:1;min-width:160px;padding:11px 14px;border-radius:12px;background:rgba(255,255,255,0.07);
-  border:1px solid var(--glass-border);color:var(--text);font-size:0.92rem;letter-spacing:0.08em;text-transform:uppercase;
-}
-.qs-input::placeholder{color:var(--faint);text-transform:none;letter-spacing:normal}
-.qs-input:focus{outline:none;border-color:rgba(var(--primary-rgb),0.5);box-shadow:0 0 0 3px rgba(var(--primary-rgb),0.12)}
-.qs-btn{
-  padding:11px 20px;border-radius:12px;background:rgba(var(--primary-rgb),0.88);color:#06121a;
-  font-family:'Syne',sans-serif;font-weight:800;font-size:0.84rem;transition:background 150ms ease,transform 90ms var(--e-out);
-}
-.qs-btn:hover{background:var(--primary)}
-.qs-btn:active{transform:scale(0.97)}
+/* ═══ HERO: fila de stats ═══ */
+.stats-row{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.stat-card{padding:15px 16px}
+.stat-icon{width:28px;height:28px;border-radius:9px;background:rgba(var(--primary-rgb),0.14);color:var(--primary);display:flex;align-items:center;justify-content:center;margin-bottom:9px}
+.stat-icon svg{width:15px;height:15px}
+.stat-value{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;line-height:1}
+.stat-label{font-size:0.72rem;color:var(--muted);margin-top:4px}
+.stat-sub{font-size:0.66rem;color:var(--faint);margin-top:2px}
+.week-heat{display:flex;gap:3px;margin-top:2px}
+.heat-cell{flex:1;height:20px;border-radius:5px;background:rgba(255,255,255,0.06)}
+.heat-cell.lvl1{background:rgba(var(--primary-rgb),0.30)}
+.heat-cell.lvl2{background:rgba(var(--primary-rgb),0.58)}
+.heat-cell.lvl3{background:rgba(var(--primary-rgb),0.90)}
+.heat-labels{display:flex;gap:3px;margin-top:4px}
+.heat-labels span{flex:1;text-align:center;font-size:0.58rem;color:var(--faint)}
 
-.grid{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
+/* Quick start — barra fina, ya no domina el hero */
+.quickstart-slim{
+  position:relative;z-index:1;
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px;margin-bottom:14px;
+}
+.qs-slim-icon{color:var(--muted);flex-shrink:0;display:flex}
+.qs-slim-icon svg{width:15px;height:15px}
+.qs-slim-input{flex:1;background:transparent;border:0;color:var(--text);font-size:0.85rem;padding:4px 0;letter-spacing:0.06em;text-transform:uppercase}
+.qs-slim-input::placeholder{color:var(--faint);text-transform:none;letter-spacing:normal}
+.qs-slim-btn{padding:7px 15px;border-radius:9px;background:rgba(var(--primary-rgb),0.18);color:var(--primary);font-family:'Syne',sans-serif;font-weight:800;font-size:0.76rem;flex-shrink:0;transition:background 140ms ease,transform 90ms var(--e-out)}
+.qs-slim-btn:hover{background:rgba(var(--primary-rgb),0.28)}
+.qs-slim-btn:active{transform:scale(0.95)}
+
+/* Lo más urgente */
+.urgent-card{
+  position:relative;z-index:1;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:16px 20px;margin-bottom:16px;
+  border-color:rgba(var(--primary-rgb),0.32);
+}
+.urgent-left{display:flex;align-items:center;gap:13px;min-width:0}
+.urgent-icon{width:36px;height:36px;border-radius:11px;background:rgba(var(--primary-rgb),0.16);color:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.urgent-icon svg{width:18px;height:18px}
+.urgent-eyebrow{font-size:0.65rem;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--primary);font-family:'Syne',sans-serif}
+.urgent-title{font-family:'Syne',sans-serif;font-size:0.98rem;font-weight:750;margin-top:2px}
+.urgent-cta{padding:9px 18px;border-radius:10px;background:rgba(var(--primary-rgb),0.88);color:#06121a;font-family:'Syne',sans-serif;font-weight:800;font-size:0.8rem;flex-shrink:0;transition:background 150ms ease,transform 90ms var(--e-out)}
+.urgent-cta:hover{background:var(--primary)}
+.urgent-cta:active{transform:scale(0.96)}
+
+.grid{position:relative;z-index:1;display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
 .col{display:flex;flex-direction:column;gap:16px}
+
+.know-legend{display:flex;gap:14px;margin-bottom:11px;flex-wrap:wrap}
+.know-legend-item{display:flex;align-items:center;gap:5px;font-size:0.68rem;color:var(--muted)}
+.know-legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
 .know-list{display:flex;flex-direction:column;gap:8px}
 .know-item{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border)}
@@ -248,7 +276,7 @@ body.sidebar-transitioning .glass{
 .know-sub{font-size:0.74rem;color:var(--muted)}
 .know-val{font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem}
 
-.msg-panel{padding:18px 18px 16px;min-height:340px}
+.msg-panel{padding:18px 18px 16px;min-height:200px}
 .msg-item{display:flex;gap:11px;padding:12px 4px;border-bottom:1px solid var(--glass-border)}
 .msg-item:last-child{border-bottom:none}
 .msg-avatar{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--secondary));
@@ -267,6 +295,10 @@ body.sidebar-transitioning .glass{
   .sidebar{display:none}
   .main{padding:78px 16px 90px}
   .grid{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+}
+@media(max-width:520px){
+  .stats-row{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -314,14 +346,12 @@ body.sidebar-transitioning .glass{
     </div>
   </header>
 
+  <!-- Rail: icono + label debajo, siempre legible, sin ocupar el ancho de un sidebar tradicional.
+       "Ajustes" ya no vive acá — tiene su propio botón en la topbar y su propia página. -->
   <nav class="sidebar" id="sidebar">
     <a href="dashboard.html" class="nav-link active" id="navDashboard" onclick="return handleHomeClick(event)">
       <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></span>
-      <span class="nav-text">Dashboard</span>
-    </a>
-    <a href="settings.html" class="nav-link">
-      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-      <span class="nav-text">Ajustes</span>
+      <span class="nav-text">Inicio</span>
     </a>
     <a href="tareas.html" class="nav-link">
       <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
@@ -339,24 +369,55 @@ body.sidebar-transitioning .glass{
 
   <main class="main">
     <div class="ambient-tod tod-morning" id="ambientTod"></div>
+
     <section class="greeting" id="greeting">
       <div class="greeting-eyebrow" id="greetDia">HOY ES —</div>
-      <div class="greeting-msg" id="greetMsg">Hola 👋</div>
+      <div class="greeting-msg" id="greetMsg">Hola</div>
       <div class="greeting-date" id="greetDate">—</div>
-      <div class="greeting-badges" id="greetBadges"></div>
     </section>
 
-    <div class="quickstart glass">
-      <div class="card-head">
-        <span class="card-title">
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
-          Quick Start
-        </span>
+    <!-- Hero: 4 cards escaneables en 2 segundos, sin necesidad de leer nada más -->
+    <div class="stats-row" id="statsRow">
+      <div class="glass stat-card">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <div class="stat-value" id="statTareasVal">—</div>
+        <div class="stat-label" id="statTareasLabel">Tareas pendientes</div>
       </div>
-      <div class="qs-row">
-        <input class="qs-input" id="gameCode" placeholder="Código de sala" maxlength="8" onkeydown="if(event.key==='Enter')joinGame()">
-        <button class="qs-btn" onclick="joinGame()">Unirme</button>
+      <div class="glass stat-card">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+        <div class="stat-value" id="statExamenVal">—</div>
+        <div class="stat-label" id="statExamenLabel">Próximo examen</div>
+        <div class="stat-sub" id="statExamenSub"></div>
       </div>
+      <div class="glass stat-card">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="stat-value" id="statMsgVal">—</div>
+        <div class="stat-label">Mensajes</div>
+      </div>
+      <div class="glass stat-card">
+        <div class="stat-label" style="margin-top:0">Tu semana</div>
+        <div class="week-heat" id="weekHeat"></div>
+        <div class="heat-labels" id="weekHeatLabels"></div>
+      </div>
+    </div>
+
+    <!-- Quick Start: sigue existiendo, pero como acción secundaria, no como bloque protagonista -->
+    <div class="quickstart-slim glass">
+      <span class="qs-slim-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg></span>
+      <input class="qs-slim-input" id="gameCode" placeholder="Código de sala (ej. AB3X9K)" maxlength="8" onkeydown="if(event.key==='Enter')joinGame()">
+      <button class="qs-slim-btn" onclick="joinGame()">Unirme</button>
+    </div>
+
+    <!-- Lo más urgente: una sola cosa, la que el sistema decide que importa ahora -->
+    <div class="urgent-card glass" id="urgentCard" style="display:none">
+      <div class="urgent-left">
+        <div class="urgent-icon" id="urgentIcon"></div>
+        <div style="min-width:0">
+          <div class="urgent-eyebrow" id="urgentEyebrow">LO MÁS URGENTE</div>
+          <div class="urgent-title" id="urgentTitle">—</div>
+        </div>
+      </div>
+      <button class="urgent-cta" id="urgentCta">Ver</button>
     </div>
 
     <div class="grid">
@@ -367,6 +428,11 @@ body.sidebar-transitioning .glass{
               <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>
               Necesito saber
             </span>
+          </div>
+          <div class="know-legend">
+            <span class="know-legend-item"><span class="know-legend-dot" style="background:var(--danger)"></span>Requiere acción</span>
+            <span class="know-legend-item"><span class="know-legend-dot" style="background:var(--warn)"></span>Próximamente</span>
+            <span class="know-legend-item"><span class="know-legend-dot" style="background:var(--ok)"></span>Al día</span>
           </div>
           <div class="know-list" id="knowList">
             <div class="empty">Cargando…</div>
@@ -394,18 +460,7 @@ body.sidebar-transitioning .glass{
 <script src="js/api.js"></script>
 <script>
 /* ══════════════════════════════════════════
-   ESTADO — separado en 3 categorías:
-
-   1) Carga inicial: si la intro (crecer + volar a la esquina) ya corrió
-      en esta pestaña. Vive en sessionStorage porque tiene que sobrevivir
-      a un reload completo del documento (app multi-página, no SPA: cada
-      link navega con un <a href> normal).
-   2) Navegación: a qué página se está yendo el click, o si es "quedate
-      acá" (mismo documento). Vive en el DOM (clase collapsed del shell).
-   3) Transición: si hay una animación de layout en curso ahora mismo
-      (sidebar expandiéndose). Vive en memoria y se limpia sola cuando
-      termina la transición real (transitionend), con un timeout de
-      seguridad como red por si el evento no llega a disparar.
+   ESTADO
 ══════════════════════════════════════════ */
 const AlephUIState = {
   INTRO_KEY: 'alephone_intro_played',
@@ -413,9 +468,6 @@ const AlephUIState = {
   markIntroPlayed(){ sessionStorage.setItem(this.INTRO_KEY, '1'); }
 };
 
-// Referencias DOM cacheadas una sola vez: este script va al final del
-// <body>, así que todos estos nodos ya existen cuando corre. Evita repetir
-// document.getElementById() en cada click.
 const els = {
   shell: document.getElementById('shell'),
   sidebar: document.getElementById('sidebar'),
@@ -426,21 +478,15 @@ const els = {
 };
 
 /* ══════════════════════════════════════════
-   INTRO SEQUENCE
-   1) "Preparando tu ambiente..." + spinner
-   2) al terminar de cargar datos: el ℵ crece 1s
-   3) vuela y se achica a la esquina sup. izquierda
-   4) dashboard queda COLAPSADO (solo íconos)
-   5) click en el ℵ -> dim flash -> expande labels
+   INTRO SEQUENCE (sin cambios de comportamiento;
+   el rail ya no cambia de ancho, así que expandDashboard()
+   ahora solo revela la palabra "AlephOne" en la topbar)
 ══════════════════════════════════════════ */
 function runIntroGrowAndDock(){
   const { introMark: mark, introOverlay: overlay, introLoading: loading } = els;
-
   loading.classList.add('gone');
-
   mark.classList.remove('centered');
   mark.classList.add('grown');
-
   setTimeout(() => {
     overlay.classList.add('hide');
     mark.classList.remove('grown');
@@ -450,8 +496,6 @@ function runIntroGrowAndDock(){
   }, 1000);
 }
 
-/* Salto directo al estado final, sin overlay ni animación: usado cuando
-   la intro ya corrió en esta sesión. */
 function skipIntro(){
   const { introMark: mark, introOverlay: overlay, introLoading: loading } = els;
   overlay.remove();
@@ -463,45 +507,12 @@ function skipIntro(){
   requestAnimationFrame(() => { mark.style.transition = ''; });
 }
 
-/* Expandir el sidebar es la interacción más repetida del dashboard.
-   Antes tapaba la transición completa con un velo casi negro (#dimFlash)
-   para esconder la reflow mientras el sidebar cambiaba de ancho — hacía
-   falta cuando el blur de las cards pesaba 22px. Con el blur bajado a
-   14px + modo lite (4px) durante la transición + contain:layout, la
-   reflow ya es lo bastante barata como para animarse a la vista sin
-   necesidad de un flash oscuro tapándola. Lo que queda es solo la lógica
-   real: activar el modo lite mientras dura la transición y apagarlo
-   cuando el navegador confirma (transitionend) que terminó — con un
-   timeout de seguridad por si ese evento no llega a disparar. */
 function expandDashboard(){
-  const { shell, sidebar } = els;
+  const { shell } = els;
   if (!shell.classList.contains('collapsed')) return;
-
-  document.body.classList.add('sidebar-transitioning');
-  sidebar.style.willChange = 'width';
   shell.classList.remove('collapsed');
-
-  let done = false;
-  const finish = () => {
-    if (done) return;
-    done = true;
-    document.body.classList.remove('sidebar-transitioning');
-    sidebar.style.willChange = 'auto';
-  };
-  sidebar.addEventListener('transitionend', (event) => {
-    if (event.propertyName === 'width') finish();
-  }, { once:true });
-  setTimeout(finish, 560);
 }
 
-/* El link "Dashboard" del sidebar apunta a esta misma página. Sin este
-   guard, cada click ahí disparaba una recarga completa del documento
-   (app no-SPA), lo que reiniciaba TODO — incluida la intro. Ese era el
-   bug reportado: si ya estamos acá, no navegamos, como mucho expandimos
-   el sidebar si estaba colapsado. */
-/* Generaliza el guard: si el link apunta al MISMO archivo en el que ya
-   estamos, no navegamos (evita el reload completo que reiniciaba la
-   intro); si apunta a otro archivo, se deja pasar la navegación normal. */
 function handleSelfNav(event, fileName){
   const current = location.pathname.split('/').pop() || 'dashboard.html';
   if (current === fileName) {
@@ -518,9 +529,7 @@ els.settingsBtn.addEventListener('click', () => {
 });
 
 /* ══════════════════════════════════════════
-   PREFERENCIAS PERSISTIDAS — aplicadas al cargar
-   Mismas claves de localStorage que usa settings.html, así lo que se
-   configura ahí tiene efecto acá sin necesidad de recargar dos veces.
+   PREFERENCIAS PERSISTIDAS
 ══════════════════════════════════════════ */
 const A11Y_KEYS = ['reduce-motion','reduce-transparency','high-contrast','font-dyslexic','letter-spacing-wide','line-height-wide','underline-links','enhanced-focus','large-targets'];
 function applyPersistedPreferences(){
@@ -545,85 +554,104 @@ function applyPersistedPreferences(){
 applyPersistedPreferences();
 
 /* ══════════════════════════════════════════
-   SALUDO COMO FONDO — franja de luz por horario
+   IDENTIDAD DEL ONBOARDING — personalidad y mensajes horarios.
+   Si el usuario vino del flujo nuevo, aleph_identity existe en
+   localStorage con { personalidad, theme, objetivos, ... }.
+   Si no existe (cuentas viejas / login directo), cae a Claridad
+   como default neutro.
 ══════════════════════════════════════════ */
-const DIAS_ES = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
-const MESES_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-
-function timeOfDayBand(hora){
-  if (hora >= 6 && hora < 13)  return { cls:'tod-morning',   msg:'Empezando el día.' };
-  if (hora >= 13 && hora < 19) return { cls:'tod-afternoon', msg:'Aún queda tarde por delante.' };
-  if (hora >= 19 && hora < 24) return { cls:'tod-evening',   msg:'La luna ya está arriba.' };
-  return { cls:'tod-night', msg:'El mundo duerme, tú no.' };
+const PERSONALIDAD_MSGS = {
+  curiosidad: { morning:'El día comienza. La curiosidad también.', afternoon:'El atardecer siempre trae nuevas preguntas.', evening:'La noche abre preguntas que el día no hace.', night:'Algunas preguntas no esperan.' },
+  claridad:   { morning:'Tiempo de empezar.', afternoon:'Queda tiempo por delante.', evening:'Estamos llegando al final del día.', night:'Es de madrugada.' },
+  momentum:   { morning:'Comencemos. Queda mucho por delante.', afternoon:'El día avanza. Avancemos con él.', evening:'El día está por terminar. Podemos continuar.', night:'Descansá cuando termines.' }
+};
+function getStoredIdentity(){
+  try { return JSON.parse(localStorage.getItem('aleph_identity') || 'null'); }
+  catch { return null; }
 }
+function timeOfDayKey(hora){
+  if (hora >= 6 && hora < 13) return 'morning';
+  if (hora >= 13 && hora < 19) return 'afternoon';
+  if (hora >= 19 && hora < 24) return 'evening';
+  return 'night';
+}
+
+const DIAS_ES = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const DIA_CORTO = ['D','L','M','M','J','V','S'];
+const MESES_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
 function renderGreeting(user){
   const now = new Date();
   const hora = now.getHours();
-  const band = timeOfDayBand(hora);
+  const key = timeOfDayKey(hora);
+  const identity = getStoredIdentity();
+  const persId = identity?.personalidad || 'claridad';
+  const msg = PERSONALIDAD_MSGS[persId]?.[key] || PERSONALIDAD_MSGS.claridad[key];
+
   const ambient = document.getElementById('ambientTod');
   ambient.classList.remove('tod-morning','tod-afternoon','tod-evening','tod-night');
-  ambient.classList.add(band.cls);
+  ambient.classList.add('tod-' + key.replace('morning','morning').replace('afternoon','afternoon').replace('evening','evening').replace('night','night'));
 
   document.getElementById('greetDia').textContent = 'HOY ES ' + DIAS_ES[now.getDay()].toUpperCase();
-  document.getElementById('greetMsg').textContent = `${user.username} — ${band.msg}`;
+  document.getElementById('greetMsg').textContent = `${user.username} — ${msg}`;
   document.getElementById('greetDate').textContent = `${now.getDate()} de ${MESES_ES[now.getMonth()]} de ${now.getFullYear()}`;
 }
 
 /* ══════════════════════════════════════════
-   NECESITO SABER — por rol
+   CARGA DE DATOS — una sola pasada, compartida entre
+   todos los renderers del hero + grid, para no repetir
+   llamadas a la API.
 ══════════════════════════════════════════ */
-async function renderNecesitoSaber(user){
-  const el = document.getElementById('knowList');
+async function loadDashboardData(user){
   const CURSO = user.curso || '3A';
+  if (user.role === 'student') {
+    const [notas, eventos, tareas, mensajes] = await Promise.all([
+      AlephAPI.Promedios.getDeAlumno(user.username).catch(() => []),
+      AlephAPI.Calendario.getProximos(CURSO, 14).catch(() => []),
+      AlephAPI.Tareas.getParaCurso(CURSO).catch(() => []),
+      AlephAPI.Comunicacion.getParaUsuario(user.username, CURSO).catch(() => [])
+    ]);
+    const pendientes = tareas.filter(t => !t.entregas?.find(e => e.alumno_username === user.username));
+    return { CURSO, notas, eventos, tareas, tareasPendientes: pendientes, mensajes, tareasDoc: [] };
+  }
+  const [tareasDoc, notasCurso, eventos, mensajes] = await Promise.all([
+    AlephAPI.Tareas.getDelDocente(user.username).catch(() => []),
+    AlephAPI.Promedios.getDeAlumno(user.username).catch(() => []),
+    AlephAPI.Calendario.getProximos(CURSO, 14).catch(() => []),
+    AlephAPI.Comunicacion.getParaUsuario(user.username, CURSO).catch(() => [])
+  ]);
+  const porCalificar = tareasDoc.filter(t => (t.entregas || []).some(e => e.nota == null));
+  return { CURSO, notas: notasCurso, eventos, tareas: tareasDoc, tareasPendientes: porCalificar, mensajes, tareasDoc };
+}
 
+/* ══════════════════════════════════════════
+   NECESITO SABER
+══════════════════════════════════════════ */
+function renderNecesitoSaber(user, data){
+  const el = document.getElementById('knowList');
   try {
+    const rows = [];
     if (user.role === 'student') {
-      const [notas, eventos, tareas] = await Promise.all([
-        AlephAPI.Promedios.getDeAlumno(user.username),
-        AlephAPI.Calendario.getProximos(CURSO, 14),
-        AlephAPI.Tareas.getParaCurso(CURSO)
-      ]);
-
       const porMateria = {};
-      notas.forEach(n => {
-        (porMateria[n.materia] ||= []).push(Number(n.valor));
-      });
+      data.notas.forEach(n => { (porMateria[n.materia] ||= []).push(Number(n.valor)); });
       const promedios = Object.entries(porMateria)
         .map(([materia, vals]) => ({ materia, prom: vals.reduce((a,b)=>a+b,0)/vals.length }))
         .sort((a,b) => a.prom - b.prom)
         .slice(0, 3);
+      const examenes = data.eventos.filter(e => e.tipo === 'examen').slice(0, 3);
+      const actividadesPend = data.tareasPendientes.slice(0, 3);
 
-      const examenes = eventos.filter(e => e.tipo === 'examen').slice(0, 3);
-      const actividadesPend = tareas
-        .filter(t => !t.entregas?.find(e => e.alumno_username === user.username))
-        .slice(0, 3);
-
-      const rows = [];
-      promedios.forEach(p => rows.push(knowRow(
-        p.prom < 6 ? 'bad' : p.prom < 7.5 ? 'warn' : 'ok',
-        p.materia, 'Promedio actual', p.prom.toFixed(1)
-      )));
+      promedios.forEach(p => rows.push(knowRow(p.prom < 6 ? 'bad' : p.prom < 7.5 ? 'warn' : 'ok', p.materia, 'Promedio actual', p.prom.toFixed(1))));
       examenes.forEach(e => rows.push(knowRow('warn', e.titulo, 'Examen próximo', fmtFecha(e.fecha))));
       actividadesPend.forEach(t => rows.push(knowRow('bad', t.titulo, 'Actividad pendiente', fmtFecha(t.fechaCierre))));
-
-      el.innerHTML = rows.length ? rows.join('') : '<div class="empty">Estás al día en todo 🎉</div>';
-
     } else {
-      const [tareasDoc, notasCurso, eventos] = await Promise.all([
-        AlephAPI.Tareas.getDelDocente(user.username),
-        AlephAPI.Promedios.getDeAlumno(user.username).catch(() => []),
-        AlephAPI.Calendario.getProximos(CURSO, 14)
-      ]);
-
-      const examenes = eventos.filter(e => e.tipo === 'examen').slice(0, 3);
-      const rows = [];
-      rows.push(knowRow('ok', `Curso ${CURSO}`, 'Rendimiento general', notasCurso.length ? (notasCurso.reduce((a,n)=>a+Number(n.valor),0)/notasCurso.length).toFixed(1) : '—'));
+      const examenes = data.eventos.filter(e => e.tipo === 'examen').slice(0, 3);
+      const prom = data.notas.length ? (data.notas.reduce((a,n)=>a+Number(n.valor),0)/data.notas.length).toFixed(1) : '—';
+      rows.push(knowRow('ok', `Curso ${data.CURSO}`, 'Rendimiento general', prom));
       examenes.forEach(e => rows.push(knowRow('warn', e.titulo, 'Examen próximo', fmtFecha(e.fecha))));
-      rows.push(knowRow('warn', 'Tareas por calificar', 'Pendientes de revisión', String(tareasDoc.filter(t => (t.entregas||[]).some(e => e.nota == null)).length)));
-
-      el.innerHTML = rows.join('');
+      rows.push(knowRow(data.tareasPendientes.length ? 'bad' : 'ok', 'Tareas por calificar', 'Pendientes de revisión', String(data.tareasPendientes.length)));
     }
+    el.innerHTML = rows.length ? rows.join('') : '<div class="empty">Estás al día en todo.</div>';
   } catch (err) {
     console.error('Necesito saber:', err);
     el.innerHTML = '<div class="empty">No se pudo cargar esta sección.</div>';
@@ -639,20 +667,107 @@ function knowRow(dot, title, sub, val){
 }
 
 /* ══════════════════════════════════════════
+   HERO: STATS ROW
+══════════════════════════════════════════ */
+function renderStatsRow(user, data){
+  // Tareas pendientes
+  const tareasEl = document.getElementById('statTareasVal');
+  const tareasLabelEl = document.getElementById('statTareasLabel');
+  tareasEl.textContent = String(data.tareasPendientes.length);
+  tareasLabelEl.textContent = user.role === 'student' ? 'Tareas pendientes' : 'Por calificar';
+
+  // Próximo examen
+  const examenes = data.eventos.filter(e => e.tipo === 'examen').sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
+  const proximoExamen = examenes[0];
+  document.getElementById('statExamenVal').textContent = proximoExamen ? fmtFecha(proximoExamen.fecha) : '—';
+  document.getElementById('statExamenSub').textContent = proximoExamen ? sanitizeLocal(proximoExamen.titulo) : 'Nada agendado';
+
+  // Mensajes — NOTA: el backend todavía no expone un flag de "leído" por
+  // usuario, así que por ahora mostramos el total de mensajes recientes
+  // como proxy. Cuando exista ese campo, filtrar por leido=false acá.
+  document.getElementById('statMsgVal').textContent = String(data.mensajes.length);
+
+  renderWeekHeat(data);
+}
+
+function renderWeekHeat(data){
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const counts = new Array(7).fill(0);
+
+  const bump = (isoDate) => {
+    if (!isoDate) return;
+    const d = new Date(isoDate);
+    d.setHours(0,0,0,0);
+    const diff = Math.round((d - today) / 86400000);
+    if (diff >= 0 && diff < 7) counts[diff] += 1;
+  };
+
+  data.eventos.forEach(e => bump(e.fecha));
+  data.tareas.forEach(t => bump(t.fechaCierre));
+  data.mensajes.forEach(m => bump(m.fechaCreacion));
+
+  const cellsEl = document.getElementById('weekHeat');
+  const labelsEl = document.getElementById('weekHeatLabels');
+  cellsEl.innerHTML = counts.map(c => {
+    const lvl = c === 0 ? '' : c <= 2 ? 'lvl1' : c <= 4 ? 'lvl2' : 'lvl3';
+    return `<div class="heat-cell ${lvl}" title="${c} evento(s)"></div>`;
+  }).join('');
+  labelsEl.innerHTML = counts.map((_, i) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() + i);
+    return `<span>${DIA_CORTO[d.getDay()]}</span>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════
+   LO MÁS URGENTE — el sistema elige una sola cosa
+══════════════════════════════════════════ */
+const ICON_TASK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
+const ICON_EXAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
+
+function renderUrgent(user, data){
+  const card = document.getElementById('urgentCard');
+  const examenes = data.eventos.filter(e => e.tipo === 'examen').sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
+  const proximoExamen = examenes[0];
+
+  let candidate = null;
+  if (user.role === 'student') {
+    const conFecha = data.tareasPendientes.filter(t => t.fechaCierre).sort((a,b) => new Date(a.fechaCierre) - new Date(b.fechaCierre));
+    const proximaTarea = conFecha[0];
+    if (proximaTarea && (!proximoExamen || new Date(proximaTarea.fechaCierre) <= new Date(proximoExamen.fecha))) {
+      candidate = { icon: ICON_TASK, title: `Entregá "${proximaTarea.titulo}" antes del ${fmtFecha(proximaTarea.fechaCierre)}`, cta: 'Ver actividad', href: 'tareas.html' };
+    } else if (proximoExamen) {
+      candidate = { icon: ICON_EXAM, title: `Tenés "${proximoExamen.titulo}" el ${fmtFecha(proximoExamen.fecha)}`, cta: 'Ver detalle', href: 'schools.html' };
+    }
+  } else {
+    if (data.tareasPendientes.length > 0) {
+      candidate = { icon: ICON_TASK, title: `${data.tareasPendientes.length} entrega(s) esperando calificación`, cta: 'Calificar', href: 'tareas.html' };
+    } else if (proximoExamen) {
+      candidate = { icon: ICON_EXAM, title: `"${proximoExamen.titulo}" es el ${fmtFecha(proximoExamen.fecha)}`, cta: 'Ver detalle', href: 'schools.html' };
+    }
+  }
+
+  if (!candidate) { card.style.display = 'none'; return; }
+  document.getElementById('urgentIcon').innerHTML = candidate.icon;
+  document.getElementById('urgentTitle').textContent = candidate.title;
+  const cta = document.getElementById('urgentCta');
+  cta.textContent = candidate.cta;
+  cta.onclick = () => { window.location.href = candidate.href; };
+  card.style.display = 'flex';
+}
+
+/* ══════════════════════════════════════════
    MENSAJES DESTACADOS
 ══════════════════════════════════════════ */
-async function renderMensajesDestacados(user){
+function renderMensajesDestacados(data){
   const el = document.getElementById('msgList');
   try {
-    const CURSO = user.curso || '3A';
-    const mensajes = await AlephAPI.Comunicacion.getParaUsuario(user.username, CURSO);
-    const destacados = mensajes.slice(0, 4);
-
+    const destacados = data.mensajes.slice(0, 4);
     if (!destacados.length) {
       el.innerHTML = '<div class="empty">No hay mensajes destacados por ahora.</div>';
       return;
     }
-
     el.innerHTML = destacados.map(m => `
       <div class="msg-item">
         <div class="msg-avatar">${(m.autor || '?').charAt(0).toUpperCase()}</div>
@@ -687,11 +802,6 @@ function fmtFechaHora(iso){
   return `${d.getDate()} ${MESES_ES[d.getMonth()].slice(0,3)} · ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
-// Antes creaba un <div> por cada campo sanitizado (y lo tiraba de
-// inmediato) solo para usar su .innerHTML como escape. Cada fila de
-// "Necesito saber" o "Mensajes destacados" dispara 3-4 de estas llamadas,
-// creando y descartando nodos DOM reales sin necesidad en cada render.
-// Reemplazo por tabla de caracteres: mismo resultado, cero nodos DOM.
 const ESCAPE_MAP = { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' };
 function sanitizeLocal(str){
   return String(str ?? '').replace(/[&<>"']/g, ch => ESCAPE_MAP[ch]);
@@ -711,12 +821,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!user) { window.location.href = './index.html'; return; }
 
   renderAvatar(user);
+  renderGreeting(user);
 
-  await Promise.all([
-    renderGreeting(user),
-    renderNecesitoSaber(user),
-    renderMensajesDestacados(user)
-  ]);
+  const data = await loadDashboardData(user);
+  renderNecesitoSaber(user, data);
+  renderStatsRow(user, data);
+  renderUrgent(user, data);
+  renderMensajesDestacados(data);
 
   if (AlephUIState.introAlreadyPlayed()) {
     skipIntro();
