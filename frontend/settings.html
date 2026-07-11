@@ -9,786 +9,119 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-/* La página entera NUNCA scrollea: altura fija a 100dvh y overflow
-   hidden en html/body. Si algún panel específico llegara a no entrar en
-   una pantalla muy baja, ES ESE panel el que gana un scroll interno
-   (ver .pane más abajo) — nunca la página. */
 html,body{width:100%;height:100%;overflow:hidden}
+:root{
+  --bg:#0f1729;--bg-2:#0c1322;--bg-3:#091020;
+  --primary:#4ab8c8;--primary-rgb:74,184,200;
+  --secondary:#6dd4e8;--secondary-rgb:109,212,232;
+  --text:#f7fbff;--muted:rgba(247,251,255,0.56);--faint:rgba(247,251,255,0.24);
+  --glass:rgba(255,255,255,0.08);--glass-strong:rgba(255,255,255,0.13);--glass-border:rgba(255,255,255,0.16);
+  --danger:#f08080;--warn:#f0b880;--ok:#6bd99a;
+  --e-out:cubic-bezier(0.16,1,0.3,1);--e-snap:cubic-bezier(0.34,1.56,0.64,1);
+}
 body{
   font-family:'DM Sans',sans-serif;
   background:linear-gradient(155deg,var(--bg) 0%,var(--bg-2) 55%,var(--bg-3) 100%);
-  color:var(--text);
-  height:100dvh;
-  -webkit-font-smoothing:antialiased;
+  color:var(--text);height:100dvh;-webkit-font-smoothing:antialiased;
   transition:background 200ms ease,color 200ms ease;
 }
+body.theme-light{--bg:#eef8fb;--bg-2:#dfeff6;--bg-3:#d3e8f2;--glass:rgba(255,255,255,0.55);--glass-strong:rgba(255,255,255,0.72);--glass-border:rgba(15,30,45,0.10);--text:#0f1729;--muted:rgba(15,23,41,0.56);--faint:rgba(15,23,41,0.28)}
+body.theme-everest{--bg:#0a0e1a;--bg-2:#0c1322;--bg-3:#091020;--primary:#4ab8c8;--primary-rgb:74,184,200;--secondary:#6dd4e8;--secondary-rgb:109,212,232}
+body.theme-andes{--bg:#1c1c1e;--bg-2:#242426;--bg-3:#161618;--primary:#4a90d9;--primary-rgb:74,144,217;--secondary:#f4a97f;--secondary-rgb:244,169,127}
+body.theme-amazonas{--bg:#0d1a0f;--bg-2:#152b18;--bg-3:#0a130c;--primary:#3dba5e;--primary-rgb:61,186,94;--secondary:#7fd99a;--secondary-rgb:127,217,154}
+body.theme-bondi{--bg:#fefce8;--bg-2:#fef9c3;--bg-3:#fdf6ae;--primary:#0096c7;--primary-rgb:0,150,199;--secondary:#48cae4;--secondary-rgb:72,202,228;--glass:rgba(255,255,255,0.52);--glass-strong:rgba(255,255,255,0.72);--glass-border:rgba(26,20,0,0.14);--text:#1a1400;--muted:rgba(26,20,0,0.60);--faint:rgba(26,20,0,0.32)}
+body.theme-serengeti{--bg:#1a0a00;--bg-2:#2d1200;--bg-3:#140800;--primary:#e85d20;--primary-rgb:232,93,32;--secondary:#f4915a;--secondary-rgb:244,145,90}
+button,input,select{font:inherit;color:inherit}button{border:0;background:none;cursor:pointer}::selection{background:rgba(var(--primary-rgb),0.30)}
 
-:root{
-  --bg:#0f1729; --bg-2:#0c1322; --bg-3:#091020;
-  --primary:#4ab8c8; --primary-rgb:74,184,200;
-  --secondary:#6dd4e8; --secondary-rgb:109,212,232;
-  --text:#f7fbff; --muted:rgba(247,251,255,0.56); --faint:rgba(247,251,255,0.24);
-  --glass:rgba(255,255,255,0.08); --glass-strong:rgba(255,255,255,0.13); --glass-border:rgba(255,255,255,0.16);
-  --danger:#f08080; --warn:#f0b880; --ok:#6bd99a;
-  --e-out:cubic-bezier(0.16,1,0.3,1);
-  --e-snap:cubic-bezier(0.34,1.56,0.64,1);
-}
-body.theme-light{
-  --bg:#eef8fb; --bg-2:#dfeff6; --bg-3:#d3e8f2;
-  --glass:rgba(255,255,255,0.55); --glass-strong:rgba(255,255,255,0.72); --glass-border:rgba(15,30,45,0.10);
-  --text:#0f1729; --muted:rgba(15,23,41,0.56); --faint:rgba(15,23,41,0.28);
-}
-button,input,select{font:inherit;color:inherit}
-button{border:0;background:none;cursor:pointer}
-::selection{background:rgba(var(--primary-rgb),0.30)}
-
-/* ═══ ACCESIBILIDAD / VISIÓN — mismas reglas que dashboard.html ═══ */
-body.a11y-reduce-motion *,body.a11y-reduce-motion *::before,body.a11y-reduce-motion *::after{
-  animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important;
-}
-body.a11y-reduce-transparency .glass,body.a11y-reduce-transparency .pill,body.a11y-reduce-transparency .icon-btn,body.a11y-reduce-transparency .gbadge,body.a11y-reduce-transparency .tab-btn{
-  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(9,14,26,0.94)!important;
-}
-body.a11y-high-contrast{
-  --bg:#000; --bg-2:#000; --bg-3:#000;
-  --text:#fff; --muted:#ddd; --faint:#aaa;
-  --glass:rgba(255,255,255,0.10); --glass-strong:rgba(255,255,255,0.18); --glass-border:rgba(255,255,255,0.4);
-  --primary:#00ffee; --secondary:#00ffee; --primary-rgb:0,255,238; --secondary-rgb:0,255,238;
-}
+body.a11y-reduce-motion *,body.a11y-reduce-motion *::before,body.a11y-reduce-motion *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important}
+body.a11y-reduce-transparency .glass,body.a11y-reduce-transparency .pill,body.a11y-reduce-transparency .icon-btn,body.a11y-reduce-transparency .tab-btn{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(9,14,26,0.94)!important}
+body.a11y-high-contrast{--bg:#000;--bg-2:#000;--bg-3:#000;--text:#fff;--muted:#ddd;--faint:#aaa;--glass:rgba(255,255,255,0.10);--glass-strong:rgba(255,255,255,0.18);--glass-border:rgba(255,255,255,0.4);--primary:#00ffee;--secondary:#00ffee;--primary-rgb:0,255,238;--secondary-rgb:0,255,238}
 @font-face{font-family:'OpenDyslexic';src:url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/fonts/OpenDyslexic-Regular.otf') format('opentype');font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:'OpenDyslexic';src:url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/fonts/OpenDyslexic-Bold.otf') format('opentype');font-weight:700;font-style:normal;font-display:swap}
 body.a11y-font-dyslexic,body.a11y-font-dyslexic *{font-family:'OpenDyslexic',sans-serif!important;letter-spacing:0.04em}
-body.a11y-letter-spacing-wide{letter-spacing:0.05em}
-body.a11y-line-height-wide *{line-height:1.85!important}
-body.a11y-underline-links a{text-decoration:underline!important;text-underline-offset:3px}
-body.a11y-enhanced-focus *:focus-visible{outline:3px solid var(--primary)!important;outline-offset:3px!important;border-radius:6px}
-body.a11y-large-targets .icon-btn{width:42px;height:42px}
-body.a11y-large-targets .nav-link{padding:14px 12px}
-body.a11y-large-targets button{min-height:42px}
-body.vision-deuteranopia{filter:url('#filter-deuteranopia')}
-body.vision-protanopia{filter:url('#filter-protanopia')}
-body.vision-tritanopia{filter:url('#filter-tritanopia')}
-body.vision-grayscale{filter:grayscale(100%)}
+body.a11y-letter-spacing-wide{letter-spacing:0.05em}body.a11y-line-height-wide *{line-height:1.85!important}body.a11y-underline-links a{text-decoration:underline!important;text-underline-offset:3px}body.a11y-enhanced-focus *:focus-visible{outline:3px solid var(--primary)!important;outline-offset:3px!important;border-radius:6px}body.a11y-large-targets .icon-btn{width:42px;height:42px}body.a11y-large-targets .nav-link{padding:12px 6px}body.a11y-large-targets button{min-height:42px}
+body.vision-deuteranopia{filter:url('#filter-deuteranopia')}body.vision-protanopia{filter:url('#filter-protanopia')}body.vision-tritanopia{filter:url('#filter-tritanopia')}body.vision-grayscale{filter:grayscale(100%)}
 
-/* ═══ BACKGROUND ═══ */
-.bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.glow{position:absolute;border-radius:50%;filter:blur(58px);will-change:transform}
-.g1{width:520px;height:520px;background:radial-gradient(circle,rgba(var(--primary-rgb),0.30),transparent 68%);top:-140px;left:-90px;animation:g1m 54s steps(30,end) infinite}
-.g2{width:420px;height:420px;background:radial-gradient(circle,rgba(var(--secondary-rgb),0.20),transparent 68%);bottom:-100px;right:-60px;animation:g2m 62s steps(30,end) infinite}
-@keyframes g1m{0%,100%{transform:translate(0,0)}50%{transform:translate(24px,-20px)}}
-@keyframes g2m{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,22px)}}
-.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.02;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}.glow{position:absolute;border-radius:50%;filter:blur(58px);will-change:transform}.g1{width:520px;height:520px;background:radial-gradient(circle,rgba(var(--primary-rgb),0.30),transparent 68%);top:-140px;left:-90px;animation:g1m 54s steps(30,end) infinite}.g2{width:420px;height:420px;background:radial-gradient(circle,rgba(var(--secondary-rgb),0.20),transparent 68%);bottom:-100px;right:-60px;animation:g2m 62s steps(30,end) infinite}@keyframes g1m{0%,100%{transform:translate(0,0)}50%{transform:translate(24px,-20px)}}@keyframes g2m{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,22px)}}.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.02;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 
-/* ═══ INTRO — idéntica a dashboard.html (se salta si ya corrió en la sesión) ═══ */
-#introOverlay{position:fixed;inset:0;z-index:900;background:linear-gradient(155deg,var(--bg) 0%,var(--bg-2) 55%,var(--bg-3) 100%);transition:opacity 380ms var(--e-out);will-change:opacity}
-#introOverlay.hide{opacity:0;pointer-events:none}
-.intro-mark{font-family:'Syne',sans-serif;font-weight:800;color:var(--secondary);font-size:2.4rem;line-height:1;text-shadow:0 0 26px rgba(var(--primary-rgb),0.4);position:fixed;top:0;left:0;z-index:950;transform-origin:0 0;transition:transform 640ms var(--e-out)}
-.intro-mark.centered{transform:translate(50vw,50vh) translate(-50%,-50%) scale(1)}
-.intro-mark.grown{transform:translate(50vw,50vh) translate(-50%,-50%) scale(2.15)}
-.intro-mark.docked{transform:translate(22px,20px) scale(0.625);cursor:pointer}
-.intro-loading{position:fixed;top:calc(50% + 62px);left:50%;transform:translate(-50%,0);z-index:910;display:flex;flex-direction:column;align-items:center;gap:12px;transition:opacity 200ms ease}
-.intro-loading.gone{opacity:0}
-.intro-text{font-family:'Syne',sans-serif;font-size:0.92rem;font-weight:700;color:var(--muted);letter-spacing:0.02em}
-.intro-spinner{width:22px;height:22px;border-radius:50%;border:2.5px solid rgba(var(--primary-rgb),0.18);border-top-color:var(--primary);animation:spin 800ms linear infinite;will-change:transform}
-@keyframes spin{to{transform:rotate(360deg)}}
+#introOverlay{position:fixed;inset:0;z-index:900;background:linear-gradient(155deg,var(--bg) 0%,var(--bg-2) 55%,var(--bg-3) 100%);transition:opacity 380ms var(--e-out);will-change:opacity}#introOverlay.hide{opacity:0;pointer-events:none}.intro-mark{font-family:'Syne',sans-serif;font-weight:800;color:var(--secondary);font-size:2.4rem;line-height:1;text-shadow:0 0 26px rgba(var(--primary-rgb),0.4);position:fixed;top:0;left:0;z-index:950;transform-origin:0 0;transition:transform 640ms var(--e-out)}.intro-mark.centered{transform:translate(50vw,50vh) translate(-50%,-50%) scale(1)}.intro-mark.grown{transform:translate(50vw,50vh) translate(-50%,-50%) scale(2.15)}.intro-mark.docked{transform:translate(22px,20px) scale(0.625);cursor:pointer}.intro-loading{position:fixed;top:calc(50% + 62px);left:50%;transform:translate(-50%,0);z-index:910;display:flex;flex-direction:column;align-items:center;gap:12px;transition:opacity 200ms ease}.intro-loading.gone{opacity:0}.intro-text{font-family:'Syne',sans-serif;font-size:0.92rem;font-weight:700;color:var(--muted);letter-spacing:0.02em}.intro-spinner{width:22px;height:22px;border-radius:50%;border:2.5px solid rgba(var(--primary-rgb),0.18);border-top-color:var(--primary);animation:spin 800ms linear infinite;will-change:transform}@keyframes spin{to{transform:rotate(360deg)}}
 
-/* ═══ LAYOUT — todo dentro de un viewport fijo ═══ */
-.shell{position:relative;z-index:5;display:flex;height:100dvh}
-
-.sidebar{
-  width:220px;flex-shrink:0;padding:78px 12px 20px;
-  display:flex;flex-direction:column;gap:4px;
-  transition:width 420ms var(--e-out);
-  contain:layout style;
-}
-.shell.collapsed .sidebar{width:64px;padding:78px 8px 20px}
-.nav-link{
-  display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:12px;
-  color:var(--muted);font-size:0.86rem;font-weight:600;white-space:nowrap;overflow:hidden;
-  transition:background 160ms var(--e-out),color 160ms ease,transform 80ms var(--e-out);
-}
-.nav-link:hover{background:var(--glass);color:var(--text)}
-.nav-link:active{transform:scale(0.97)}
-.nav-link.active{background:rgba(var(--primary-rgb),0.16);color:var(--primary)}
-.nav-icon{width:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.nav-icon svg{width:17px;height:17px}
-.nav-text{opacity:1;transition:opacity 200ms ease}
-.shell.collapsed .nav-text{opacity:0;pointer-events:none}
-
-.topbar{
-  position:fixed;top:0;left:0;right:0;z-index:120;
-  height:64px;display:flex;align-items:center;justify-content:space-between;
-  padding:0 24px 0 20px;
-}
-.topbar-left{display:flex;align-items:center;gap:10px;padding-left:38px}
-.topbar-mark{font-family:'Syne',sans-serif;font-weight:800;color:var(--secondary);font-size:1.5rem;line-height:1;cursor:pointer;text-shadow:0 0 18px rgba(var(--primary-rgb),0.35);transition:transform 150ms var(--e-out)}
-.topbar-mark:active{transform:scale(0.92)}
-.topbar-word{font-family:'Syne',sans-serif;font-weight:800;font-size:1.12rem;color:var(--text);opacity:0;transform:translateX(-6px);transition:opacity 320ms var(--e-out) 80ms,transform 320ms var(--e-out) 80ms}
-.shell:not(.collapsed) .topbar-word{opacity:1;transform:translateX(0)}
-.topbar-right{display:flex;align-items:center;gap:10px}
-.pill{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:999px;background:var(--glass);border:1px solid var(--glass-border);font-size:0.78rem;font-weight:600}
-.pill-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:#06121a;font-weight:800;font-family:'Syne',sans-serif;font-size:0.78em}
-.icon-btn{width:34px;height:34px;border-radius:10px;background:var(--glass);border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;color:var(--muted);transition:background 150ms ease,color 150ms ease,transform 80ms var(--e-out)}
-.icon-btn:hover{background:var(--glass-strong);color:var(--text)}
-.icon-btn:active{transform:scale(0.92)}
-.icon-btn svg{width:16px;height:16px}
-
-/* Main: columna fija en altura, nada de scroll propio */
-.main{flex:1;min-width:0;min-height:0;padding:64px 26px 18px;position:relative;display:flex;flex-direction:column;contain:layout style}
-
-/* Glow ambiental — lo único que persiste de la identidad del dashboard
-   acá, sin el saludo grande: solo el resplandor por hora del día. */
-.ambient-tod{position:absolute;top:0;left:-26px;right:-26px;height:210px;z-index:0;pointer-events:none;filter:blur(64px);opacity:0.8;transition:background 700ms ease}
-.ambient-tod.tod-morning{background:radial-gradient(ellipse 55% 60% at 22% 8%,rgba(224,120,52,0.5),transparent 72%),radial-gradient(ellipse 45% 55% at 78% 0%,rgba(190,86,40,0.26),transparent 75%)}
-.ambient-tod.tod-afternoon{background:radial-gradient(ellipse 55% 60% at 22% 8%,rgba(224,178,52,0.46),transparent 72%),radial-gradient(ellipse 45% 55% at 78% 0%,rgba(190,142,40,0.24),transparent 75%)}
-.ambient-tod.tod-evening{background:radial-gradient(ellipse 55% 60% at 22% 8%,rgba(58,111,158,0.48),transparent 72%),radial-gradient(ellipse 45% 55% at 78% 0%,rgba(39,77,118,0.26),transparent 75%)}
-.ambient-tod.tod-night{background:radial-gradient(ellipse 55% 60% at 22% 8%,rgba(90,58,158,0.48),transparent 72%),radial-gradient(ellipse 45% 55% at 78% 0%,rgba(58,42,112,0.26),transparent 75%)}
-
-.settings-hero{position:relative;z-index:1;flex:0 0 auto;padding:8px 2px 16px}
-.settings-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800}
-.settings-sub{font-size:0.8rem;color:var(--muted);margin-top:3px}
-
-/* Tabs */
-.tabs-row{position:relative;z-index:1;flex:0 0 auto;display:flex;gap:6px;padding:4px;margin-bottom:14px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);border-radius:14px;width:fit-content}
-.tab-btn{
-  padding:9px 18px;border-radius:11px;font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;
-  color:var(--muted);display:flex;align-items:center;gap:7px;
-  transition:background 150ms var(--e-out),color 150ms ease,transform 80ms var(--e-out);
-}
-.tab-btn svg{width:15px;height:15px}
-.tab-btn:hover{color:var(--text)}
-.tab-btn:active{transform:scale(0.96)}
-.tab-btn.active{background:rgba(var(--primary-rgb),0.18);color:var(--primary)}
-
-/* Panel — ocupa TODO el alto restante, sin importar cuánto mida el resto */
-.panel{
-  flex:1 1 auto;min-height:0;
-  background:var(--glass);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);
-  border:1px solid var(--glass-border);border-radius:18px;
-  box-shadow:inset 0 1.5px 0 rgba(255,255,255,0.14),0 8px 28px rgba(0,0,0,0.2);
-  position:relative;z-index:1;overflow:hidden;
-}
-@media(max-width:900px){.panel{backdrop-filter:blur(9px) saturate(1.15);-webkit-backdrop-filter:blur(9px) saturate(1.15)}}
-
-.pane{display:none;height:100%;padding:22px 24px;overflow-y:auto}
-.pane.active{display:block}
-
-/* ── PERFIL ── */
-.perfil-grid{display:grid;grid-template-columns:220px 1fr;gap:22px;height:100%}
-.identity-card{display:flex;flex-direction:column;gap:14px}
-.identity-avatar{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:#06121a;font-weight:800;font-family:'Syne',sans-serif;font-size:1.6rem;flex-shrink:0}
-.identity-name{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800}
-.identity-role{font-size:0.76rem;color:var(--muted);margin-top:2px}
-.logout-btn{
-  margin-top:auto;padding:10px 14px;border-radius:11px;background:rgba(255,255,255,0.06);border:1px solid var(--glass-border);
-  color:var(--muted);font-size:0.82rem;font-weight:600;display:flex;align-items:center;gap:8px;
-  transition:background 150ms ease,color 150ms ease;
-}
-.logout-btn:hover{background:rgba(255,255,255,0.11);color:var(--text)}
-.logout-btn svg{width:15px;height:15px}
-
-.danger-zone{
-  margin-top:14px;padding:14px;border-radius:13px;
-  background:rgba(240,80,80,0.07);border:1px solid rgba(240,80,80,0.25);
-}
-.danger-title{font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:800;color:var(--danger);display:flex;align-items:center;gap:6px;margin-bottom:6px}
-.danger-title svg{width:14px;height:14px}
-.danger-sub{font-size:0.72rem;color:var(--muted);line-height:1.45;margin-bottom:10px}
-.danger-btn{
-  width:100%;padding:9px 12px;border-radius:10px;background:rgba(240,80,80,0.14);border:1px solid rgba(240,80,80,0.35);
-  color:var(--danger);font-size:0.78rem;font-weight:700;transition:background 150ms ease;
-}
-.danger-btn:hover{background:rgba(240,80,80,0.22)}
-.danger-btn.armed{background:var(--danger);color:#2a0808;border-color:var(--danger)}
-
-.form-col{display:flex;flex-direction:column;gap:16px;min-height:0}
-.form-block{background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:13px;padding:14px 16px}
-.form-block-title{font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:800;margin-bottom:10px}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.field{display:flex;flex-direction:column;gap:5px}
-.field label{font-size:0.68rem;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:0.06em}
-.field input{
-  padding:9px 12px;border-radius:9px;background:rgba(255,255,255,0.06);border:1px solid var(--glass-border);
-  color:var(--text);font-size:0.85rem;
-}
-.field input:focus{outline:none;border-color:rgba(var(--primary-rgb),0.5);box-shadow:0 0 0 3px rgba(var(--primary-rgb),0.12)}
-.form-actions{display:flex;align-items:center;gap:10px;margin-top:10px}
-.save-btn{
-  padding:8px 16px;border-radius:9px;background:rgba(var(--primary-rgb),0.88);color:#06121a;
-  font-family:'Syne',sans-serif;font-weight:800;font-size:0.78rem;transition:background 150ms ease,transform 90ms var(--e-out);
-}
-.save-btn:hover{background:var(--primary)}
-.save-btn:active{transform:scale(0.97)}
-.save-btn:disabled{opacity:0.5;cursor:default}
-.form-msg{font-size:0.74rem;min-height:16px}
-.form-msg.ok{color:var(--ok)}
-.form-msg.err{color:var(--danger)}
-
-/* ── TEMA ── */
-.tema-row{display:flex;flex-direction:column;gap:20px}
-.seg{display:flex;gap:6px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);border-radius:12px;padding:4px;width:fit-content}
-.seg-btn{padding:8px 18px;border-radius:9px;font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;color:var(--muted);transition:background 150ms ease,color 150ms ease}
-.seg-btn.active{background:rgba(var(--primary-rgb),0.18);color:var(--primary)}
-.fs-row{display:flex;align-items:center;gap:12px}
-.fs-btn{width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,0.06);border:1px solid var(--glass-border);font-size:1.1rem;display:flex;align-items:center;justify-content:center}
-.fs-val{font-family:'Syne',sans-serif;font-weight:800;min-width:46px;text-align:center}
-.section-label{font-size:0.72rem;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px}
-
-/* ── VISIÓN ── */
-.vision-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;max-width:560px}
-.vision-btn{padding:14px 10px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);text-align:center;transition:all 150ms ease}
-.vision-btn:hover{background:rgba(255,255,255,0.09)}
-.vision-btn.active{border-color:rgba(var(--primary-rgb),0.5);background:rgba(var(--primary-rgb),0.1);color:var(--primary)}
-.vision-btn strong{display:block;font-family:'Syne',sans-serif;font-size:0.82rem}
-.vision-btn small{display:block;font-size:0.68rem;color:var(--muted);margin-top:2px}
-.vision-btn.active small{color:inherit;opacity:0.75}
-
-/* ── ACCESIBILIDAD ── */
-.a11y-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.tgl-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:11px;background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);cursor:pointer;transition:background 150ms ease}
-.tgl-row:hover{background:rgba(255,255,255,0.08)}
-.tgl-label strong{display:block;font-size:0.8rem;font-weight:700}
-.tgl-label small{display:block;font-size:0.67rem;color:var(--muted);margin-top:1px}
-.tgl-switch{width:34px;height:19px;border-radius:10px;background:rgba(255,255,255,0.14);position:relative;flex-shrink:0;transition:background 180ms ease}
-.tgl-switch::after{content:'';width:13px;height:13px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:transform 180ms var(--e-snap)}
-.tgl-switch.on{background:var(--primary)}
-.tgl-switch.on::after{transform:translateX(15px)}
-
-@media(max-width:900px){
-  html,body{height:auto;overflow:auto}
-  body{height:auto}
-  .shell{height:auto;min-height:100dvh}
-  .sidebar{display:none}
-  .main{padding:74px 16px 24px}
-  .panel{height:auto}
-  .pane{height:auto;overflow:visible}
-  .perfil-grid{grid-template-columns:1fr}
-  .vision-grid{grid-template-columns:1fr 1fr}
-  .a11y-grid{grid-template-columns:1fr}
-}
+.shell{position:relative;z-index:5;display:flex;height:100dvh}.sidebar{width:72px;flex-shrink:0;padding:78px 8px 20px;display:flex;flex-direction:column;align-items:center;gap:6px;contain:layout style}.nav-link{width:100%;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px 8px;border-radius:12px;color:var(--muted);text-decoration:none;transition:background 160ms var(--e-out),color 160ms ease,transform 80ms var(--e-out)}.nav-link:hover{background:var(--glass);color:var(--text)}.nav-link:active{transform:scale(0.95)}.nav-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;transition:background 160ms var(--e-out),color 160ms ease}.nav-icon svg{width:17px;height:17px}.nav-link.active{color:var(--primary)}.nav-link.active .nav-icon{background:var(--primary);color:#06121a}.nav-text{font-size:9.5px;font-weight:700;letter-spacing:0.01em;text-align:center;line-height:1.15;max-width:64px}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:120;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 24px 0 20px}.topbar-left{display:flex;align-items:center;gap:10px;padding-left:38px}.topbar-word{font-family:'Syne',sans-serif;font-weight:800;font-size:1.12rem;color:var(--text)}.topbar-right{display:flex;align-items:center;gap:10px}.pill{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:999px;background:var(--glass);border:1px solid var(--glass-border);font-size:0.78rem;font-weight:600}.pill-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:#06121a;font-weight:800;font-family:'Syne',sans-serif;font-size:0.78em}.icon-btn{width:34px;height:34px;border-radius:10px;background:var(--glass);border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;color:var(--muted);transition:background 150ms ease,color 150ms ease,transform 80ms var(--e-out);text-decoration:none}.icon-btn:hover{background:var(--glass-strong);color:var(--text)}.icon-btn:active{transform:scale(0.92)}.icon-btn svg{width:16px;height:16px}
+.main{flex:1;min-width:0;min-height:0;padding:64px 26px 18px;position:relative;display:flex;flex-direction:column;contain:layout style}.ambient-tod{position:absolute;top:0;left:-26px;right:-26px;height:210px;z-index:0;pointer-events:none;filter:blur(64px);opacity:0.8;transition:background 700ms ease}.ambient-tod.tod-morning{background:radial-gradient(ellipse 55% 60% at 22% 8%,rgba(224,120,52,0.5),transparent 72%),radial-gradient(ellipse 45% 55% at 78% 0%,rgba(190,86,40,0.26),transparent 75%)}.ambient-tod.tod-afternoon{background:radial-gradient(ellipse 55% 60% at 22% 8%,rgba(224,178,52,0.46),transparent 72%),radial-gradient(ellipse 45% 55% at 78% 0%,rgba(190,142,40,0.24),transparent 75%)}.ambient-tod.tod-evening{background:radial-gradient(ellipse 55% 60% at 22% 8%,rgba(58,111,158,0.48),transparent 72%),radial-gradient(ellipse 45% 55% at 78% 0%,rgba(39,77,118,0.26),transparent 75%)}.ambient-tod.tod-night{background:radial-gradient(ellipse 55% 60% at 22% 8%,rgba(90,58,158,0.48),transparent 72%),radial-gradient(ellipse 45% 55% at 78% 0%,rgba(58,42,112,0.26),transparent 75%)}
+.settings-hero{position:relative;z-index:1;flex:0 0 auto;padding:8px 2px 16px}.settings-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800}.settings-sub{font-size:0.8rem;color:var(--muted);margin-top:3px}.tabs-row{position:relative;z-index:1;flex:0 0 auto;display:flex;gap:6px;padding:4px;margin-bottom:14px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);border-radius:14px;width:fit-content}.tab-btn{padding:9px 16px;border-radius:11px;font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:7px;transition:background 150ms var(--e-out),color 150ms ease,transform 80ms var(--e-out)}.tab-btn svg{width:15px;height:15px}.tab-btn:hover{color:var(--text)}.tab-btn:active{transform:scale(0.96)}.tab-btn.active{background:rgba(var(--primary-rgb),0.18);color:var(--primary)}
+.panel{flex:1 1 auto;min-height:0;background:var(--glass);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);border:1px solid var(--glass-border);border-radius:18px;box-shadow:inset 0 1.5px 0 rgba(255,255,255,0.14),0 8px 28px rgba(0,0,0,0.2);position:relative;z-index:1;overflow:hidden}.pane{display:none;height:100%;padding:22px 24px;overflow-y:auto}.pane.active{display:block}
+.perfil-grid{display:grid;grid-template-columns:220px 1fr;gap:22px;height:100%}.identity-card{display:flex;flex-direction:column;gap:14px}.identity-avatar{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:#06121a;font-weight:800;font-family:'Syne',sans-serif;font-size:1.6rem;flex-shrink:0}.identity-name{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800}.identity-role{font-size:0.76rem;color:var(--muted);margin-top:2px}.logout-btn{margin-top:auto;padding:10px 14px;border-radius:11px;background:rgba(255,255,255,0.06);border:1px solid var(--glass-border);color:var(--muted);font-size:0.82rem;font-weight:600;display:flex;align-items:center;gap:8px;transition:background 150ms ease,color 150ms ease}.logout-btn:hover{background:rgba(255,255,255,0.11);color:var(--text)}.logout-btn svg{width:15px;height:15px}.danger-zone{margin-top:14px;padding:14px;border-radius:13px;background:rgba(240,80,80,0.07);border:1px solid rgba(240,80,80,0.25)}.danger-title{font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:800;color:var(--danger);display:flex;align-items:center;gap:6px;margin-bottom:6px}.danger-title svg{width:14px;height:14px}.danger-sub{font-size:0.72rem;color:var(--muted);line-height:1.45;margin-bottom:10px}.danger-btn{width:100%;padding:9px 12px;border-radius:10px;background:rgba(240,80,80,0.14);border:1px solid rgba(240,80,80,0.35);color:var(--danger);font-size:0.78rem;font-weight:700;transition:background 150ms ease}.danger-btn:hover{background:rgba(240,80,80,0.22)}.danger-btn.armed{background:var(--danger);color:#2a0808;border-color:var(--danger)}
+.form-col{display:flex;flex-direction:column;gap:16px;min-height:0}.form-block{background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:13px;padding:14px 16px}.form-block-title{font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:800;margin-bottom:10px}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:0.68rem;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:0.06em}.field input{padding:9px 12px;border-radius:9px;background:rgba(255,255,255,0.06);border:1px solid var(--glass-border);color:var(--text);font-size:0.85rem}.field input:focus{outline:none;border-color:rgba(var(--primary-rgb),0.5);box-shadow:0 0 0 3px rgba(var(--primary-rgb),0.12)}.form-actions{display:flex;align-items:center;gap:10px;margin-top:10px}.save-btn{padding:8px 16px;border-radius:9px;background:rgba(var(--primary-rgb),0.88);color:#06121a;font-family:'Syne',sans-serif;font-weight:800;font-size:0.78rem;transition:background 150ms ease,transform 90ms var(--e-out)}.save-btn:hover{background:var(--primary)}.save-btn:active{transform:scale(0.97)}.save-btn:disabled{opacity:0.5;cursor:default}.form-msg{font-size:0.74rem;min-height:16px}.form-msg.ok{color:var(--ok)}.form-msg.err{color:var(--danger)}
+.identity-settings{display:grid;grid-template-columns:1fr 1fr;gap:18px}.identity-section{background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);border-radius:13px;padding:14px}.identity-section.wide{grid-column:1/-1}.section-label{font-size:0.72rem;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px}.palette-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.palette-btn,.pers-btn,.goal-btn{border:1.5px solid var(--glass-border);background:rgba(255,255,255,0.05);border-radius:12px;text-align:left;transition:border-color 150ms ease,background 150ms ease,transform 80ms var(--e-out)}.palette-btn:active,.pers-btn:active,.goal-btn:active{transform:scale(0.97)}.palette-btn.active,.pers-btn.active,.goal-btn.active{border-color:rgba(var(--primary-rgb),0.62);background:rgba(var(--primary-rgb),0.12)}.palette-btn{padding:9px}.pal-swatch{height:30px;border-radius:8px;margin-bottom:7px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.25)}.pal-name,.pers-name{font-family:'Syne',sans-serif;font-weight:800;font-size:0.78rem}.pal-place,.pers-desc{font-size:0.66rem;color:var(--muted);margin-top:2px}.pers-list{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.pers-btn{padding:12px}.goals-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.goal-btn{padding:9px;font-size:0.72rem;color:var(--muted);line-height:1.28}.goal-btn.active{color:var(--primary)}.identity-actions{display:flex;align-items:center;gap:10px;margin-top:14px}
+.tema-row{display:flex;flex-direction:column;gap:20px}.seg{display:flex;gap:6px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);border-radius:12px;padding:4px;width:fit-content}.seg-btn{padding:8px 18px;border-radius:9px;font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;color:var(--muted);transition:background 150ms ease,color 150ms ease}.seg-btn.active{background:rgba(var(--primary-rgb),0.18);color:var(--primary)}.fs-row{display:flex;align-items:center;gap:12px}.fs-btn{width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,0.06);border:1px solid var(--glass-border);font-size:1.1rem;display:flex;align-items:center;justify-content:center}.fs-val{font-family:'Syne',sans-serif;font-weight:800;min-width:46px;text-align:center}
+.vision-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;max-width:560px}.vision-btn{padding:14px 10px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);text-align:center;transition:all 150ms ease}.vision-btn:hover{background:rgba(255,255,255,0.09)}.vision-btn.active{border-color:rgba(var(--primary-rgb),0.5);background:rgba(var(--primary-rgb),0.1);color:var(--primary)}.vision-btn strong{display:block;font-family:'Syne',sans-serif;font-size:0.82rem}.vision-btn small{display:block;font-size:0.68rem;color:var(--muted);margin-top:2px}.vision-btn.active small{color:inherit;opacity:0.75}.a11y-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tgl-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:11px;background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);cursor:pointer;transition:background 150ms ease}.tgl-row:hover{background:rgba(255,255,255,0.08)}.tgl-label strong{display:block;font-size:0.8rem;font-weight:700}.tgl-label small{display:block;font-size:0.67rem;color:var(--muted);margin-top:1px}.tgl-switch{width:34px;height:19px;border-radius:10px;background:rgba(255,255,255,0.14);position:relative;flex-shrink:0;transition:background 180ms ease}.tgl-switch::after{content:'';width:13px;height:13px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:transform 180ms var(--e-snap)}.tgl-switch.on{background:var(--primary)}.tgl-switch.on::after{transform:translateX(15px)}
+@media(max-width:900px){html,body{height:auto;overflow:auto}body{height:auto}.shell{height:auto;min-height:100dvh}.sidebar{display:none}.main{padding:74px 16px 24px}.panel{height:auto}.pane{height:auto;overflow:visible}.perfil-grid,.identity-settings{grid-template-columns:1fr}.palette-grid,.pers-list,.goals-grid,.vision-grid,.a11y-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><defs><filter id="filter-deuteranopia" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="0.367 0.861 -0.228 0 0  0.280 0.673 0.047 0 0  -0.012 0.043 0.969 0 0  0 0 0 1 0"/></filter><filter id="filter-protanopia" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="0.152 1.053 -0.205 0 0  0.115 0.786 0.099 0 0  -0.004 -0.048 1.052 0 0  0 0 0 1 0"/></filter><filter id="filter-tritanopia" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="1.256 -0.077 -0.179 0 0  -0.078 0.931 0.148 0 0  0.005 0.691 0.304 0 0  0 0 0 1 0"/></filter></defs></svg>
+<div class="bg-layer"><div class="glow g1"></div><div class="glow g2"></div></div><div class="grain"></div>
+<div id="introOverlay"></div><span class="intro-mark centered" id="introMark">ℵ</span><div class="intro-loading" id="introLoading"><div class="intro-spinner"></div><p class="intro-text">Preparando tu ambiente...</p></div>
 
-<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
-  <defs>
-    <filter id="filter-deuteranopia" color-interpolation-filters="linearRGB">
-      <feColorMatrix type="matrix" values="0.367 0.861 -0.228 0 0  0.280 0.673 0.047 0 0  -0.012 0.043 0.969 0 0  0 0 0 1 0"/>
-    </filter>
-    <filter id="filter-protanopia" color-interpolation-filters="linearRGB">
-      <feColorMatrix type="matrix" values="0.152 1.053 -0.205 0 0  0.115 0.786 0.099 0 0  -0.004 -0.048 1.052 0 0  0 0 0 1 0"/>
-    </filter>
-    <filter id="filter-tritanopia" color-interpolation-filters="linearRGB">
-      <feColorMatrix type="matrix" values="1.256 -0.077 -0.179 0 0  -0.078 0.931 0.148 0 0  0.005 0.691 0.304 0 0  0 0 0 1 0"/>
-    </filter>
-  </defs>
-</svg>
-
-<div class="bg-layer"><div class="glow g1"></div><div class="glow g2"></div></div>
-<div class="grain"></div>
-
-<div id="introOverlay"></div>
-<span class="intro-mark centered" id="introMark">ℵ</span>
-<div class="intro-loading" id="introLoading">
-  <div class="intro-spinner"></div>
-  <p class="intro-text">Preparando tu ambiente...</p>
-</div>
-
-<div class="shell collapsed" id="shell">
-  <header class="topbar">
-    <div class="topbar-left"><span class="topbar-word">AlephOne</span></div>
-    <div class="topbar-right">
-      <a class="icon-btn" href="dashboard.html" title="Volver al dashboard">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
-      </a>
-      <div class="pill">
-        <div class="pill-avatar" id="userAvatar">?</div>
-        <span id="username">—</span>
-      </div>
-    </div>
-  </header>
-
+<div class="shell" id="shell">
+  <header class="topbar"><div class="topbar-left"><span class="topbar-word">AlephOne</span></div><div class="topbar-right"><a class="icon-btn" href="dashboard.html" title="Volver al dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg></a><div class="pill"><div class="pill-avatar" id="userAvatar">?</div><span id="username">—</span></div></div></header>
   <nav class="sidebar" id="sidebar">
-    <a href="dashboard.html" class="nav-link">
-      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></span>
-      <span class="nav-text">Dashboard</span>
-    </a>
-    <a href="settings.html" class="nav-link active" id="navSettings" onclick="return handleSelfNav(event,'settings.html')">
-      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-      <span class="nav-text">Ajustes</span>
-    </a>
-    <a href="tareas.html" class="nav-link">
-      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
-      <span class="nav-text">Actividades</span>
-    </a>
-    <a href="schools.html" class="nav-link">
-      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></span>
-      <span class="nav-text">Escuela</span>
-    </a>
-    <a href="comunicacion.html" class="nav-link">
-      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-      <span class="nav-text">Comunidad</span>
-    </a>
+    <a href="dashboard.html" class="nav-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></span><span class="nav-text">Inicio</span></a>
+    <a href="tareas.html" class="nav-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span class="nav-text">Actividades</span></a>
+    <a href="schools.html" class="nav-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></span><span class="nav-text">Escuela</span></a>
+    <a href="comunicacion.html" class="nav-link"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="nav-text">Comunidad</span></a>
   </nav>
-
   <main class="main">
     <div class="ambient-tod tod-morning" id="ambientTod"></div>
-
-    <div class="settings-hero">
-      <div class="settings-title">Ajustes</div>
-      <div class="settings-sub">Tu cuenta, tu estilo, tu forma de ver AlephOne.</div>
-    </div>
-
+    <div class="settings-hero"><div class="settings-title">Ajustes</div><div class="settings-sub">Tu cuenta, tu estilo, tu forma de ver AlephOne.</div></div>
     <div class="tabs-row" role="tablist">
-      <button class="tab-btn active" data-tab="perfil" onclick="switchTab('perfil')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>
-        Perfil
-      </button>
-      <button class="tab-btn" data-tab="tema" onclick="switchTab('tema')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c0-1-1-1.5-2-1.5h-2a2.5 2.5 0 0 1-2.5-2.5V7A3 3 0 0 0 12 3Z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="10.5" cy="6.5" r="1"/></svg>
-        Tema
-      </button>
-      <button class="tab-btn" data-tab="vision" onclick="switchTab('vision')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-        Visión
-      </button>
-      <button class="tab-btn" data-tab="a11y" onclick="switchTab('a11y')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4" r="1.6" fill="currentColor" stroke="none"/><path d="M5 8h14M12 8v13M8 21l4-6 4 6M6 12l6-1 6 1"/></svg>
-        Accesibilidad
-      </button>
+      <button class="tab-btn active" data-tab="perfil" onclick="switchTab('perfil')">Perfil</button>
+      <button class="tab-btn" data-tab="identidad" onclick="switchTab('identidad')">Identidad</button>
+      <button class="tab-btn" data-tab="tema" onclick="switchTab('tema')">Tema</button>
+      <button class="tab-btn" data-tab="vision" onclick="switchTab('vision')">Visión</button>
+      <button class="tab-btn" data-tab="a11y" onclick="switchTab('a11y')">Accesibilidad</button>
     </div>
-
     <div class="panel">
-      <!-- PERFIL -->
       <div class="pane active" id="pane-perfil">
-        <div class="perfil-grid">
-          <div class="identity-card">
-            <div class="identity-avatar" id="idAvatar">?</div>
-            <div>
-              <div class="identity-name" id="idName">—</div>
-              <div class="identity-role" id="idRole">—</div>
-            </div>
-            <button class="logout-btn" onclick="doLogout()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-              Cerrar sesión
-            </button>
-            <div class="danger-zone">
-              <div class="danger-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                Zona de peligro
-              </div>
-              <div class="danger-sub">Elimina tu perfil y cierra tu sesión permanentemente. Esta acción no se puede deshacer.</div>
-              <button class="danger-btn" id="deleteBtn" onclick="handleDeleteAccount()">Eliminar cuenta</button>
-            </div>
-          </div>
-
-          <div class="form-col">
-            <div class="form-block">
-              <div class="form-block-title">Información de la cuenta</div>
-              <div class="form-row">
-                <div class="field">
-                  <label for="profUsername">Usuario</label>
-                  <input type="text" id="profUsername" autocomplete="username">
-                </div>
-                <div class="field">
-                  <label for="profEmail">Correo electrónico</label>
-                  <input type="email" id="profEmail" autocomplete="email">
-                </div>
-              </div>
-              <div class="form-actions">
-                <button class="save-btn" id="saveInfoBtn" onclick="saveProfileInfo()">Guardar cambios</button>
-                <span class="form-msg" id="infoMsg"></span>
-              </div>
-            </div>
-
-            <div class="form-block">
-              <div class="form-block-title">Cambiar contraseña</div>
-              <div class="form-row">
-                <div class="field">
-                  <label for="newPass">Nueva contraseña</label>
-                  <input type="password" id="newPass" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
-                </div>
-                <div class="field">
-                  <label for="newPass2">Confirmar contraseña</label>
-                  <input type="password" id="newPass2" autocomplete="new-password">
-                </div>
-              </div>
-              <div class="form-actions">
-                <button class="save-btn" id="savePassBtn" onclick="savePassword()">Actualizar contraseña</button>
-                <span class="form-msg" id="passMsg"></span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div class="perfil-grid"><div class="identity-card"><div class="identity-avatar" id="idAvatar">?</div><div><div class="identity-name" id="idName">—</div><div class="identity-role" id="idRole">—</div></div><button class="logout-btn" onclick="doLogout()">Cerrar sesión</button><div class="danger-zone"><div class="danger-title">Zona de peligro</div><div class="danger-sub">Elimina tu perfil y cierra tu sesión. La baja completa de auth requiere backend dedicado.</div><button class="danger-btn" id="deleteBtn" onclick="handleDeleteAccount()">Eliminar cuenta</button></div></div>
+          <div class="form-col"><div class="form-block"><div class="form-block-title">Información de la cuenta</div><div class="form-row"><div class="field"><label for="profUsername">Usuario</label><input type="text" id="profUsername" autocomplete="username"></div><div class="field"><label for="profEmail">Correo electrónico</label><input type="email" id="profEmail" autocomplete="email"></div></div><div class="form-actions"><button class="save-btn" id="saveInfoBtn" onclick="saveProfileInfo()">Guardar cambios</button><span class="form-msg" id="infoMsg"></span></div></div><div class="form-block"><div class="form-block-title">Cambiar contraseña</div><div class="form-row"><div class="field"><label for="newPass">Nueva contraseña</label><input type="password" id="newPass" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></div><div class="field"><label for="newPass2">Confirmar contraseña</label><input type="password" id="newPass2" autocomplete="new-password"></div></div><div class="form-actions"><button class="save-btn" id="savePassBtn" onclick="savePassword()">Actualizar contraseña</button><span class="form-msg" id="passMsg"></span></div></div></div></div>
       </div>
-
-      <!-- TEMA -->
-      <div class="pane" id="pane-tema">
-        <div class="tema-row">
-          <div>
-            <div class="section-label">Modo</div>
-            <div class="seg" id="themeSeg">
-              <button class="seg-btn" data-mode="dark" onclick="setThemeMode('dark')">Oscuro</button>
-              <button class="seg-btn" data-mode="light" onclick="setThemeMode('light')">Claro</button>
-              <button class="seg-btn" data-mode="auto" onclick="setThemeMode('auto')">Auto</button>
-            </div>
-          </div>
-          <div>
-            <div class="section-label">Tamaño de texto</div>
-            <div class="fs-row">
-              <button class="fs-btn" onclick="changeFontSize(-1)" aria-label="Reducir">−</button>
-              <span class="fs-val" id="fsVal">100%</span>
-              <button class="fs-btn" onclick="changeFontSize(1)" aria-label="Aumentar">+</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- VISIÓN -->
-      <div class="pane" id="pane-vision">
-        <div class="section-label">Modo de visión de color</div>
-        <div class="vision-grid" id="visionGrid">
-          <button class="vision-btn" data-v="normal" onclick="setVision('normal')"><strong>Normal</strong><small>Sin filtro</small></button>
-          <button class="vision-btn" data-v="deuteranopia" onclick="setVision('deuteranopia')"><strong>Deuteranopia</strong><small>Déficit verde</small></button>
-          <button class="vision-btn" data-v="protanopia" onclick="setVision('protanopia')"><strong>Protanopia</strong><small>Déficit rojo</small></button>
-          <button class="vision-btn" data-v="tritanopia" onclick="setVision('tritanopia')"><strong>Tritanopia</strong><small>Déficit azul</small></button>
-          <button class="vision-btn" data-v="grayscale" onclick="setVision('grayscale')"><strong>Escala de grises</strong><small>Sin color</small></button>
-        </div>
-      </div>
-
-      <!-- ACCESIBILIDAD -->
-      <div class="pane" id="pane-a11y">
-        <div class="section-label">Preferencias de accesibilidad</div>
-        <div class="a11y-grid" id="a11yGrid"></div>
-      </div>
+      <div class="pane" id="pane-identidad"><div class="identity-settings"><div class="identity-section wide"><div class="section-label">Paleta</div><div class="palette-grid" id="paletteGrid"></div></div><div class="identity-section"><div class="section-label">Personalidad</div><div class="pers-list" id="personalityList"></div></div><div class="identity-section"><div class="section-label">Resumen</div><div class="identity-name" id="identityPreviewName">Tu espacio</div><div class="identity-role" id="identityPreviewRole">AlephOne</div><div class="danger-sub" id="identityPreviewMsg">Se va a construir mientras avanzás.</div></div><div class="identity-section wide"><div class="section-label">Objetivos</div><div class="goals-grid" id="goalsGrid"></div><div class="identity-actions"><button class="save-btn" onclick="saveIdentity()">Guardar identidad</button><span class="form-msg" id="identityMsg"></span></div></div></div></div>
+      <div class="pane" id="pane-tema"><div class="tema-row"><div><div class="section-label">Modo</div><div class="seg" id="themeSeg"><button class="seg-btn" data-mode="dark" onclick="setThemeMode('dark')">Oscuro</button><button class="seg-btn" data-mode="light" onclick="setThemeMode('light')">Claro</button><button class="seg-btn" data-mode="auto" onclick="setThemeMode('auto')">Auto</button></div></div><div><div class="section-label">Tamaño de texto</div><div class="fs-row"><button class="fs-btn" onclick="changeFontSize(-1)">−</button><span class="fs-val" id="fsVal">100%</span><button class="fs-btn" onclick="changeFontSize(1)">+</button></div></div></div></div>
+      <div class="pane" id="pane-vision"><div class="section-label">Modo de visión de color</div><div class="vision-grid" id="visionGrid"><button class="vision-btn" data-v="normal" onclick="setVision('normal')"><strong>Normal</strong><small>Sin filtro</small></button><button class="vision-btn" data-v="deuteranopia" onclick="setVision('deuteranopia')"><strong>Deuteranopia</strong><small>Déficit verde</small></button><button class="vision-btn" data-v="protanopia" onclick="setVision('protanopia')"><strong>Protanopia</strong><small>Déficit rojo</small></button><button class="vision-btn" data-v="tritanopia" onclick="setVision('tritanopia')"><strong>Tritanopia</strong><small>Déficit azul</small></button><button class="vision-btn" data-v="grayscale" onclick="setVision('grayscale')"><strong>Escala de grises</strong><small>Sin color</small></button></div></div>
+      <div class="pane" id="pane-a11y"><div class="section-label">Preferencias de accesibilidad</div><div class="a11y-grid" id="a11yGrid"></div></div>
     </div>
   </main>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/api.js"></script>
 <script>
-/* ══════════════════════════════════════════
-   ESTADO — mismas 3 categorías que dashboard.html:
-   carga inicial (sessionStorage) / navegación (DOM) / transición (memoria).
-══════════════════════════════════════════ */
-const AlephUIState = {
-  INTRO_KEY: 'alephone_intro_played',
-  introAlreadyPlayed(){ return sessionStorage.getItem(this.INTRO_KEY) === '1'; },
-  markIntroPlayed(){ sessionStorage.setItem(this.INTRO_KEY, '1'); }
-};
-
-const els = {
-  shell: document.getElementById('shell'),
-  sidebar: document.getElementById('sidebar'),
-  introOverlay: document.getElementById('introOverlay'),
-  introMark: document.getElementById('introMark'),
-  introLoading: document.getElementById('introLoading'),
-};
-
-/* ══════════════════════════════════════════
-   INTRO — idéntica lógica que dashboard.html
-══════════════════════════════════════════ */
-function runIntroGrowAndDock(){
-  const { introMark: mark, introOverlay: overlay, introLoading: loading } = els;
-  loading.classList.add('gone');
-  mark.classList.remove('centered');
-  mark.classList.add('grown');
-  setTimeout(() => {
-    overlay.classList.add('hide');
-    mark.classList.remove('grown');
-    mark.classList.add('docked');
-    mark.onclick = expandDashboard;
-    setTimeout(() => { overlay.remove(); loading.remove(); }, 400);
-  }, 1000);
-}
-function skipIntro(){
-  const { introMark: mark, introOverlay: overlay, introLoading: loading } = els;
-  overlay.remove();
-  loading.remove();
-  mark.classList.remove('centered');
-  mark.style.transition = 'none';
-  mark.classList.add('docked');
-  mark.onclick = expandDashboard;
-  requestAnimationFrame(() => { mark.style.transition = ''; });
-}
-function expandDashboard(){
-  const { shell, sidebar } = els;
-  if (!shell.classList.contains('collapsed')) return;
-  document.body.classList.add('sidebar-transitioning');
-  sidebar.style.willChange = 'width';
-  shell.classList.remove('collapsed');
-  let done = false;
-  const finish = () => {
-    if (done) return;
-    done = true;
-    document.body.classList.remove('sidebar-transitioning');
-    sidebar.style.willChange = 'auto';
-  };
-  sidebar.addEventListener('transitionend', (event) => {
-    if (event.propertyName === 'width') finish();
-  }, { once:true });
-  setTimeout(finish, 560);
-}
-function handleSelfNav(event, fileName){
-  const current = location.pathname.split('/').pop() || 'dashboard.html';
-  if (current === fileName) {
-    event.preventDefault();
-    if (els.shell.classList.contains('collapsed')) expandDashboard();
-    return false;
-  }
-  return true;
-}
-
-/* ══════════════════════════════════════════
-   TABS
-══════════════════════════════════════════ */
-function switchTab(name){
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
-  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('active', p.id === 'pane-' + name));
-}
-
-/* ══════════════════════════════════════════
-   GLOW AMBIENTAL POR HORA — igual que dashboard.html
-══════════════════════════════════════════ */
-function timeOfDayBand(hora){
-  if (hora >= 6 && hora < 13)  return 'tod-morning';
-  if (hora >= 13 && hora < 19) return 'tod-afternoon';
-  if (hora >= 19 && hora < 24) return 'tod-evening';
-  return 'tod-night';
-}
-function renderAmbient(){
-  const el = document.getElementById('ambientTod');
-  el.classList.remove('tod-morning','tod-afternoon','tod-evening','tod-night');
-  el.classList.add(timeOfDayBand(new Date().getHours()));
-}
-
-/* ══════════════════════════════════════════
-   PERFIL — lectura/edición real vía Supabase
-══════════════════════════════════════════ */
-function renderIdentity(user){
-  const initial = (user.username || '?').charAt(0).toUpperCase();
-  document.getElementById('userAvatar').textContent = initial;
-  document.getElementById('username').textContent = user.username || '—';
-  document.getElementById('idAvatar').textContent = initial;
-  document.getElementById('idName').textContent = user.username || '—';
-  const roles = { student:'Estudiante', teacher:'Docente', director:'Director', superadmin:'Superadmin' };
-  document.getElementById('idRole').textContent = roles[user.role] || user.role || '—';
-  document.getElementById('profUsername').value = user.username || '';
-  document.getElementById('profEmail').value = user.email || '';
-}
-
-async function saveProfileInfo(){
-  const btn = document.getElementById('saveInfoBtn');
-  const msg = document.getElementById('infoMsg');
-  const user = AlephAPI.Auth.getCurrentUser();
-  const newUsername = document.getElementById('profUsername').value.trim();
-  const newEmail = document.getElementById('profEmail').value.trim();
-
-  msg.className = 'form-msg';
-  msg.textContent = '';
-
-  if (!newUsername || newUsername.length < 3) { msg.className = 'form-msg err'; msg.textContent = 'Usuario muy corto.'; return; }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) { msg.className = 'form-msg err'; msg.textContent = 'Email inválido.'; return; }
-
-  btn.disabled = true;
-  try {
-    // AlephAPI expone su cliente de Supabase como AlephAPI._client — se
-    // reutiliza acá en vez de duplicar la config de conexión.
-    const { error } = await AlephAPI._client
-      .from('profiles')
-      .update({ username: newUsername, email_real: newEmail })
-      .eq('id', user.id);
-
-    if (error) {
-      msg.className = 'form-msg err';
-      msg.textContent = error.code === '23505' ? 'Ese usuario ya existe.' : 'No se pudo guardar.';
-    } else {
-      window._alephUser.username = newUsername;
-      window._alephUser.email = newEmail;
-      renderIdentity(window._alephUser);
-      msg.className = 'form-msg ok';
-      msg.textContent = 'Guardado.';
-    }
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-async function savePassword(){
-  const btn = document.getElementById('savePassBtn');
-  const msg = document.getElementById('passMsg');
-  const p1 = document.getElementById('newPass').value;
-  const p2 = document.getElementById('newPass2').value;
-
-  msg.className = 'form-msg';
-  msg.textContent = '';
-
-  if (p1.length < 6) { msg.className = 'form-msg err'; msg.textContent = 'Mínimo 6 caracteres.'; return; }
-  if (p1 !== p2) { msg.className = 'form-msg err'; msg.textContent = 'No coinciden.'; return; }
-
-  btn.disabled = true;
-  try {
-    const { error } = await AlephAPI._client.auth.updateUser({ password: p1 });
-    if (error) {
-      msg.className = 'form-msg err';
-      msg.textContent = 'No se pudo actualizar.';
-    } else {
-      document.getElementById('newPass').value = '';
-      document.getElementById('newPass2').value = '';
-      msg.className = 'form-msg ok';
-      msg.textContent = 'Contraseña actualizada.';
-    }
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-function doLogout(){
-  AlephAPI.Auth.logout();
-}
-
-/* Zona de peligro: flujo "armado" en dos pasos en vez de un modal, para
-   no romper la regla de "nunca scrollear" con un overlay extra.
-   NOTA: el SDK de Supabase con la clave pública NO puede borrar el
-   usuario de auth (requiere permisos de service role). Esto borra el
-   perfil y cierra la sesión; la baja completa de la cuenta de acceso
-   necesita un endpoint dedicado en el backend (Render) que todavía no
-   existe — queda marcado acá para cuando se agregue. */
-let deleteArmed = false;
-function handleDeleteAccount(){
-  const btn = document.getElementById('deleteBtn');
-  if (!deleteArmed) {
-    deleteArmed = true;
-    btn.classList.add('armed');
-    btn.textContent = '¿Seguro? Tocá de nuevo para confirmar';
-    setTimeout(() => {
-      if (deleteArmed) {
-        deleteArmed = false;
-        btn.classList.remove('armed');
-        btn.textContent = 'Eliminar cuenta';
-      }
-    }, 4000);
-    return;
-  }
-  deleteArmed = false;
-  btn.disabled = true;
-  btn.textContent = 'Eliminando…';
-  const user = AlephAPI.Auth.getCurrentUser();
-  AlephAPI._client.from('profiles').delete().eq('id', user.id).then(() => {
-    AlephAPI.Auth.logout();
-  });
-}
-
-/* ══════════════════════════════════════════
-   TEMA
-══════════════════════════════════════════ */
-const FONT_SIZES = [85, 92, 100, 107, 115];
-let fontSizeIdx = 2;
-
-function setThemeMode(mode){
-  localStorage.setItem('aleph_theme_mode', mode);
-  applyThemeMode(mode);
-}
-function applyThemeMode(mode){
-  const prefersLight = mode === 'light' || (mode === 'auto' && window.matchMedia('(prefers-color-scheme: light)').matches);
-  document.body.classList.toggle('theme-light', prefersLight);
-  document.querySelectorAll('#themeSeg .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-}
-function changeFontSize(dir){
-  fontSizeIdx = Math.max(0, Math.min(FONT_SIZES.length - 1, fontSizeIdx + dir));
-  const size = FONT_SIZES[fontSizeIdx];
-  document.documentElement.style.fontSize = size + '%';
-  document.getElementById('fsVal').textContent = size + '%';
-  localStorage.setItem('aleph_font_size_idx', fontSizeIdx);
-}
-
-/* ══════════════════════════════════════════
-   VISIÓN
-══════════════════════════════════════════ */
-const VISION_MODES = ['deuteranopia','protanopia','tritanopia','grayscale'];
-function setVision(mode){
-  VISION_MODES.forEach(m => document.body.classList.remove('vision-' + m));
-  if (mode !== 'normal') document.body.classList.add('vision-' + mode);
-  document.querySelectorAll('#visionGrid .vision-btn').forEach(b => b.classList.toggle('active', b.dataset.v === mode));
-  localStorage.setItem('aleph_vision', mode);
-}
-
-/* ══════════════════════════════════════════
-   ACCESIBILIDAD
-══════════════════════════════════════════ */
-const A11Y_OPTIONS = [
-  { key:'reduce-motion', label:'Reducir movimiento', sub:'Desactiva animaciones' },
-  { key:'reduce-transparency', label:'Reducir transparencias', sub:'Quita blur y vidrio' },
-  { key:'high-contrast', label:'Alto contraste', sub:'Más diferencia fondo/texto' },
-  { key:'font-dyslexic', label:'Fuente para dislexia', sub:'OpenDyslexic' },
-  { key:'letter-spacing-wide', label:'Espaciado de letras', sub:'Más aire entre caracteres' },
-  { key:'line-height-wide', label:'Interlineado amplio', sub:'Más espacio entre líneas' },
-  { key:'underline-links', label:'Subrayar links', sub:'Siempre visibles' },
-  { key:'enhanced-focus', label:'Foco mejorado', sub:'Indicador de teclado más claro' },
-  { key:'large-targets', label:'Toques ampliados', sub:'Botones más grandes' },
-];
-
-function renderA11yGrid(){
-  const el = document.getElementById('a11yGrid');
-  el.innerHTML = A11Y_OPTIONS.map(opt => `
-    <div class="tgl-row" onclick="toggleA11y('${opt.key}')" role="switch" id="row-${opt.key}" aria-checked="false">
-      <div class="tgl-label"><strong>${opt.label}</strong><small>${opt.sub}</small></div>
-      <div class="tgl-switch" id="sw-${opt.key}"></div>
-    </div>`).join('');
-}
-
-function toggleA11y(key){
-  const isOn = document.body.classList.toggle('a11y-' + key);
-  document.getElementById('sw-' + key)?.classList.toggle('on', isOn);
-  document.getElementById('row-' + key)?.setAttribute('aria-checked', String(isOn));
-  localStorage.setItem('aleph_a11y_' + key, isOn);
-}
-
-/* ══════════════════════════════════════════
-   INIT — aplica lo guardado y carga el perfil real
-══════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', async () => {
-  renderAmbient();
-  renderA11yGrid();
-
-  // Tema
-  const savedMode = localStorage.getItem('aleph_theme_mode') || 'dark';
-  applyThemeMode(savedMode);
-  const savedFS = localStorage.getItem('aleph_font_size_idx');
-  if (savedFS !== null) {
-    fontSizeIdx = parseInt(savedFS, 10);
-    const size = FONT_SIZES[fontSizeIdx] || 100;
-    document.documentElement.style.fontSize = size + '%';
-    document.getElementById('fsVal').textContent = size + '%';
-  }
-
-  // Visión
-  const savedVision = localStorage.getItem('aleph_vision') || 'normal';
-  setVision(savedVision);
-
-  // Accesibilidad
-  A11Y_OPTIONS.forEach(opt => {
-    if (localStorage.getItem('aleph_a11y_' + opt.key) === 'true') {
-      document.body.classList.add('a11y-' + opt.key);
-      document.getElementById('sw-' + opt.key)?.classList.add('on');
-      document.getElementById('row-' + opt.key)?.setAttribute('aria-checked', 'true');
-    }
-  });
-
-  // Perfil real
-  await AlephAPI.Auth.init();
-  const user = AlephAPI.Auth.getCurrentUser();
-  if (!user) { window.location.href = './index.html'; return; }
-  renderIdentity(user);
-
-  if (AlephUIState.introAlreadyPlayed()) {
-    skipIntro();
-  } else {
-    AlephUIState.markIntroPlayed();
-    runIntroGrowAndDock();
-  }
-});
+const INTRO_KEY='alephone_intro_played';
+const els={introOverlay:document.getElementById('introOverlay'),introMark:document.getElementById('introMark'),introLoading:document.getElementById('introLoading')};
+function runIntroGrowAndDock(){els.introLoading.classList.add('gone');els.introMark.classList.remove('centered');els.introMark.classList.add('grown');setTimeout(()=>{els.introOverlay.classList.add('hide');els.introMark.classList.remove('grown');els.introMark.classList.add('docked');setTimeout(()=>{els.introOverlay.remove();els.introLoading.remove();},400);},1000)}
+function skipIntro(){els.introOverlay.remove();els.introLoading.remove();els.introMark.classList.remove('centered');els.introMark.style.transition='none';els.introMark.classList.add('docked');requestAnimationFrame(()=>{els.introMark.style.transition='';})}
+function switchTab(name){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('active',p.id==='pane-'+name))}
+function timeOfDayBand(h){if(h>=6&&h<13)return'tod-morning';if(h>=13&&h<19)return'tod-afternoon';if(h>=19&&h<24)return'tod-evening';return'tod-night'}function renderAmbient(){const el=document.getElementById('ambientTod');el.classList.remove('tod-morning','tod-afternoon','tod-evening','tod-night');el.classList.add(timeOfDayBand(new Date().getHours()))}
+function renderIdentity(user){const initial=(user.username||'?').charAt(0).toUpperCase();document.getElementById('userAvatar').textContent=initial;document.getElementById('username').textContent=user.username||'—';document.getElementById('idAvatar').textContent=initial;document.getElementById('idName').textContent=user.username||'—';const roles={student:'Estudiante',teacher:'Docente',director:'Director',superadmin:'Superadmin'};document.getElementById('idRole').textContent=roles[user.role]||user.role||'—';document.getElementById('profUsername').value=user.username||'';document.getElementById('profEmail').value=user.email||'';document.getElementById('identityPreviewName').textContent=user.username||'Tu espacio'}
+async function saveProfileInfo(){const btn=document.getElementById('saveInfoBtn'),msg=document.getElementById('infoMsg'),user=AlephAPI.Auth.getCurrentUser(),username=document.getElementById('profUsername').value.trim(),email=document.getElementById('profEmail').value.trim();msg.className='form-msg';msg.textContent='';if(username.length<3){msg.className='form-msg err';msg.textContent='Usuario muy corto.';return}if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){msg.className='form-msg err';msg.textContent='Email inválido.';return}btn.disabled=true;try{const {error}=await AlephAPI._client.from('profiles').update({username,email_real:email}).eq('id',user.id);if(error){msg.className='form-msg err';msg.textContent=error.code==='23505'?'Ese usuario ya existe.':'No se pudo guardar.'}else{window._alephUser.username=username;window._alephUser.email=email;renderIdentity(window._alephUser);msg.className='form-msg ok';msg.textContent='Guardado.'}}finally{btn.disabled=false}}
+async function savePassword(){const btn=document.getElementById('savePassBtn'),msg=document.getElementById('passMsg'),p1=document.getElementById('newPass').value,p2=document.getElementById('newPass2').value;msg.className='form-msg';msg.textContent='';if(p1.length<6){msg.className='form-msg err';msg.textContent='Mínimo 6 caracteres.';return}if(p1!==p2){msg.className='form-msg err';msg.textContent='No coinciden.';return}btn.disabled=true;try{const {error}=await AlephAPI._client.auth.updateUser({password:p1});if(error){msg.className='form-msg err';msg.textContent='No se pudo actualizar.'}else{document.getElementById('newPass').value='';document.getElementById('newPass2').value='';msg.className='form-msg ok';msg.textContent='Contraseña actualizada.'}}finally{btn.disabled=false}}
+function doLogout(){AlephAPI.Auth.logout()}let deleteArmed=false;function handleDeleteAccount(){const btn=document.getElementById('deleteBtn');if(!deleteArmed){deleteArmed=true;btn.classList.add('armed');btn.textContent='¿Seguro? Tocá de nuevo para confirmar';setTimeout(()=>{if(deleteArmed){deleteArmed=false;btn.classList.remove('armed');btn.textContent='Eliminar cuenta'}},4000);return}deleteArmed=false;btn.disabled=true;btn.textContent='Eliminando…';const user=AlephAPI.Auth.getCurrentUser();AlephAPI._client.from('profiles').delete().eq('id',user.id).then(()=>AlephAPI.Auth.logout())}
+const PALETAS=[{id:'everest',name:'Everest',place:'Nepal',theme:'theme-everest',swatch:'linear-gradient(135deg,#0a0e1a,#4ab8c8)'},{id:'andes',name:'Andes',place:'Argentina/Chile',theme:'theme-andes',swatch:'linear-gradient(135deg,#1c1c1e,#4a90d9,#f4a97f)'},{id:'amazonas',name:'Amazonas',place:'Perú/Brasil/Colombia',theme:'theme-amazonas',swatch:'linear-gradient(135deg,#0d1a0f,#3dba5e)'},{id:'bondi',name:'Bondi Beach',place:'Australia',theme:'theme-bondi',swatch:'linear-gradient(135deg,#fefce8,#0096c7)'},{id:'serengeti',name:'Serengeti',place:'Tanzania',theme:'theme-serengeti',swatch:'linear-gradient(135deg,#1a0a00,#e85d20)'}];
+const PERSONALIDADES=[{id:'curiosidad',name:'Curiosidad',desc:'Para cuando querés entender, no solo terminar.',msgs:{morning:'El día comienza. La curiosidad también.',afternoon:'El atardecer siempre trae nuevas preguntas.',evening:'La noche abre preguntas que el día no hace.',night:'Algunas preguntas no esperan.'}},{id:'claridad',name:'Claridad',desc:'Para cuando sabés lo que hay que hacer y querés hacerlo.',msgs:{morning:'Tiempo de empezar.',afternoon:'Queda tiempo por delante.',evening:'Estamos llegando al final del día.',night:'Es de madrugada.'}},{id:'momentum',name:'Momentum',desc:'Para cuando necesitás que algo te empuje a seguir.',msgs:{morning:'Comencemos. Queda mucho por delante.',afternoon:'El día avanza. Avancemos con él.',evening:'El día está por terminar. Podemos continuar.',night:'Descansá cuando termines.'}}];
+const OBJETIVOS=[['proposito','Aprender con propósito'],['conectado','Mantenerme conectado con mi escuela'],['progreso','Conocer mi progreso'],['aldia','Mantener mis actividades al día'],['metas','Alcanzar mis metas académicas'],['comunidad','Trabajar mejor con mi comunidad'],['descubrir','Descubrir nuevas formas de aprender'],['organizar','Organizar mi vida escolar'],['noperder','No perderme nada importante'],['crecer','Crecer cada día'],['equilibrio','Encontrar un mejor equilibrio'],['potencial','Aprovechar todo mi potencial']].map(([id,label])=>({id,label}));
+let identity={theme:'theme-everest',personalidad:'claridad',objetivos:[]};
+function timeKey(){const h=new Date().getHours();if(h>=6&&h<13)return'morning';if(h>=13&&h<19)return'afternoon';if(h>=19&&h<24)return'evening';return'night'}
+function loadIdentity(){try{identity={...identity,...(JSON.parse(localStorage.getItem('aleph_identity')||'{}'))}}catch{}}
+function applyIdentityTheme(){document.body.classList.remove('theme-everest','theme-andes','theme-amazonas','theme-bondi','theme-serengeti');document.body.classList.add(identity.theme||'theme-everest')}
+function renderIdentityEditor(){document.getElementById('paletteGrid').innerHTML=PALETAS.map(p=>`<button class="palette-btn ${identity.theme===p.theme?'active':''}" onclick="pickPalette('${p.theme}')"><div class="pal-swatch" style="background:${p.swatch}"></div><div class="pal-name">${p.name}</div><div class="pal-place">${p.place}</div></button>`).join('');document.getElementById('personalityList').innerHTML=PERSONALIDADES.map(p=>`<button class="pers-btn ${identity.personalidad===p.id?'active':''}" onclick="pickPersonality('${p.id}')"><div class="pers-name">${p.name}</div><div class="pers-desc">${p.desc}</div></button>`).join('');document.getElementById('goalsGrid').innerHTML=OBJETIVOS.map(o=>`<button class="goal-btn ${identity.objetivos.includes(o.id)?'active':''}" onclick="toggleGoal('${o.id}')">${o.label}</button>`).join('');renderIdentityPreview()}
+function renderIdentityPreview(){const p=PERSONALIDADES.find(x=>x.id===identity.personalidad)||PERSONALIDADES[1];document.getElementById('identityPreviewRole').textContent=p.name.toUpperCase();document.getElementById('identityPreviewMsg').textContent=p.msgs[timeKey()]}
+function pickPalette(theme){identity.theme=theme;applyIdentityTheme();renderIdentityEditor()}function pickPersonality(id){identity.personalidad=id;renderIdentityEditor()}function toggleGoal(id){identity.objetivos=identity.objetivos.includes(id)?identity.objetivos.filter(x=>x!==id):[...identity.objetivos,id];renderIdentityEditor()}function saveIdentity(){const user=AlephAPI.Auth.getCurrentUser();localStorage.setItem('aleph_identity',JSON.stringify({username:user?.username||identity.username||null,theme:identity.theme,personalidad:identity.personalidad,objetivos:identity.objetivos,saved_at:new Date().toISOString()}));const msg=document.getElementById('identityMsg');msg.className='form-msg ok';msg.textContent='Identidad guardada.';setTimeout(()=>msg.textContent='',1800)}
+const FONT_SIZES=[85,92,100,107,115];let fontSizeIdx=2;function setThemeMode(mode){localStorage.setItem('aleph_theme_mode',mode);applyThemeMode(mode)}function applyThemeMode(mode){const prefersLight=mode==='light'||(mode==='auto'&&window.matchMedia('(prefers-color-scheme: light)').matches);document.body.classList.toggle('theme-light',prefersLight);document.querySelectorAll('#themeSeg .seg-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode))}function changeFontSize(dir){fontSizeIdx=Math.max(0,Math.min(FONT_SIZES.length-1,fontSizeIdx+dir));const size=FONT_SIZES[fontSizeIdx];document.documentElement.style.fontSize=size+'%';document.getElementById('fsVal').textContent=size+'%';localStorage.setItem('aleph_font_size_idx',fontSizeIdx)}
+const VISION_MODES=['deuteranopia','protanopia','tritanopia','grayscale'];function setVision(mode){VISION_MODES.forEach(m=>document.body.classList.remove('vision-'+m));if(mode!=='normal')document.body.classList.add('vision-'+mode);document.querySelectorAll('#visionGrid .vision-btn').forEach(b=>b.classList.toggle('active',b.dataset.v===mode));localStorage.setItem('aleph_vision',mode)}
+const A11Y_OPTIONS=[['reduce-motion','Reducir movimiento','Desactiva animaciones'],['reduce-transparency','Reducir transparencias','Quita blur y vidrio'],['high-contrast','Alto contraste','Más diferencia fondo/texto'],['font-dyslexic','Fuente para dislexia','OpenDyslexic'],['letter-spacing-wide','Espaciado de letras','Más aire entre caracteres'],['line-height-wide','Interlineado amplio','Más espacio entre líneas'],['underline-links','Subrayar links','Siempre visibles'],['enhanced-focus','Foco mejorado','Indicador de teclado más claro'],['large-targets','Toques ampliados','Botones más grandes']].map(([key,label,sub])=>({key,label,sub}));
+function renderA11yGrid(){document.getElementById('a11yGrid').innerHTML=A11Y_OPTIONS.map(o=>`<div class="tgl-row" onclick="toggleA11y('${o.key}')" role="switch" id="row-${o.key}" aria-checked="false"><div class="tgl-label"><strong>${o.label}</strong><small>${o.sub}</small></div><div class="tgl-switch" id="sw-${o.key}"></div></div>`).join('')}function toggleA11y(key){const on=document.body.classList.toggle('a11y-'+key);document.getElementById('sw-'+key)?.classList.toggle('on',on);document.getElementById('row-'+key)?.setAttribute('aria-checked',String(on));localStorage.setItem('aleph_a11y_'+key,on)}
+document.addEventListener('DOMContentLoaded',async()=>{renderAmbient();renderA11yGrid();loadIdentity();applyIdentityTheme();renderIdentityEditor();const savedMode=localStorage.getItem('aleph_theme_mode')||'dark';applyThemeMode(savedMode);const savedFS=localStorage.getItem('aleph_font_size_idx');if(savedFS!==null){fontSizeIdx=parseInt(savedFS,10);const size=FONT_SIZES[fontSizeIdx]||100;document.documentElement.style.fontSize=size+'%';document.getElementById('fsVal').textContent=size+'%'}setVision(localStorage.getItem('aleph_vision')||'normal');A11Y_OPTIONS.forEach(o=>{if(localStorage.getItem('aleph_a11y_'+o.key)==='true')toggleA11y(o.key)});await AlephAPI.Auth.init();const user=AlephAPI.Auth.getCurrentUser();if(!user){window.location.href='./index.html';return}renderIdentity(user);renderIdentityPreview();if(sessionStorage.getItem(INTRO_KEY)==='1')skipIntro();else{sessionStorage.setItem(INTRO_KEY,'1');runIntroGrowAndDock()}});
 </script>
 </body>
 </html>
