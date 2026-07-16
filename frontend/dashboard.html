@@ -859,6 +859,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 ══════════════════════════════════════════ */
 window.addEventListener('storage', async (event) => {
   if (event.key === 'aleph_identity') {
+    applyTheme(getStoredIdentity()?.theme);
     const user = AlephAPI.Auth.getCurrentUser();
     if (user) renderGreeting(user);
   }
