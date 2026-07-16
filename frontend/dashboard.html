@@ -834,6 +834,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!user) { window.location.href = './index.html'; return; }
 
   renderAvatar(user);
+  applyTheme(getStoredIdentity()?.theme);
   renderGreeting(user);
 
   const data = await loadDashboardData(user);
