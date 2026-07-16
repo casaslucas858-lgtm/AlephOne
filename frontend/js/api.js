@@ -43,6 +43,26 @@ const AlephAPI = (() => {
         return msg || fallback;
     }
 
+    async function _backendRequest(path, options = {}) {
+        const token = await Auth.getAccessToken();
+        if (!token) return { ok: false, error: 'Tu sesión expiró. Volvé a iniciar sesión.' };
+
+        try {
+            const response = await fetch(`${BACKEND_URL}${path}`, {
+                ...options,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+                    ...(options.headers || {})
+                }
+            });
+            const data = await response.json();
+            return response.ok ? data : { ok: false, error: data.error || 'No se pudo completar la operación.' };
+        } catch (error) {
+            return { ok: false, error: 'No se pudo conectar con AlephOne.' };
+        }
+    }
+
     function _profilePayload(authUser, overrides = {}) {
         const meta = authUser?.user_metadata || {};
         const email = overrides.email_real || authUser?.email || meta.email || null;
@@ -154,6 +174,11 @@ const AlephAPI = (() => {
 
             _setCurrentUser(authUser, ensured.profile);
             return { ok: true, profile: ensured.profile };
+        },
+
+        async getAccessToken() {
+            const { data } = await _sb.auth.getSession();
+            return data.session?.access_token || null;
         },
 
         async login(usernameOrEmail, password) {
@@ -531,9 +556,12 @@ const AlephAPI = (() => {
             try {
                 const formData = new FormData();
                 formData.append('file', file);
+                const token = await Auth.getAccessToken();
+                if (!token) return { ok: false, error: 'Tu sesión expiró. Volvé a iniciar sesión.' };
 
                 const res = await fetch(`${BACKEND_URL}/upload-image`, {
                     method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
                     body: formData
                 });
 
@@ -1053,6 +1081,35 @@ const AlephAPI = (() => {
         }
     };
 
-    return { Auth, Comunicacion, Tareas, Horario, Promedios, Calendario, Quiz, Preguntas, Sala, Asignacion, Storage, Schools, _client: _sb };
+    // --- INSTITUCIÓN ----------------------------------------
+    const Institucion = {
+        async getContexto() {
+            return _backendRequest('/api/me/context');
+        },
+
+        async getActividades(schoolId, gradeId) {
+            return _backendRequest(`/api/schools/${schoolId}/grades/${gradeId}/activities`);
+        },
+
+        async crearActividad(schoolId, gradeId, payload) {
+            return _backendRequest(`/api/schools/${schoolId}/grades/${gradeId}/activities`, {
+                method: 'POST', body: JSON.stringify(payload)
+            });
+        },
+
+        async entregarActividad(schoolId, gradeId, activityId, contenido) {
+            return _backendRequest(`/api/schools/${schoolId}/grades/${gradeId}/activities/${activityId}/submissions`, {
+                method: 'POST', body: JSON.stringify({ contenido })
+            });
+        },
+
+        async calificarEntrega(schoolId, gradeId, activityId, submissionId, nota) {
+            return _backendRequest(`/api/schools/${schoolId}/grades/${gradeId}/activities/${activityId}/submissions/${submissionId}`, {
+                method: 'PATCH', body: JSON.stringify({ nota })
+            });
+        }
+    };
+
+    return { Auth, Comunicacion, Tareas, Horario, Promedios, Calendario, Quiz, Preguntas, Sala, Asignacion, Storage, Schools, Institucion, _client: _sb };
 
 })();
