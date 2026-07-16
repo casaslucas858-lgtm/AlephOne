@@ -1,309 +1,63 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tareas — AlephOne</title>
-    <link rel="stylesheet" href="css/style.css">
-    <style>
-        .mobile-nav-btn {
-            display: none;
-            background: var(--bg-subtle);
-            border: 1px solid var(--border);
-            color: var(--text);
-            width: 38px; height: 38px;
-            border-radius: var(--radius-sm);
-            font-size: 1.1em;
-            align-items: center;
-            justify-content: center;
-        }
-        @media (max-width: 900px) { .mobile-nav-btn { display: flex; } }
-
-        /* Modal */
-        .modal-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
-            z-index: 500; align-items: center; justify-content: center; padding: 20px;
-        }
-        .modal-overlay.open { display: flex; }
-        .modal {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: var(--radius-xl); padding: 32px;
-            width: 100%; max-width: 540px;
-            box-shadow: var(--shadow-lg); animation: fadeUp 0.25s ease both;
-            max-height: 90vh; overflow-y: auto;
-        }
-        .modal-header {
-            display: flex; align-items: center;
-            justify-content: space-between; margin-bottom: 24px;
-        }
-        .modal-title { font-family: var(--font-display); font-size: 1.2em; font-weight: 700; }
-        .modal-close {
-            background: var(--bg-subtle); border: 1px solid var(--border);
-            color: var(--text-muted); width: 34px; height: 34px;
-            border-radius: 50%; font-size: 1em;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all var(--transition);
-        }
-        .modal-close:hover { background: var(--bg-hover); color: var(--text); }
-
-        /* Tarea card */
-        .tarea-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: var(--radius-lg); padding: 20px 22px;
-            margin-bottom: 12px; transition: all var(--transition);
-            position: relative; overflow: hidden;
-        }
-        .tarea-card::before {
-            content: ''; position: absolute;
-            left: 0; top: 0; bottom: 0; width: 4px;
-        }
-        .tarea-card.urgente::before  { background: #dc3545; }
-        .tarea-card.pronto::before   { background: #ffc107; }
-        .tarea-card.normal::before   { background: var(--primary); }
-        .tarea-card.entregada::before { background: #28a745; }
-
-        .tarea-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-
-        .tarea-header {
-            display: flex; align-items: flex-start;
-            justify-content: space-between; gap: 12px; margin-bottom: 8px;
-        }
-        .tarea-titulo {
-            font-family: var(--font-display); font-size: 1em;
-            font-weight: 700; color: var(--text);
-        }
-        .tarea-desc {
-            font-size: 0.88em; color: var(--text-muted);
-            line-height: 1.5; margin-bottom: 12px;
-        }
-        .tarea-footer {
-            display: flex; align-items: center;
-            justify-content: space-between; flex-wrap: wrap; gap: 8px;
-        }
-        .tarea-meta-row {
-            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-        }
-
-        /* Entrega form */
-        .entrega-section {
-            margin-top: 14px; padding-top: 14px;
-            border-top: 1px solid var(--border);
-        }
-        .entrega-done {
-            display: flex; align-items: center; gap: 8px;
-            color: #28a745; font-size: 0.88em; font-weight: 600;
-        }
-
-        /* Vista docente: tabla entregas */
-        .entregas-tabla {
-            width: 100%; border-collapse: collapse;
-            font-size: 0.85em; margin-top: 12px;
-        }
-        .entregas-tabla th {
-            background: var(--bg-subtle); padding: 8px 12px;
-            text-align: left; font-weight: 600;
-            color: var(--text-muted); border-bottom: 1px solid var(--border);
-        }
-        .entregas-tabla td {
-            padding: 8px 12px; border-bottom: 1px solid var(--border);
-            color: var(--text);
-        }
-        .entregas-tabla tr:last-child td { border-bottom: none; }
-
-        .filter-bar {
-            display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
-        }
-        .filter-chip {
-            padding: 6px 16px; border-radius: 999px; font-size: 0.82em;
-            font-weight: 600; border: 1.5px solid var(--border);
-            background: var(--bg-subtle); color: var(--text-muted);
-            cursor: pointer; transition: all var(--transition);
-        }
-        .filter-chip:hover { border-color: var(--primary); color: var(--text); }
-        .filter-chip.active {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            border-color: transparent; color: white;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Actividades - AlephOne</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1729;--bg-2:#0c1322;--bg-3:#091020;--primary:#4ab8c8;--primary-rgb:74,184,200;--secondary:#6dd4e8;--text:#f7fbff;--muted:rgba(247,251,255,.56);--faint:rgba(247,251,255,.24);--glass:rgba(255,255,255,.08);--glass-strong:rgba(255,255,255,.13);--glass-border:rgba(255,255,255,.16);--danger:#f08080;--warn:#f0b880;--ok:#6bd99a;--e-out:cubic-bezier(.16,1,.3,1)}
+body{min-height:100vh;background:linear-gradient(155deg,var(--bg),var(--bg-2) 55%,var(--bg-3));font-family:'DM Sans',sans-serif;color:var(--text);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}button{border:0;cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--primary);outline-offset:3px}.bg{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}.glow{position:absolute;border-radius:50%;filter:blur(64px)}.glow.a{width:520px;height:520px;top:-180px;left:-110px;background:radial-gradient(circle,rgba(var(--primary-rgb),.33),transparent 68%)}.glow.b{width:400px;height:400px;right:-80px;bottom:-120px;background:radial-gradient(circle,rgba(109,212,232,.17),transparent 68%)}
+.shell{position:relative;z-index:1;display:flex;min-height:100vh}.rail{width:72px;flex:0 0 72px;padding:78px 8px 18px;display:flex;flex-direction:column;align-items:center;gap:6px}.nav-link{width:100%;padding:9px 3px 8px;border-radius:12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;text-decoration:none;font-size:9.5px;font-weight:700;line-height:1.15;text-align:center;transition:background .16s var(--e-out),color .16s}.nav-link:hover{background:var(--glass);color:var(--text)}.nav-link.active{color:var(--primary)}.nav-icon{width:30px;height:30px;display:grid;place-items:center;border-radius:9px}.nav-icon svg{width:17px;height:17px}.nav-link.active .nav-icon{background:var(--primary);color:#06121a}.topbar{position:fixed;z-index:10;top:0;left:0;right:0;height:64px;padding:0 24px 0 110px;display:flex;align-items:center;justify-content:space-between}.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:1.12rem}.brand b{color:var(--secondary);font-size:1.45rem;margin-right:8px}.top-actions{display:flex;gap:10px;align-items:center}.icon-btn{width:34px;height:34px;border-radius:10px;background:var(--glass);border:1px solid var(--glass-border);display:grid;place-items:center;color:var(--muted)}.icon-btn svg{width:16px;height:16px}.user{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border:1px solid var(--glass-border);background:var(--glass);border-radius:999px;font-size:.78rem;font-weight:600}.avatar{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#06121a;font-family:'Syne',sans-serif;font-weight:800}
+.main{flex:1;min-width:0;padding:88px 28px 42px}.context{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin:0 0 24px}.eyebrow{font-family:'Syne',sans-serif;font-size:.68rem;font-weight:800;letter-spacing:.1em;color:var(--primary);text-transform:uppercase}.title{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;margin-top:5px}.subtitle{font-size:.84rem;color:var(--muted);margin-top:4px}.context-controls{display:flex;gap:8px;align-items:center}.select{appearance:none;background:var(--glass);border:1px solid var(--glass-border);border-radius:10px;padding:9px 30px 9px 11px;color:var(--text);font-size:.78rem;max-width:190px}.primary{border-radius:10px;padding:10px 14px;background:rgba(var(--primary-rgb),.9);color:#06121a;font-family:'Syne',sans-serif;font-size:.78rem;font-weight:800;box-shadow:0 3px 13px rgba(var(--primary-rgb),.24);transition:transform .12s var(--e-out),background .15s}.primary:hover{background:var(--primary)}.primary:active{transform:scale(.97)}
+.glass{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 8px 28px rgba(0,0,0,.18)}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px}.stat{padding:15px 16px}.stat-label{font-size:.72rem;color:var(--muted)}.stat-value{font-family:'Syne',sans-serif;font-size:1.42rem;font-weight:800;margin-top:6px}.stat-detail{font-size:.67rem;color:var(--faint);margin-top:3px}.join{padding:11px 13px;display:flex;align-items:center;gap:10px;margin-bottom:16px}.join svg{width:17px;color:var(--primary);flex:none}.join input{flex:1;min-width:0;border:0;background:transparent;outline:0;font-size:.85rem;color:var(--text);text-transform:uppercase;letter-spacing:.08em}.join input::placeholder{text-transform:none;letter-spacing:0;color:var(--faint)}.join button{background:rgba(var(--primary-rgb),.18);border:1px solid rgba(var(--primary-rgb),.28);border-radius:8px;color:var(--primary);padding:7px 12px;font-family:'Syne',sans-serif;font-size:.73rem;font-weight:800}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(260px,.75fr);gap:16px;align-items:start}.panel{padding:18px}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:15px}.panel-title{display:flex;align-items:center;gap:8px;font-family:'Syne',sans-serif;font-size:.86rem;font-weight:800}.panel-title svg{width:16px;height:16px;color:var(--primary)}.small-link{color:var(--primary);font-size:.73rem;font-weight:700;background:none}.activity-list{display:flex;flex-direction:column;gap:8px}.activity{display:grid;grid-template-columns:7px minmax(0,1fr) auto;gap:11px;align-items:center;padding:11px 10px 11px 0;border-bottom:1px solid var(--glass-border)}.activity:last-child{border-bottom:0}.status{width:7px;height:100%;min-height:45px;border-radius:0 6px 6px 0;background:var(--primary)}.status.urgent{background:var(--danger)}.status.soon{background:var(--warn)}.status.done{background:var(--ok)}.activity-title{font-size:.86rem;font-weight:700}.activity-meta{font-size:.72rem;color:var(--muted);margin-top:3px}.activity-date{font-family:'Syne',sans-serif;font-size:.73rem;font-weight:800;color:var(--text);text-align:right}.activity-action{margin-top:6px;border-radius:7px;padding:5px 8px;font-size:.68rem;font-weight:700;background:rgba(255,255,255,.08);color:var(--muted)}.activity-action.accent{background:rgba(var(--primary-rgb),.18);color:var(--primary)}.empty{padding:26px 8px;text-align:center;color:var(--muted);font-size:.82rem;line-height:1.5}.side{display:flex;flex-direction:column;gap:16px}.news{display:flex;flex-direction:column;gap:10px}.news-item{padding-bottom:10px;border-bottom:1px solid var(--glass-border)}.news-item:last-child{padding-bottom:0;border:0}.news-kicker{font-family:'Syne',sans-serif;color:var(--primary);font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.news-title{font-size:.8rem;font-weight:700;margin-top:4px}.news-meta{font-size:.68rem;color:var(--faint);margin-top:3px}.projection{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}.projection-value{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800}.projection-copy{font-size:.73rem;color:var(--muted);line-height:1.45}.score-pill{padding:5px 8px;border:1px solid rgba(var(--primary-rgb),.3);border-radius:999px;color:var(--primary);font-family:'Syne',sans-serif;font-size:.67rem;font-weight:800}.table{width:100%;border-collapse:collapse;font-size:.76rem}.table th{text-align:left;color:var(--faint);font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;padding:8px}.table td{padding:9px 8px;border-top:1px solid var(--glass-border)}.grade-input{width:54px;border:1px solid var(--glass-border);background:rgba(255,255,255,.06);border-radius:6px;padding:4px;color:var(--text)}
+.modal-wrap{position:fixed;z-index:30;inset:0;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(3,6,12,.66);backdrop-filter:blur(8px)}.modal-wrap.open{display:flex}.modal{width:min(500px,100%);padding:20px;background:#111a2d;border:1px solid var(--glass-border);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.4)}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.modal-title{font-family:'Syne',sans-serif;font-weight:800}.close{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.08);color:var(--muted)}.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.field label{font-size:.68rem;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.06em}.field input,.field textarea,.field select{background:rgba(255,255,255,.06);border:1px solid var(--glass-border);border-radius:8px;padding:9px;color:var(--text);outline:none}.field textarea{resize:vertical;min-height:90px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.secondary{border-radius:9px;padding:9px 12px;background:rgba(255,255,255,.08);color:var(--muted);font-size:.77rem;font-weight:700}.error{font-size:.74rem;color:var(--danger);min-height:18px}
+@media(max-width:900px){.rail{display:none}.topbar{padding:0 16px}.main{padding:82px 16px 32px}.grid{grid-template-columns:1fr}.context{flex-direction:column}.context-controls{width:100%;flex-wrap:wrap}.select{flex:1}.stats{grid-template-columns:1fr 1fr}.user span{display:none}}@media(max-width:520px){.stats{grid-template-columns:1fr}.title{font-size:1.55rem}.context-controls .primary{width:100%}.activity{grid-template-columns:6px minmax(0,1fr) auto}.topbar{padding-right:12px}.brand{font-size:.98rem}}
+</style>
 </head>
 <body>
-<div class="app-shell">
-    <header class="topbar">
-        <div style="display:flex; align-items:center; gap:12px;">
-            <button class="mobile-nav-btn" onclick="toggleMobileNav()">☰</button>
-            <span class="topbar-logo">ℵ AlephOne</span>
-        </div>
-        <div class="topbar-right">
-            <button class="dark-mode-toggle" id="darkModeBtn" title="Cambiar tema">🌙</button>
-            <div class="user-pill">
-                <div class="user-avatar" id="userAvatar">?</div>
-                <span id="username">—</span>
-                <span class="role-badge" id="userRole">—</span>
-            </div>
-            <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
-        </div>
-    </header>
-
-    <nav class="sidebar" id="sidebar">
-        <span class="nav-section-label">Principal</span>
-        <a href="dashboard.html" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
-        <a href="comunicacion.html" class="nav-link"><span class="nav-icon">📢</span> Comunicación</a>
-        <a href="tareas.html" class="nav-link active"><span class="nav-icon">📋</span> Tareas</a>
-        <span class="nav-section-label">Académico</span>
-        <a href="horario.html" class="nav-link"><span class="nav-icon">🗓️</span> Horario</a>
-        <a href="promedios.html" class="nav-link"><span class="nav-icon">📊</span> Promedios</a>
-        <span class="nav-section-label">Herramientas</span>
-        <a href="quizzit.html" class="nav-link"><span class="nav-icon">🧪</span> Quizzit</a>
-        <a href="ai-chat.html" class="nav-link"><span class="nav-icon">🤖</span> Fractal AI</a>
-        <div class="sidebar-footer">
-            <button class="btn btn-ghost btn-sm" onclick="logout()" style="width:100%;">← Cerrar sesión</button>
-        </div>
-    </nav>
-
-    <main class="main-content">
-        <div class="page-header" style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-            <div>
-                <h2>📋 Tareas</h2>
-                <p class="text-muted">Actividades, trabajos prácticos y entregas.</p>
-            </div>
-            <button class="btn btn-primary" id="btnNuevaTarea" style="display:none;"
-                    onclick="abrirModalTarea()">+ Nueva tarea</button>
-        </div>
-
-        <div class="filter-bar">
-            <button class="filter-chip active" onclick="filtrar('todas', this)">Todas</button>
-            <button class="filter-chip" onclick="filtrar('tarea', this)">📋 Tareas</button>
-            <button class="filter-chip" onclick="filtrar('quiz', this)">🧪 Quizzes</button>
-            <button class="filter-chip" onclick="filtrar('examen', this)">📝 Exámenes</button>
-        </div>
-
-        <div id="tareasList"></div>
-    </main>
-</div>
-
-<div class="modal-overlay" id="modalTarea" onclick="cerrarModalSiFondo(event, 'modalTarea')">
-    <div class="modal">
-        <div class="modal-header">
-            <span class="modal-title">📋 Nueva tarea</span>
-            <button class="modal-close" onclick="cerrarModal('modalTarea')">✕</button>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Tipo</label>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button class="filter-chip active" onclick="selTipo('tarea',this)">📋 Tarea</button>
-                <button class="filter-chip" onclick="selTipo('quiz',this)">🧪 Quiz</button>
-                <button class="filter-chip" onclick="selTipo('examen',this)">📝 Examen</button>
-            </div>
-            <input type="hidden" id="tареaTipo" value="tarea">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Título</label>
-            <input type="text" id="tareaTitulo" class="form-input" placeholder="Ej: TP Ecuaciones lineales" maxlength="80">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Descripción</label>
-            <textarea id="tareaDesc" class="form-textarea" placeholder="Consigna, instrucciones, recursos..." rows="3" maxlength="500"></textarea>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Materia</label>
-            <input type="text" id="tareaMateria" class="form-input" placeholder="Ej: Matemática">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Fecha de cierre</label>
-            <input type="datetime-local" id="tareaCierre" class="form-input">
-        </div>
-        <div id="tareaError" class="form-error" style="margin-bottom:8px;"></div>
-        <div style="display:flex; gap:10px; justify-content:flex-end;">
-            <button class="btn btn-secondary" onclick="cerrarModal('modalTarea')">Cancelar</button>
-            <button class="btn btn-primary" onclick="crearTarea()">Publicar →</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="modalEntrega" onclick="cerrarModalSiFondo(event, 'modalEntrega')">
-    <div class="modal">
-        <div class="modal-header">
-            <span class="modal-title">📤 Entregar tarea</span>
-            <button class="modal-close" onclick="cerrarModal('modalEntrega')">✕</button>
-        </div>
-        <p id="entregaTareaTitle" style="font-weight:600; margin-bottom:16px; color:var(--text-muted);"></p>
-        <div class="form-group">
-            <label class="form-label">Tu respuesta / comentario</label>
-            <textarea id="entregaContenido" class="form-textarea"
-                      placeholder="Escribí tu respuesta, o indicá que adjuntás físicamente..." rows="4" maxlength="800"></textarea>
-        </div>
-        <div id="entregaError" class="form-error" style="margin-bottom:8px;"></div>
-        <div style="display:flex; gap:10px; justify-content:flex-end;">
-            <button class="btn btn-secondary" onclick="cerrarModal('modalEntrega')">Cancelar</button>
-            <button class="btn btn-primary" onclick="confirmarEntrega()">Entregar ✓</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="modalEntregas" onclick="cerrarModalSiFondo(event, 'modalEntregas')">
-    <div class="modal" style="max-width:600px;">
-        <div class="modal-header">
-            <span class="modal-title" id="entregasModalTitle">Entregas</span>
-            <button class="modal-close" onclick="cerrarModal('modalEntregas')">✕</button>
-        </div>
-        <div id="entregasLista"></div>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/api.js"></script>
-<script src="js/app.js"></script>
-<script src="js/tareas.js"></script>
-
-<!-- BOTTOM NAV (mobile only) -->
-<nav class="bottom-nav" id="bottomNav">
-    <a href="dashboard.html" class="bn-item">
-        <span class="bn-icon">🏠</span>
-        <span class="bn-label">Inicio</span>
-    </a>
-    <a href="comunicacion.html" class="bn-item">
-        <span class="bn-icon">📢</span>
-        <span class="bn-label">Mensajes</span>
-    </a>
-    <a href="tareas.html" class="bn-item active">
-        <span class="bn-icon">📋</span>
-        <span class="bn-label">Tareas</span>
-    </a>
-    <button type="button" class="bn-item" onclick="toggleMasSheet()">
-        <span class="bn-icon">⋯</span>
-        <span class="bn-label">Más</span>
-    </button>
+<div class="bg"><div class="glow a"></div><div class="glow b"></div></div>
+<div class="shell">
+<nav class="rail" aria-label="Navegación principal">
+  <a class="nav-link" href="dashboard.html"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2Z"/></svg></span>Inicio</a>
+  <a class="nav-link active" href="tareas.html"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Actividades</a>
+  <a class="nav-link" href="schools.html"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></span>Escuela</a>
+  <a class="nav-link" href="comunicacion.html"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg></span>Comunidad</a>
 </nav>
+<header class="topbar"><div class="brand"><b>ℵ</b>AlephOne</div><div class="top-actions"><a class="icon-btn" href="settings.html" aria-label="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></a><div class="user"><span class="avatar" id="avatar">?</span><span id="username">-</span></div></div></header>
+<main class="main">
+  <section class="context"><div><div class="eyebrow">Seguimiento académico</div><h1 class="title">Actividades</h1><p class="subtitle">Lo que necesitás saber, hacer y proyectar para tu grado.</p></div><div class="context-controls"><select class="select" id="schoolSelect" aria-label="Escuela activa"></select><select class="select" id="gradeSelect" aria-label="Grado activo"></select><button class="primary" id="newActivity" hidden>Nueva actividad</button></div></section>
+  <section id="app"></section>
+</main></div>
 
-<!-- SHEET MÁS -->
-<div class="mas-overlay" id="masOverlay" onclick="toggleMasSheet()"></div>
-<div class="mas-sheet" id="masSheet">
-    <div class="mas-handle"></div>
-    <a href="horario.html" class="mas-item" onclick="toggleMasSheet()">
-        <span class="mas-icon">🗓️</span>
-        <span>Horario</span>
-    </a>
-    <a href="promedios.html" class="mas-item" onclick="toggleMasSheet()">
-        <span class="mas-icon">📊</span>
-        <span>Promedios</span>
-    </a>
-    <a href="quizzit.html" class="mas-item" onclick="toggleMasSheet()">
-        <span class="mas-icon">🧪</span>
-        <span>Quizzit</span>
-    </a>
-    <a href="ai-chat.html" class="mas-item" onclick="toggleMasSheet()">
-        <span class="mas-icon">🤖</span>
-        <span>Fractal AI</span>
-    </a>
-</div>
+<div class="modal-wrap" id="activityModal"><div class="modal"><div class="modal-head"><span class="modal-title">Nueva actividad</span><button class="close" data-close="activityModal" aria-label="Cerrar">×</button></div><div class="field"><label for="activityTitle">Título</label><input id="activityTitle" maxlength="100"></div><div class="field"><label for="activitySubject">Materia</label><input id="activitySubject" maxlength="60"></div><div class="field"><label for="activityType">Tipo</label><select id="activityType"><option value="tarea">Trabajo</option><option value="examen">Examen</option><option value="quiz">Quiz</option></select></div><div class="field"><label for="activityDue">Fecha de cierre</label><input id="activityDue" type="datetime-local"></div><div class="field"><label for="activityDescription">Consigna</label><textarea id="activityDescription" maxlength="700"></textarea></div><div class="error" id="activityError"></div><div class="modal-actions"><button class="secondary" data-close="activityModal">Cancelar</button><button class="primary" id="publishActivity">Publicar</button></div></div></div>
+<div class="modal-wrap" id="submissionModal"><div class="modal"><div class="modal-head"><span class="modal-title" id="submissionTitle">Entregar actividad</span><button class="close" data-close="submissionModal" aria-label="Cerrar">×</button></div><div class="field"><label for="submissionContent">Tu entrega</label><textarea id="submissionContent" maxlength="1500" placeholder="Escribí tu respuesta o adjuntá la información necesaria."></textarea></div><div class="error" id="submissionError"></div><div class="modal-actions"><button class="secondary" data-close="submissionModal">Cancelar</button><button class="primary" id="sendSubmission">Entregar</button></div></div></div>
+<div class="modal-wrap" id="gradingModal"><div class="modal"><div class="modal-head"><span class="modal-title" id="gradingTitle">Entregas</span><button class="close" data-close="gradingModal" aria-label="Cerrar">×</button></div><div id="gradingList"></div></div></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/api.js"></script>
 <script>
-function toggleMasSheet() {
-    document.getElementById('masSheet').classList.toggle('open');
-    document.getElementById('masOverlay').classList.toggle('open');
-}
+let currentUser, context, activeSchool, activeGrade, activitiesData, submissionActivityId, gradingActivityId;
+const ICON={calendar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',news:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10v4a1.5 1.5 0 0 0 1.5 1.5H6l5 4.5v-15L6 9H4.5A1.5 1.5 0 0 0 3 10Z"/><path d="M15 8.5a5 5 0 0 1 0 7"/></svg>',chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-7"/></svg>'};
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function modal(id,open){document.getElementById(id).classList.toggle('open',open)}
+function dateLabel(value){if(!value)return'Sin fecha';const d=new Date(value);return new Intl.DateTimeFormat('es-AR',{day:'numeric',month:'short'}).format(d)}
+function dueState(activity){const own=activity.submissions?.[0];if(own)return{type:'done',label:own.nota==null?'Entregado':`Nota ${own.nota}`};if(!activity.fecha_cierre)return{type:'normal',label:'Sin fecha'};const diff=Math.ceil((new Date(activity.fecha_cierre)-new Date())/86400000);if(diff<0)return{type:'urgent',label:'Vencida'};if(diff<=1)return{type:'urgent',label:diff===0?'Hoy':'Mañana'};if(diff<=7)return{type:'soon',label:`${diff} días`};return{type:'normal',label:dateLabel(activity.fecha_cierre)}}
+function render(){const app=document.getElementById('app');if(!activeGrade){app.innerHTML='<div class="glass empty">Elegí una escuela y un grado para ver sus actividades.</div>';return}if(!activitiesData){app.innerHTML='<div class="glass empty">Cargando actividades...</div>';return}const list=activitiesData.activities||[];const manageable=activitiesData.permissions.canManage;const now=list.filter(a=>{const s=dueState(a);return s.type==='urgent'||s.type==='soon'});const pending=manageable?list.reduce((n,a)=>n+(a.submissions||[]).filter(s=>s.nota==null).length,0):list.filter(a=>!a.submissions?.length).length;const graded=list.flatMap(a=>a.submissions||[]).filter(s=>s.nota!=null);const average=graded.length?(graded.reduce((sum,s)=>sum+Number(s.nota),0)/graded.length).toFixed(1):'—';document.getElementById('newActivity').hidden=!manageable;app.innerHTML=`<div class="stats"><div class="glass stat"><div class="stat-label">Próximas esta semana</div><div class="stat-value">${now.length}</div><div class="stat-detail">Exámenes y trabajos con fecha cercana</div></div><div class="glass stat"><div class="stat-label">${manageable?'Por calificar':'Pendientes'}</div><div class="stat-value">${pending}</div><div class="stat-detail">${manageable?'Entregas que requieren revisión':'Actividades que todavía no entregaste'}</div></div><div class="glass stat"><div class="stat-label">Proyección actual</div><div class="stat-value">${average}</div><div class="stat-detail">Promedio sobre entregas ya calificadas</div></div></div><div class="glass join">${ICON.calendar}<input id="roomCode" maxlength="8" placeholder="Código para sala" aria-label="Código para sala"><button id="joinRoom">Unirme</button></div><div class="grid"><section class="glass panel"><div class="panel-head"><div class="panel-title">${ICON.calendar} Exámenes y trabajos próximos</div><span class="small-link">${list.length} actividades</span></div><div class="activity-list">${list.length?list.map(a=>activityHTML(a,manageable)).join(''):'<div class="empty">Todavía no hay actividades publicadas para este grado.</div>'}</div></section><aside class="side"><section class="glass panel"><div class="panel-head"><div class="panel-title">${ICON.news} Noticias escolares</div></div><div class="news"><div class="news-item"><div class="news-kicker">Escuela y grado</div><div class="news-title">Los comunicados institucionales aparecerán acá.</div><div class="news-meta">Se conectan en el próximo bloque de Comunidad.</div></div></div></section><section class="glass panel"><div class="panel-head"><div class="panel-title">${ICON.news} Noticias académicas globales</div></div><div class="news"><div class="news-item"><div class="news-kicker">AlephOne</div><div class="news-title">No hay novedades académicas globales por ahora.</div><div class="news-meta">Esta sección reunirá oportunidades, concursos y convocatorias verificadas.</div></div></div></section><section class="glass panel"><div class="panel-head"><div class="panel-title">${ICON.chart} Proyección de notas</div><span class="score-pill">Meta 7,0</span></div><div class="projection"><div><div class="projection-value">${average}</div><div class="projection-copy">${graded.length?`Basado en ${graded.length} entrega${graded.length===1?'':'s'} calificada${graded.length===1?'':'s'}.`:'Todavía no hay entregas calificadas para proyectar.'}</div></div><span class="score-pill">Actual</span></div></section></aside></div>`;document.getElementById('joinRoom').onclick=joinRoom;document.querySelectorAll('[data-deliver]').forEach(b=>b.onclick=()=>openSubmission(b.dataset.deliver,b.dataset.title));document.querySelectorAll('[data-submissions]').forEach(b=>b.onclick=()=>showSubmissions(b.dataset.submissions,b.dataset.activity,b.dataset.title));}
+function activityHTML(a,manageable){const state=dueState(a);const count=a.submissions?.length||0;const action=manageable?`<button class="activity-action accent" data-submissions='${esc(JSON.stringify(a.submissions||[]))}' data-activity="${a.id}" data-title="${esc(a.titulo)}">${count} entrega${count===1?'':'s'}</button>`:a.submissions?.length?`<span class="activity-action">${state.label}</span>`:`<button class="activity-action accent" data-deliver="${a.id}" data-title="${esc(a.titulo)}">Entregar</button>`;return`<article class="activity"><span class="status ${state.type}"></span><div><div class="activity-title">${esc(a.titulo)}</div><div class="activity-meta">${esc(a.materia||'Sin materia')} · ${esc(a.tipo||'actividad')} · ${dateLabel(a.fecha_cierre)}</div></div><div><div class="activity-date">${state.label}</div>${action}</div></article>`}
+function showSubmissions(raw,activityId,title){let entries=[];try{entries=JSON.parse(raw)}catch{}gradingActivityId=activityId;document.getElementById('gradingTitle').textContent=`Entregas: ${title}`;const list=document.getElementById('gradingList');list.innerHTML=entries.length?`<table class="table"><thead><tr><th>Estudiante</th><th>Entrega</th><th>Nota</th><th></th></tr></thead><tbody>${entries.map(s=>`<tr><td>${esc(s.alumno_username)}</td><td>${esc(s.contenido||'Sin detalle')}</td><td><input class="grade-input" data-grade="${s.id}" type="number" min="0" max="10" step="0.1" value="${s.nota??''}" aria-label="Nota de ${esc(s.alumno_username)}"></td><td><button class="activity-action accent" data-save-grade="${s.id}">Guardar</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">Todavía no hay entregas.</div>';list.querySelectorAll('[data-save-grade]').forEach(button=>button.onclick=()=>saveGrade(button.dataset.saveGrade));modal('gradingModal',true)}
+async function saveGrade(submissionId){const input=document.querySelector(`[data-grade="${submissionId}"]`);const nota=Number(input.value);if(!Number.isFinite(nota)||nota<0||nota>10){input.focus();return}const result=await AlephAPI.Institucion.calificarEntrega(activeSchool.id,activeGrade.id,gradingActivityId,submissionId,nota);if(!result.ok){alert(result.error||'No se pudo guardar la nota.');return}modal('gradingModal',false);loadActivities()}
+function openSubmission(id,title){submissionActivityId=id;document.getElementById('submissionTitle').textContent=`Entregar: ${title}`;document.getElementById('submissionContent').value='';document.getElementById('submissionError').textContent='';modal('submissionModal',true)}
+async function loadActivities(){activitiesData=null;render();const result=await AlephAPI.Institucion.getActividades(activeSchool.id,activeGrade.id);activitiesData=result.ok?result:null;render()}
+function populateSelectors(){const schoolSelect=document.getElementById('schoolSelect'),gradeSelect=document.getElementById('gradeSelect');schoolSelect.innerHTML=context.schools.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');schoolSelect.value=activeSchool.id;const fillGrades=()=>{activeSchool=context.schools.find(s=>s.id===schoolSelect.value);gradeSelect.innerHTML=(activeSchool.grades||[]).filter(g=>g.membershipRole||activeSchool.membershipRole==='director').map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('');activeGrade=activeSchool.grades.find(g=>g.id===gradeSelect.value)||activeSchool.grades[0];if(activeGrade)gradeSelect.value=activeGrade.id;loadActivities()};schoolSelect.onchange=fillGrades;gradeSelect.onchange=()=>{activeGrade=activeSchool.grades.find(g=>g.id===gradeSelect.value);loadActivities()};fillGrades()}
+function joinRoom(){const code=document.getElementById('roomCode').value.trim().toUpperCase();if(code)location.href=`quiz-jugar.html?code=${encodeURIComponent(code)}`}
+async function publish(){const payload={titulo:document.getElementById('activityTitle').value.trim(),materia:document.getElementById('activitySubject').value.trim()||null,tipo:document.getElementById('activityType').value,fechaCierre:document.getElementById('activityDue').value?new Date(document.getElementById('activityDue').value).toISOString():null,descripcion:document.getElementById('activityDescription').value.trim()};const error=document.getElementById('activityError');if(!payload.titulo){error.textContent='Necesitás un título.';return}const result=await AlephAPI.Institucion.crearActividad(activeSchool.id,activeGrade.id,payload);if(!result.ok){error.textContent=result.error;return}modal('activityModal',false);loadActivities()}
+async function sendSubmission(){const error=document.getElementById('submissionError'),contenido=document.getElementById('submissionContent').value.trim();if(!contenido){error.textContent='Escribí tu entrega antes de continuar.';return}const result=await AlephAPI.Institucion.entregarActividad(activeSchool.id,activeGrade.id,submissionActivityId,contenido);if(!result.ok){error.textContent=result.error;return}modal('submissionModal',false);loadActivities()}
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>modal(b.dataset.close,false));document.getElementById('newActivity').onclick=()=>modal('activityModal',true);document.getElementById('publishActivity').onclick=publish;document.getElementById('sendSubmission').onclick=sendSubmission;document.querySelectorAll('.modal-wrap').forEach(w=>w.onclick=e=>{if(e.target===w)modal(w.id,false)});
+document.addEventListener('DOMContentLoaded',async()=>{await AlephAPI.Auth.init();currentUser=AlephAPI.Auth.getCurrentUser();if(!currentUser){location.href='index.html';return}document.getElementById('username').textContent=currentUser.username;document.getElementById('avatar').textContent=(currentUser.username||'?')[0].toUpperCase();const result=await AlephAPI.Institucion.getContexto();if(!result.ok||!result.schools?.length){document.getElementById('app').innerHTML='<div class="glass empty">Todavía no pertenecés a una escuela activa. <a href="schools.html" style="color:var(--primary)">Buscar una escuela</a></div>';return}context=result;activeSchool=context.schools[0];activeGrade=activeSchool.grades?.find(g=>g.membershipRole)||activeSchool.grades?.[0];populateSelectors()});
 </script>
-
-</body>
-</html>
+</body></html>
