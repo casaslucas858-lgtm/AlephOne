@@ -85,20 +85,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 @keyframes g2m{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,22px)}}
 .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.02;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 
-/* ═══ INTRO — idéntico a dashboard.html, para que la primera carga de sesión
-   se sienta igual sin importar por qué página entra el usuario ═══ */
-#introOverlay{position:fixed;inset:0;z-index:900;background:linear-gradient(155deg,var(--bg) 0%,var(--bg-2) 55%,var(--bg-3) 100%);transition:opacity 380ms var(--e-out);will-change:opacity}
-#introOverlay.hide{opacity:0;pointer-events:none}
-.intro-mark{font-family:'Syne',sans-serif;font-weight:800;color:var(--secondary);font-size:2.4rem;line-height:1;text-shadow:0 0 26px rgba(var(--primary-rgb),0.4);position:fixed;top:0;left:0;z-index:950;transform-origin:0 0;transition:transform 640ms var(--e-out)}
-.intro-mark.centered{transform:translate(50vw,50vh) translate(-50%,-50%) scale(1)}
-.intro-mark.grown{transform:translate(50vw,50vh) translate(-50%,-50%) scale(2.15)}
-.intro-mark.docked{transform:translate(22px,20px) scale(0.625);cursor:pointer}
-.intro-loading{position:fixed;top:calc(50% + 62px);left:50%;transform:translate(-50%,0);z-index:910;display:flex;flex-direction:column;align-items:center;gap:12px;transition:opacity 200ms ease}
-.intro-loading.gone{opacity:0}
-.intro-text{font-family:'Syne',sans-serif;font-size:0.92rem;font-weight:700;color:var(--muted);letter-spacing:0.02em}
-.intro-spinner{width:22px;height:22px;border-radius:50%;border:2.5px solid rgba(var(--primary-rgb),0.18);border-top-color:var(--primary);animation:spin 800ms linear infinite;will-change:transform}
-@keyframes spin{to{transform:rotate(360deg)}}
-
 /* ═══ LAYOUT ═══ */
 .shell{position:relative;z-index:5;display:flex;min-height:100vh}
 .sidebar{width:72px;flex-shrink:0;padding:78px 8px 20px;display:flex;flex-direction:column;align-items:center;gap:6px;contain:layout style}
@@ -243,15 +229,7 @@ body.sidebar-transitioning .glass{backdrop-filter:blur(4px);-webkit-backdrop-fil
 <div class="bg-layer"><div class="glow g1"></div><div class="glow g2"></div></div>
 <div class="grain"></div>
 
-<!-- INTRO — solo corre una vez por sesión (sessionStorage), igual que en dashboard.html -->
-<div id="introOverlay"></div>
-<span class="intro-mark centered" id="introMark">ℵ</span>
-<div class="intro-loading" id="introLoading">
-  <div class="intro-spinner"></div>
-  <p class="intro-text">Preparando tu ambiente...</p>
-</div>
-
-<div class="shell collapsed" id="shell">
+<div class="shell" id="shell">
   <header class="topbar">
     <div class="topbar-left">
       <span class="topbar-word">AlephOne</span>
@@ -272,7 +250,7 @@ body.sidebar-transitioning .glass{backdrop-filter:blur(4px);-webkit-backdrop-fil
       <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></span>
       <span class="nav-text">Inicio</span>
     </a>
-    <a href="tareas.html" class="nav-link active" id="navActividades" onclick="return handleSelfNav(event,'tareas.html')">
+    <a href="tareas.html" class="nav-link active" id="navActividades">
       <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
       <span class="nav-text">Actividades</span>
     </a>
@@ -309,61 +287,6 @@ body.sidebar-transitioning .glass{backdrop-filter:blur(4px);-webkit-backdrop-fil
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/api.js"></script>
 <script>
-/* ══════════════════════════════════════════
-   ESTADO DEL SHELL — idéntico a dashboard.html, para que la intro,
-   los temas y la accesibilidad se comporten igual en cualquier página.
-══════════════════════════════════════════ */
-const AlephUIState = {
-  INTRO_KEY: 'alephone_intro_played',
-  introAlreadyPlayed(){ return sessionStorage.getItem(this.INTRO_KEY) === '1'; },
-  markIntroPlayed(){ sessionStorage.setItem(this.INTRO_KEY, '1'); }
-};
-
-const shellEls = {
-  shell: document.getElementById('shell'),
-  introOverlay: document.getElementById('introOverlay'),
-  introMark: document.getElementById('introMark'),
-  introLoading: document.getElementById('introLoading'),
-};
-
-function runIntroGrowAndDock(){
-  const { introMark: mark, introOverlay: overlay, introLoading: loading } = shellEls;
-  loading.classList.add('gone');
-  mark.classList.remove('centered');
-  mark.classList.add('grown');
-  setTimeout(() => {
-    overlay.classList.add('hide');
-    mark.classList.remove('grown');
-    mark.classList.add('docked');
-    mark.onclick = expandShell;
-    setTimeout(() => { overlay.remove(); loading.remove(); }, 400);
-  }, 1000);
-}
-function skipIntro(){
-  const { introMark: mark, introOverlay: overlay, introLoading: loading } = shellEls;
-  overlay.remove();
-  loading.remove();
-  mark.classList.remove('centered');
-  mark.style.transition = 'none';
-  mark.classList.add('docked');
-  mark.onclick = expandShell;
-  requestAnimationFrame(() => { mark.style.transition = ''; });
-}
-function expandShell(){
-  const { shell } = shellEls;
-  if (!shell.classList.contains('collapsed')) return;
-  shell.classList.remove('collapsed');
-}
-function handleSelfNav(event, fileName){
-  const current = location.pathname.split('/').pop() || 'dashboard.html';
-  if (current === fileName) {
-    event.preventDefault();
-    if (shellEls.shell.classList.contains('collapsed')) expandShell();
-    return false;
-  }
-  return true;
-}
-
 /* ══════════════════════════════════════════
    PREFERENCIAS PERSISTIDAS — temas, tamaño de fuente, visión y
    accesibilidad, leídas de localStorage igual que en dashboard.html
@@ -449,12 +372,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
     populateSelectors();
   }
 
-  if (AlephUIState.introAlreadyPlayed()) {
-    skipIntro();
-  } else {
-    AlephUIState.markIntroPlayed();
-    runIntroGrowAndDock();
-  }
 });
 </script>
 </body></html>
