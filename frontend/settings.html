@@ -366,6 +366,7 @@ body.pre-rise .rise,body.pre-rise .rail{opacity:0}
 .id-layout{display:grid;grid-template-columns:1fr 290px;gap:18px;align-items:start}
 .id-edit > .block + .block{margin-top:14px}
 .palette-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px}
+.palette-btn{min-width:0}
 .pers-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px}
 .goals-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px}
 .palette-btn,.pers-btn,.goal-btn{background:var(--chip-bg);border:1.5px solid var(--chip-border);border-radius:14px;text-align:left;transition:border-color 150ms ease,background 150ms ease,transform 90ms var(--e-out),opacity 150ms ease}
@@ -373,7 +374,7 @@ body.pre-rise .rise,body.pre-rise .rail{opacity:0}
 .palette-btn.active,.pers-btn.active,.goal-btn.active{border-color:rgb(var(--primary-rgb));background:rgba(var(--primary-rgb),0.13)}
 .palette-btn{padding:10px;min-height:44px}
 .pal-swatch{height:32px;border-radius:9px;margin-bottom:8px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.25),0 0 0 1px rgba(var(--shadow-rgb),0.14)}
-.pal-name,.pers-name{font-family:'Syne',sans-serif;font-weight:800;font-size:0.88rem}
+.pal-name,.pers-name{font-family:'Syne',sans-serif;font-weight:800;font-size:0.88rem;overflow-wrap:anywhere}
 .pal-place,.pers-desc{font-size:0.78rem;color:var(--muted);margin-top:2px;line-height:1.35}
 .pers-btn{padding:12px 13px;min-height:56px}
 .goal-btn{padding:10px 12px;min-height:48px;font-size:0.86rem;color:var(--muted);line-height:1.3}
@@ -1063,7 +1064,8 @@ function setTab(name,opts){
 }
 $('#tabs').addEventListener('click',e=>{const b=e.target.closest('.tab-btn');if(b)setTab(b.dataset.tab);});
 $('#tabs').addEventListener('keydown',e=>{
-  const i=TABS.indexOf(document.activeElement&&document.activeElement.dataset?document.activeElement.dataset.tab:'');
+  const cur=e.target.closest('.tab-btn');
+  const i=cur?TABS.indexOf(cur.dataset.tab):-1;
   if(i<0)return;
   let n=null;
   if(e.key==='ArrowRight')n=(i+1)%TABS.length;
@@ -1166,7 +1168,7 @@ function loadIdentity(){
 function buildEditor(){
   $('#paletteGrid').innerHTML=PALETAS.map(p=>
     '<button type="button" class="palette-btn" data-theme="'+p.theme+'" aria-pressed="false">'+
-    '<div class="pal-swatch" style="background:'+p.swatch+'"></div><div class="pal-name">'+p.name+'</div><div class="pal-place">'+p.place+'</div></button>').join('');
+    '<div class="pal-swatch" style="background:'+p.swatch+'"></div><div class="pal-name">'+p.name+'</div></button>').join('');
   $('#personalityList').innerHTML=PERSONALIDADES.map(p=>
     '<button type="button" class="pers-btn" data-pers="'+p.id+'" aria-pressed="false"><div class="pers-name">'+p.name+'</div><div class="pers-desc">'+p.desc+'</div></button>').join('');
   $('#goalsGrid').innerHTML=objList().map(o=>
@@ -1190,7 +1192,7 @@ function syncEditor(){
   $('#ipMsg').textContent=p.msgs[timeKey()];
   $('#ipPill').textContent=p.name;
   $('#ipChips').innerHTML=identity.objetivos.map(id=>{const o=labels.find(x=>x.id===id);return o?'<span class="ip-chip">'+esc(o.label)+'</span>':'';}).join('');
-  $('#ipPlace').textContent=pal.name+' · '+pal.place;
+  $('#ipPlace').textContent=pal.name;
 
   const dirty=snap()!==savedSnap;
   $('#revertIdBtn').hidden=!dirty;
