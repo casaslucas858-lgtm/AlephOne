@@ -396,6 +396,8 @@ a.stat-card:active{transform:scale(0.985)}
 .msg-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .msg-name{font-size:0.88rem;font-weight:700}
 .msg-time{font-size:0.76rem;color:var(--faint);flex-shrink:0}
+.msg-item.unread .msg-name::after{content:'';display:inline-block;width:7px;height:7px;margin-left:7px;border-radius:50%;background:rgb(var(--primary-rgb));vertical-align:middle}
+.msg-item.unread .msg-text{color:var(--text)}
 .msg-text{font-size:0.86rem;color:var(--muted);line-height:1.4;margin-top:2px}
 
 .card-pad{padding:18px 20px}
@@ -541,7 +543,8 @@ a.stat-card:active{transform:scale(0.985)}
         <a class="glass stat-card rise" href="comunicacion.html">
           <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
           <div class="stat-value" id="statMsgVal">—</div>
-          <div class="stat-label">Mensajes</div>
+          <div class="stat-label">Mensajes sin leer</div>
+          <div class="stat-sub" id="statMsgSub"></div>
         </a>
         <div class="glass stat-card rise">
           <div class="stat-label" style="margin-top:0">Tu semana</div>
@@ -1223,22 +1226,28 @@ function renderStatsRow(user, data){
   tareasEl.setAttribute('data-count', '');
   $('#statTareasLabel').textContent = user.role === 'student' ? 'Tareas pendientes' : 'Por calificar';
 
-  const examenes = data.eventos.filter(e => e.tipo === 'examen').sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
+  const examenes = data.eventos.filter(e => e.tipo === 'examen').sort((a,b) => parseFecha(a.fecha) - parseFecha(b.fecha));
   const proximoExamen = examenes[0];
   $('#statExamenVal').textContent = proximoExamen ? fmtFecha(proximoExamen.fecha) : '—';
   $('#statExamenSub').textContent = proximoExamen ? proximoExamen.titulo : 'Nada agendado';
   $('#statExamenLabel').textContent = proximoExamen ? 'Próximo examen · ' + cuandoEs(proximoExamen.fecha) : 'Próximo examen';
 
-  // El backend todavía no expone "leído" por usuario: se muestra el total reciente como proxy.
+  // Sin leer: api.js marca `leido` por usuario. Lo que escribió uno mismo no cuenta.
+  const sinLeer = data.mensajes.filter(m => esSinLeer(m, user.username));
   const msgEl = $('#statMsgVal');
-  msgEl.textContent = String(data.mensajes.length);
+  msgEl.textContent = String(sinLeer.length);
   msgEl.setAttribute('data-count', '');
+  $('#statMsgSub').textContent = data.mensajes.length ? `de ${data.mensajes.length} recientes` : 'Sin mensajes';
 
   renderWeekHeat(data);
 }
 
+function esSinLeer(m, username){
+  return m.autor !== username && !(m.leido && m.leido.length);
+}
+
 function cuandoEs(iso){
-  const d = new Date(iso); d.setHours(0,0,0,0);
+  const d = parseFecha(iso); d.setHours(0,0,0,0);
   const t = new Date(); t.setHours(0,0,0,0);
   const diff = Math.round((d - t) / 86400000);
   if (diff <= 0) return 'hoy';
@@ -1254,7 +1263,7 @@ function renderWeekHeat(data){
 
   const bump = (isoDate) => {
     if (!isoDate) return;
-    const d = new Date(isoDate);
+    const d = parseFecha(isoDate);
     d.setHours(0,0,0,0);
     const diff = Math.round((d - today) / 86400000);
     if (diff >= 0 && diff < 7) counts[diff] += 1;
@@ -1297,14 +1306,14 @@ const ICON_EXAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 
 function renderUrgent(user, data){
   const card = $('#urgentCard');
-  const examenes = data.eventos.filter(e => e.tipo === 'examen').sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
+  const examenes = data.eventos.filter(e => e.tipo === 'examen').sort((a,b) => parseFecha(a.fecha) - parseFecha(b.fecha));
   const proximoExamen = examenes[0];
 
   let candidate = null;
   if (user.role === 'student') {
-    const conFecha = data.tareasPendientes.filter(t => t.fechaCierre).sort((a,b) => new Date(a.fechaCierre) - new Date(b.fechaCierre));
+    const conFecha = data.tareasPendientes.filter(t => t.fechaCierre).sort((a,b) => parseFecha(a.fechaCierre) - parseFecha(b.fechaCierre));
     const proximaTarea = conFecha[0];
-    if (proximaTarea && (!proximoExamen || new Date(proximaTarea.fechaCierre) <= new Date(proximoExamen.fecha))) {
+    if (proximaTarea && (!proximoExamen || parseFecha(proximaTarea.fechaCierre) <= parseFecha(proximoExamen.fecha))) {
       candidate = { icon: ICON_TASK, title: `Entregá "${proximaTarea.titulo}" antes del ${fmtFecha(proximaTarea.fechaCierre)}`, cta: 'Ver actividad', href: 'tareas.html' };
     } else if (proximoExamen) {
       candidate = { icon: ICON_EXAM, title: `Tenés "${proximoExamen.titulo}" el ${fmtFecha(proximoExamen.fecha)}`, cta: 'Ver detalle', href: 'schools.html' };
@@ -1332,13 +1341,16 @@ function renderUrgent(user, data){
 function renderMensajesDestacados(data){
   const el = $('#msgList');
   try {
-    const destacados = data.mensajes.slice(0, 4);
+    const yo = AlephAPI.Auth.getCurrentUser()?.username;
+    /* los sin leer primero, cada grupo en su orden original (más nuevo arriba) */
+    const ordenados = [...data.mensajes.filter(m => esSinLeer(m, yo)), ...data.mensajes.filter(m => !esSinLeer(m, yo))];
+    const destacados = ordenados.slice(0, 4);
     if (!destacados.length) {
       el.innerHTML = '<div class="empty">No hay mensajes destacados por ahora.</div>';
       return;
     }
     el.innerHTML = destacados.map(m => `
-      <a class="msg-item" href="comunicacion.html">
+      <a class="msg-item${esSinLeer(m, yo) ? ' unread' : ''}" href="comunicacion.html">
         <div class="msg-avatar">${sanitizeLocal((m.autor || '?').charAt(0).toUpperCase())}</div>
         <div class="msg-body">
           <div class="msg-top">
@@ -1367,9 +1379,18 @@ function joinGame(){
   window.location.href = `sala.html?code=${encodeURIComponent(code)}`;
 }
 
+/* Las columnas de fecha (sin hora) llegan como "YYYY-MM-DD": new Date() las toma como UTC
+   y en husos al oeste de UTC caen el día anterior. Se leen como fecha local. */
+function parseFecha(v){
+  if (!v) return null;
+  if (v instanceof Date) return v;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v));
+  return m ? new Date(+m[1], +m[2] - 1, +m[3]) : new Date(v);
+}
+
 function fmtFecha(iso){
   if (!iso) return '—';
-  const d = new Date(iso);
+  const d = parseFecha(iso);
   return `${d.getDate()} ${MESES_ES[d.getMonth()].slice(0,3)}`;
 }
 function fmtFechaHora(iso){
