@@ -1049,7 +1049,7 @@ function buildStepHTML(cfg,id){
       const on=data.theme===p.theme;
       return '<button class="paleta-btn'+(on?' selected':'')+'" type="button" data-theme="'+p.theme+'" aria-pressed="'+on+'">'+
         '<div class="paleta-swatch" style="background:'+p.swatch+'"></div>'+
-        '<span class="paleta-name">'+p.name+'</span><span class="paleta-place">'+p.place+'</span></button>';
+        '<span class="paleta-name">'+p.name+'</span></button>';
     }).join('');
     return '<div class="step-q" id="'+id+'-q">'+q+'</div><div class="paleta-grid" role="group" aria-labelledby="'+id+'-q">'+opts+'</div>'+
       '<button class="step-next" type="button" data-next'+(data.theme?'':' disabled')+'>Continuar</button>';
@@ -1328,7 +1328,7 @@ function updateIdentityCard(){
   const persEl=$('#idCardPers');
   if(persEl){persEl.style.display=pers?'inline-flex':'none';persEl.textContent=pers?pers.name:'';}
   const objEl=$('#idCardObjs');if(objEl)objEl.innerHTML=chips;
-  const placeEl=$('#idCardPlace');if(placeEl)placeEl.textContent=paleta?paleta.name+' · '+paleta.place:'';
+  const placeEl=$('#idCardPlace');if(placeEl)placeEl.textContent=paleta?paleta.name:'';
 }
 
 /* ---------- transicion final ---------- */
