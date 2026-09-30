@@ -56,7 +56,7 @@ html{min-height:100%;background:#0a0e1a;-webkit-text-size-adjust:100%}
   --btn-ink:#061014;
 
   /* Ola (panel de identidad) */
-  --wave-fill:rgba(250,253,255,0.98);
+  --wave-fill:#fafdff;
   --wave-text:#101826;
   --wave-muted:rgba(16,24,38,0.62);
   --wave-faint:rgba(16,24,38,0.40);
@@ -124,7 +124,7 @@ body.theme-everest{
   --primary:#4ab8c8; --primary-rgb:74,184,200;
   --secondary:#6dd4e8; --secondary-rgb:109,212,232;
   --accent-rgb:255,184,107; --neutral-rgb:200,225,240;
-  --wave-fill:rgba(250,253,255,0.98);
+  --wave-fill:#fafdff;
   --wave-text:#101826; --wave-muted:rgba(16,24,38,0.62); --wave-faint:rgba(16,24,38,0.40);
   --wave-accent:#0f7f92; --wave-accent-rgb:15,127,146;
   --wave-chip-bg:rgba(16,24,38,0.06); --wave-chip-border:rgba(16,24,38,0.12); --wave-divider:rgba(16,24,38,0.14);
@@ -430,7 +430,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--focus,rgb(var(--pri
 }
 #loadingOverlay.show{display:flex}
 .loading-text{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--wave-text)}
-.loading-mark{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;color:var(--wave-accent)}
+.loading-mark{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;line-height:1;color:var(--wave-accent)}
 .loading-spinner{width:26px;height:26px;border-radius:50%;border:2.5px solid rgba(var(--wave-accent-rgb),0.22);border-top-color:var(--wave-accent);animation:spin 800ms linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -1321,7 +1321,21 @@ function updateIdentityCard(){
 }
 
 /* ---------- transicion final ---------- */
+/* El dashboard retoma la ola con estos colores (ver playWaveReveal en dashboard.html) */
+function stashTransition(){
+  try{
+    const cs=getComputedStyle(document.body);
+    sessionStorage.setItem('aleph_transition',JSON.stringify({
+      fill:cs.getPropertyValue('--wave-fill').trim(),
+      text:cs.getPropertyValue('--wave-text').trim(),
+      accent:cs.getPropertyValue('--wave-accent').trim(),
+      t:Date.now()
+    }));
+  }catch(e){}
+}
+
 function startTakeover(){
+  stashTransition();
   const el=$('#wt'),svg=$('#wt-svg'),path=$('#wtPath'),loader=$('#loadingOverlay');
   const w=window.innerWidth,h=window.innerHeight;
   if(mqReduce.matches){
