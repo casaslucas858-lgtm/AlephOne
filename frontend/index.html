@@ -464,6 +464,10 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--focus,rgb(var(--pri
   .wave-wrap-mobile,#identityCardMobile{display:none!important}
 }
 
+body.a11y-reduce-motion *,body.a11y-reduce-motion *::before,body.a11y-reduce-motion *::after{
+  animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important;
+}
+body.a11y-reduce-motion .glass::after{display:none}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:1ms!important;animation-iteration-count:1!important;transition-duration:1ms!important;scroll-behavior:auto!important}
   .glass::after{display:none}
@@ -548,7 +552,14 @@ const $$=(s,r)=>Array.from((r||document).querySelectorAll(s));
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const TAU=Math.PI*2;
-const mqReduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+const _mqReduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+let a11yReduce=false;
+try{a11yReduce=localStorage.getItem('aleph_a11y_reduce-motion')==='true';}catch(e){}
+if(a11yReduce)document.body.classList.add('a11y-reduce-motion');
+const mqReduce={
+  get matches(){return _mqReduce.matches||a11yReduce;},
+  addEventListener(t,f){ if(_mqReduce.addEventListener)_mqReduce.addEventListener(t,f); else if(_mqReduce.addListener)_mqReduce.addListener(f); }
+};
 const mqMobile=window.matchMedia('(max-width:760px)');
 const mqFine=window.matchMedia('(hover:hover) and (pointer:fine)');
 const onMQ=(mq,fn)=>{ if(mq.addEventListener) mq.addEventListener('change',fn); else if(mq.addListener) mq.addListener(fn); };
@@ -1068,7 +1079,7 @@ function buildStepHTML(cfg,id){
   if(cfg.type==='loginForm'){
     return '<form class="step-form" novalidate>'+
       '<div class="step-q">'+q+'</div>'+
-      '<label class="field-label" for="'+id+'-u">Usuario</label>'+
+      '<label class="field-label" for="'+id+'-u">Usuario o correo</label>'+
       '<div class="step-input-wrap"><input class="step-input" id="'+id+'-u" name="username" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" data-key="username" value="'+esc(data.username)+'" aria-describedby="'+id+'-err"></div>'+
       '<label class="field-label" for="'+id+'-p">Contraseña</label>'+
       '<div class="step-input-wrap"><input class="step-input has-eye" id="'+id+'-p" name="password" type="password" autocomplete="current-password" data-key="password" value="'+esc(data.password)+'" aria-describedby="'+id+'-err">'+
@@ -1228,8 +1239,8 @@ async function submitRegistration(){
 function routeRegistrationError(msg){
   const m=(msg||'').toLowerCase();
   let target=step;
-  if(/mail|correo/.test(m))target=indexOfKey('email');
-  else if(/usuario|username|nombre/.test(m))target=indexOfKey('username');
+  if(/correo ya|ya esta registrado|e-?mail/.test(m))target=indexOfKey('email');
+  else if(/nombre de usuario ya existe/.test(m))target=indexOfKey('username');
   if(target!==step&&target>-1){
     step=target;pendingError=msg||'No se pudo completar el registro.';
     renderStep(false,'back');updateIdentityCard();
@@ -1243,7 +1254,7 @@ async function submitLogin(){
   const u=activePanel.querySelector('[name="username"]'),p=activePanel.querySelector('[name="password"]');
   const user=u.value.trim(),pass=p.value.trim();
   if(!user||!pass){
-    showError('Ingresá tu usuario y tu contraseña.',user?p:u);
+    showError('Ingresá tu usuario (o correo) y tu contraseña.',user?p:u);
     (user?p:u).focus();
     return;
   }
