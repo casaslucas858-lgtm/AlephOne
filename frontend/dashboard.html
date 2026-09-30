@@ -180,38 +180,41 @@ html.boot-transition .intro-loading{opacity:1;animation:none}
 .intro-spinner{width:26px;height:26px;border-radius:50%;border:2.5px solid rgba(var(--primary-rgb),0.22);border-top-color:var(--boot-accent,rgb(var(--primary-rgb)));animation:spin 800ms linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Marca ℵ: vuela del centro al rincón. Escala base 2.4rem; acoplada = 1.5rem */
+/* Marca ℵ: vuela del centro al logo de la cápsula (o de la topbar en móvil) */
 .intro-mark{
-  position:fixed;top:0;left:0;z-index:950;
+  position:fixed;top:0;left:0;z-index:950;pointer-events:none;
   font-family:'Syne',sans-serif;font-weight:800;font-size:2.4rem;line-height:1;color:var(--secondary);
   text-shadow:0 0 22px rgba(var(--primary-rgb),0.30);
   transform-origin:0 0;visibility:hidden;
 }
-.intro-mark.docked{visibility:visible;transform:translate(22px,20px) scale(0.625);cursor:pointer;transition:transform 150ms var(--e-out)}
-.intro-mark.docked:active{transform:translate(22px,20px) scale(0.56)}
 
 /* Entrada escalonada del contenido */
-body.pre-rise .rise{opacity:0}
+body.pre-rise .rise,body.pre-rise .rail{opacity:0}
 
 /* ═══ LAYOUT ═══ */
 .shell{position:relative;z-index:5;display:flex;min-height:100vh;min-height:100dvh}
 
-/* Rail de navegación: cápsula de vidrio, fija mientras se scrollea */
-.sidebar{
-  position:sticky;top:0;align-self:flex-start;height:100vh;height:100dvh;
-  width:84px;flex-shrink:0;padding:78px 10px 20px;
-}
-.rail{position:relative;display:flex;flex-direction:column;gap:4px;padding:8px 6px;border-radius:22px}
-.nav-hl{
-  position:absolute;left:6px;right:6px;top:8px;height:60px;border-radius:14px;
+/* Rail de navegación: cápsula de vidrio centrada a la derecha, fija mientras se scrollea */
+.sidebar{position:fixed;top:0;right:14px;bottom:0;z-index:130;display:flex;align-items:center;pointer-events:none}
+.rail{position:relative;width:88px;display:flex;flex-direction:column;gap:2px;padding:8px 6px 10px;border-radius:26px;pointer-events:auto}
+.rail > .nav-hl{
+  position:absolute;left:6px;right:6px;top:0;height:60px;border-radius:14px;
   background:var(--ghost-bg-hover);opacity:0;pointer-events:none;z-index:0;
   transform:translateY(var(--hl-y,0px));
   transition:transform 220ms var(--e-out),height 220ms var(--e-out),opacity 160ms ease;
 }
+/* Logo dentro de la cápsula, centrado; recibe la ℵ del intro */
+.rail-logo,.topbar-mark{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;color:var(--secondary)}
+.rail-logo{height:48px;border-radius:14px;transition:transform 120ms var(--e-out)}
+.rail-logo:active{transform:scale(0.94)}
+.logo-glyph{display:block;font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;line-height:1;text-shadow:0 0 18px rgba(var(--primary-rgb),0.30);opacity:0}
+.rail-logo.ready .logo-glyph,.topbar-mark.ready .logo-glyph{opacity:1}
+.rail-sep{position:relative;z-index:1;height:1px;margin:2px 12px 6px;background:var(--glass-border)}
+.topbar-mark{display:none;width:40px;height:40px}
 .nav-link{
   position:relative;z-index:1;width:100%;
-  display:flex;flex-direction:column;align-items:center;gap:4px;
-  padding:9px 2px 8px;border-radius:14px;color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:8px 0 7px;border-radius:14px;color:var(--muted);
   transition:color 160ms ease,transform 90ms var(--e-out);
 }
 .nav-link:active{transform:scale(0.95)}
@@ -220,7 +223,7 @@ body.pre-rise .rise{opacity:0}
 .nav-link:hover,.nav-link:focus-visible{color:var(--text)}
 .nav-link.active{color:var(--primary-ink,rgb(var(--primary-rgb)))}
 .nav-link.active .nav-icon{background:rgb(var(--primary-rgb));color:var(--btn-ink);box-shadow:0 3px 12px rgba(var(--primary-rgb),0.30)}
-.nav-text{font-size:0.7rem;font-weight:700;text-align:center;line-height:1.15;max-width:66px}
+.nav-text{font-size:0.72rem;font-weight:700;text-align:center;line-height:1.15;white-space:nowrap}
 
 /* Topbar: transparente arriba, vidrio al scrollear */
 .topbar{
@@ -236,7 +239,7 @@ body.pre-rise .rise{opacity:0}
   transition:opacity 200ms ease;
 }
 .topbar.scrolled::before{opacity:1}
-.topbar-left{display:flex;align-items:center;gap:10px;padding-left:38px}
+.topbar-left{display:flex;align-items:center;gap:6px;padding-left:4px}
 .topbar-word{
   font-family:'Syne',sans-serif;font-weight:800;font-size:1.12rem;color:var(--text);
   opacity:0;transform:translateX(-6px);transition:opacity 320ms var(--e-out) 80ms,transform 320ms var(--e-out) 80ms;
@@ -264,7 +267,7 @@ body.pre-rise .rise{opacity:0}
 .icon-btn svg{width:17px;height:17px;transition:transform 400ms var(--e-out)}
 
 /* Main */
-.main{flex:1;min-width:0;padding:84px 26px 48px;position:relative}
+.main{flex:1;min-width:0;padding:84px 118px 48px 26px;position:relative}
 .main-inner{position:relative;max-width:1180px;margin:0 auto}
 
 .greeting{position:relative;padding:30px 4px 22px;margin-bottom:6px}
@@ -310,7 +313,7 @@ body.pre-rise .rise{opacity:0}
 }
 .glass.hot::after{opacity:1}
 @media (hover:none){.glass::after{display:none}}
-.glass > *{position:relative;z-index:1}
+.glass > *:not(.nav-hl){position:relative;z-index:1}
 
 .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .card-title{font-family:'Syne',sans-serif;font-size:0.92rem;font-weight:800;display:flex;align-items:center;gap:7px}
@@ -417,16 +420,18 @@ a.stat-card:active{transform:scale(0.985)}
   .grid{grid-template-columns:1fr}
   .stats-row{grid-template-columns:1fr 1fr}
   .topbar{padding:0 16px}
-  .topbar-left{padding-left:34px}
+  .topbar-left{padding-left:0}
+  .topbar-mark{display:flex}
   /* Rail -> barra inferior (antes no había navegación en móvil) */
-  .sidebar{
-    position:fixed;top:auto;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));
-    width:auto;height:auto;padding:0;z-index:130;align-self:auto;
-  }
-  .rail{flex-direction:row;justify-content:space-around;padding:6px;border-radius:24px}
-  .nav-hl{display:none}
+  .sidebar{top:auto;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));display:block}
+  .rail{width:auto;flex-direction:row;justify-content:space-around;padding:6px;border-radius:24px}
+  .rail > .nav-hl,.rail-logo,.rail-sep{display:none}
   .nav-link{flex:1;min-height:56px;justify-content:center}
-  .nav-text{font-size:0.72rem}
+}
+@media(max-height:560px) and (min-width:901px){
+  .nav-link{padding:5px 0 4px}
+  .nav-icon{width:28px;height:28px}
+  .rail-logo{height:38px}
 }
 @media(max-width:520px){
   .stats-row{grid-template-columns:1fr}
@@ -466,12 +471,13 @@ a.stat-card:active{transform:scale(0.985)}
   <p class="intro-text">Cargando tu espacio...</p>
   <div class="intro-spinner"></div>
 </div>
-<span class="intro-mark" id="introMark" role="button" tabindex="0" aria-label="AlephOne. Mostrar u ocultar el nombre">ℵ</span>
+<span class="intro-mark" id="introMark" aria-hidden="true">ℵ</span>
 
 <!-- SHELL -->
 <div class="shell collapsed" id="shell">
   <header class="topbar" id="topbar">
     <div class="topbar-left">
+      <a class="topbar-mark" id="topbarMark" href="dashboard.html" aria-label="AlephOne, inicio" onclick="return handleLogoClick(event)"><span class="logo-glyph" aria-hidden="true">ℵ</span></a>
       <span class="topbar-word">AlephOne</span>
     </div>
     <div class="topbar-right">
@@ -489,6 +495,8 @@ a.stat-card:active{transform:scale(0.985)}
   <nav class="sidebar" id="sidebar" aria-label="Principal">
     <div class="rail glass" id="rail">
       <span class="nav-hl" id="navHl" aria-hidden="true"></span>
+      <a class="rail-logo" id="railLogo" href="dashboard.html" aria-label="AlephOne, inicio" onclick="return handleLogoClick(event)"><span class="logo-glyph" aria-hidden="true">ℵ</span></a>
+      <span class="rail-sep" aria-hidden="true"></span>
       <a href="dashboard.html" class="nav-link active" id="navDashboard" aria-current="page" onclick="return handleHomeClick(event)">
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></span>
         <span class="nav-text">Inicio</span>
@@ -896,8 +904,15 @@ const FX=(function(){
   const show=a=>{
     if(mqMobile.matches)return;
     const r=a.getBoundingClientRect(),n=rail.getBoundingClientRect();
-    rail.style.setProperty('--hl-y',(r.top-n.top-8)+'px');
-    hl.style.height=r.height+'px';hl.style.opacity='1';
+    const y=(r.top-n.top-rail.clientTop)+'px';
+    if(hl.style.opacity!=='1'){ /* primera aparición: sin deslizar desde arriba */
+      hl.style.transition='none';
+      rail.style.setProperty('--hl-y',y);hl.style.height=r.height+'px';
+      void hl.offsetHeight;hl.style.transition='';
+    }else{
+      rail.style.setProperty('--hl-y',y);hl.style.height=r.height+'px';
+    }
+    hl.style.opacity='1';
   };
   $$('.nav-link',rail).forEach(a=>{
     a.addEventListener('pointerenter',()=>show(a));
@@ -928,19 +943,24 @@ const easeInOut=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
 function finishIntro(){
   ['introOverlay','introWave','introLoading'].forEach(k=>{ if(els[k]) els[k].remove(); });
 }
+/* Entrega la ℵ voladora a los logos reales (cápsula en desktop, topbar en móvil) */
 function dockMark(){
-  const mark=els.introMark;
-  mark.classList.add('docked');
-  mark.onclick=expandDashboard;
-  mark.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggleWordmark(); } };
+  $$('.rail-logo,.topbar-mark').forEach(l=>l.classList.add('ready'));
+  els.introMark.style.visibility='hidden';
+  setTimeout(expandDashboard,400); /* revela "AlephOne" en la topbar */
+}
+function logoGlyph(){
+  const el=mqMobile.matches?$('#topbarMark'):$('#railLogo');
+  return el?$('.logo-glyph',el):null;
 }
 
-/* Ola que se retira hacia la izquierda (misma dirección que en el login) + ℵ que vuela a su rincón */
+/* Ola que se retira hacia la izquierda (misma dirección que en el login) + ℵ que vuela a su logo */
 function playWaveReveal(){
   const { introOverlay:overlay, introWave:wave, introLoading:loading, introMark:mark, introPh:ph } = els;
   const W=window.innerWidth,H=window.innerHeight;
 
-  const endColor=getComputedStyle(mark).color;
+  const glyph=logoGlyph();
+  const endColor=getComputedStyle(glyph||mark).color;
   const startColor=getComputedStyle(ph).color;
   const phr=ph.getBoundingClientRect();
   mark.style.transition='none';
@@ -948,16 +968,19 @@ function playWaveReveal(){
   mark.style.visibility='visible';
   const base=mark.getBoundingClientRect();
   const s0=base.height?phr.height/base.height:.7;
+  const tr=glyph?glyph.getBoundingClientRect():{left:22,top:20,height:base.height*.625};
+  const s1=base.height?tr.height/base.height:.625;
   const from='translate('+phr.left+'px,'+phr.top+'px) scale('+s0+')';
-  const to='translate(22px,20px) scale(0.625)';
+  const to='translate('+tr.left+'px,'+tr.top+'px) scale('+s1+')';
   mark.style.transform=from;mark.style.color=startColor;
   ph.style.visibility='hidden';
   loading.classList.add('gone');
 
   const flight=mark.animate([{transform:from,color:startColor},{transform:to,color:endColor}],{duration:780,delay:60,easing:EASE_OUT,fill:'both'});
   flight.onfinish=()=>{
-    mark.style.transform='';mark.style.color='';mark.style.visibility='';mark.style.transition='';
-    dockMark();flight.cancel();
+    dockMark();
+    mark.style.transform='';mark.style.color='';mark.style.transition='';
+    flight.cancel();
   };
 
   const path=wave.querySelector('path');
@@ -980,10 +1003,8 @@ function playWaveReveal(){
 
 /* Sin movimiento: fundido simple */
 function playSoftReveal(){
-  const { introOverlay:overlay } = els;
-  els.introMark.style.visibility='';
   dockMark();
-  overlay.classList.add('fade');
+  els.introOverlay.classList.add('fade');
   els.introLoading.classList.add('gone');
   setTimeout(finishIntro,300);
 }
@@ -1005,6 +1026,7 @@ function handleSelfNav(event, fileName){
   return true;
 }
 function handleHomeClick(event){ return handleSelfNav(event, 'dashboard.html'); }
+function handleLogoClick(event){ event.preventDefault(); FX.burst(); expandDashboard(); return false; }
 
 els.settingsBtn.addEventListener('click', () => {
   window.location.href = 'settings.html';
@@ -1019,6 +1041,9 @@ function riseIn(baseDelay){
     el.animate([{opacity:0,transform:'translateY(16px)'},{opacity:1,transform:'none'}],
       {duration:560,delay:baseDelay+i*55,easing:EASE_OUT,fill:'backwards'});
   });
+  const railEl=$('#rail');
+  railEl.animate([{opacity:0,transform:mqMobile.matches?'translateY(18px)':'translateX(18px)'},{opacity:1,transform:'none'}],
+    {duration:560,delay:baseDelay+120,easing:EASE_OUT,fill:'backwards'});
   $$('[data-count]').forEach(el=>{
     const n=parseInt(el.textContent,10);
     if(isNaN(n)||n<=0)return;
@@ -1402,7 +1427,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     riseIn(360);
   } else {
     /* Recarga dentro de la misma sesión: la carga se disuelve rápido */
-    els.introMark.style.visibility = '';
     dockMark();
     els.introOverlay.classList.add('fade');
     els.introLoading.classList.add('gone');
