@@ -1401,6 +1401,7 @@ slot.addEventListener('input',function(e){
 document.addEventListener('DOMContentLoaded',function(){
   if(typeof applyAccessibility==='function')applyAccessibility();
   updateIdentityCard();
+  try{ if(typeof BACKEND_URL==='string')fetch(BACKEND_URL,{mode:'no-cors',cache:'no-store'}).catch(function(){}); }catch(e){} /* despierta el backend mientras la persona escribe */
   FX.init();
 });
 })();
