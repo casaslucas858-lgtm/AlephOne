@@ -272,7 +272,7 @@ const FX=(function(){
     ctx=canvas&&canvas.getContext&&canvas.getContext('2d');
     if(!ctx)return;
     initialized=true;
-    cards=$('.glass');
+    cards=$$('.glass');
     readTheme();layout(true);
     if(reducedMotion())renderStatic();else start();
 
@@ -483,6 +483,9 @@ function mount(opts){
   if(!reducedMotion())body.classList.add('pre-rise');
   FX.init();FX.setTod(timeKey());
   warmBackend();
+  /* red de seguridad: si la página falla antes de llamar a ready(), la cubierta igual se retira */
+  setTimeout(()=>{releaseCover();body.classList.remove('pre-rise');},6000);
+  window.addEventListener('error',()=>{releaseCover();body.classList.remove('pre-rise');});
 
   /* preferencias cambiadas desde otra pestaña */
   window.addEventListener('storage',e=>{
@@ -501,10 +504,13 @@ function rise(els,base){
   if(reducedMotion())return;
   Array.from(els).forEach((el,i)=>el.animate([{opacity:0,transform:'translateY(16px)'},{opacity:1,transform:'none'}],{duration:560,delay:(base||0)+i*60,easing:EASE_OUT,fill:'backwards'}));
 }
-/* Retira la cubierta de carga y hace entrar la página */
-function ready(){
+function releaseCover(){
   const cover=$('#cover');
   if(cover){cover.classList.add('fade');setTimeout(()=>cover.remove(),320);}
+}
+/* Retira la cubierta de carga y hace entrar la página */
+function ready(){
+  releaseCover();
   document.body.classList.remove('pre-rise');
   FX.playIntro();
   rise($$('.rise'),60);
