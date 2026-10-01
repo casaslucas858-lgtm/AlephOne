@@ -50,7 +50,7 @@ function applyTheme(themeClass){
 applyTheme(getStoredIdentity()?.theme);
 
 const FX=(function(){
-  const canvas=$('#bgShapes'),ctx=canvas.getContext('2d');
+  let canvas=null,ctx=null,initialized=false;
   const TAU=Math.PI*2;
   let lowPower=(navigator.hardwareConcurrency||4)<=4||(navigator.deviceMemory||4)<=2;
   let W=0,H=0,dpr=1,T=0,last=0,raf=0,running=false,frames=0,ema=16,active=0,introAt=Infinity;
@@ -159,7 +159,7 @@ const FX=(function(){
     if(ripples.length>4)ripples.shift();
   }
   function burst(){
-    if(reducedMotion())return;
+    if(!initialized||reducedMotion())return;
     for(let i=0;i<active;i++){
       const s=shapes[i],a=Math.random()*TAU,f=140+Math.random()*90;
       s.vx+=Math.cos(a)*f;s.vy+=Math.sin(a)*f;
@@ -225,12 +225,13 @@ const FX=(function(){
     raf=requestAnimationFrame(frame);
   }
   function start(){
-    if(running||reducedMotion()||document.hidden)return;
+    if(!initialized||running||reducedMotion()||document.hidden)return;
     running=true;last=performance.now();raf=requestAnimationFrame(frame);
   }
   function stop(){running=false;if(raf)cancelAnimationFrame(raf);raf=0;}
-  function renderStatic(){T=Math.max(T,1.4);simulate(0,false);draw();}
+  function renderStatic(){if(!initialized)return;T=Math.max(T,1.4);simulate(0,false);draw();}
   function syncMode(){
+    if(!initialized)return;
     readTheme();
     if(reducedMotion()){stop();shapes.forEach(s=>{s.ox=s.oy=s.vx=s.vy=s.spin=0;});renderStatic();}
     else start();
@@ -243,6 +244,7 @@ const FX=(function(){
     if(reducedMotion()&&pal){pal.t=todT.slice();renderStatic();}
   }
   function playIntro(){
+    if(!initialized)return;
     introAt=reducedMotion()?-10:T;
     if(reducedMotion())renderStatic();
   }
@@ -265,7 +267,12 @@ const FX=(function(){
   function clearSheen(){cards.forEach(c=>c.classList.remove('hot'));}
 
   function init(){
-    cards=$$('.glass');
+    if(initialized)return;
+    canvas=$('#bgShapes');
+    ctx=canvas&&canvas.getContext&&canvas.getContext('2d');
+    if(!ctx)return;
+    initialized=true;
+    cards=$('.glass');
     readTheme();layout(true);
     if(reducedMotion())renderStatic();else start();
 
