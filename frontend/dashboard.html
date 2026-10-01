@@ -1413,6 +1413,7 @@ function renderAvatar(user){
    INIT
 ══════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
+  try{ if(typeof BACKEND_URL==='string')fetch(BACKEND_URL,{mode:'no-cors',cache:'no-store'}).catch(function(){}); }catch(e){} /* despierta el backend mientras la persona escribe */
   FX.init();
 
   const transition = readTransition();
