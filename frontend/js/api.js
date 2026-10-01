@@ -43,23 +43,36 @@ const AlephAPI = (() => {
         return msg || fallback;
     }
 
-    async function _backendRequest(path, options = {}) {
+    async function _backendRequest(path, options = {}, { timeoutMs = 45000 } = {}) {
         const token = await Auth.getAccessToken();
         if (!token) return { ok: false, error: 'Tu sesión expiró. Volvé a iniciar sesión.' };
+
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
 
         try {
             const response = await fetch(`${BACKEND_URL}${path}`, {
                 ...options,
+                signal: controller.signal,
                 headers: {
                     Authorization: `Bearer ${token}`,
                     ...(options.body ? { 'Content-Type': 'application/json' } : {}),
                     ...(options.headers || {})
                 }
             });
-            const data = await response.json();
-            return response.ok ? data : { ok: false, error: data.error || 'No se pudo completar la operación.' };
+            let data = null;
+            try { data = await response.json(); } catch { /* respuesta sin JSON (p. ej. 502 mientras despierta) */ }
+            if (response.ok) return data || { ok: true };
+            return { ok: false, error: (data && data.error) || `El servidor respondió ${response.status}.` };
         } catch (error) {
-            return { ok: false, error: 'No se pudo conectar con AlephOne.' };
+            return {
+                ok: false,
+                error: error.name === 'AbortError'
+                    ? 'El servidor tardó demasiado en responder.'
+                    : 'No se pudo conectar con AlephOne.'
+            };
+        } finally {
+            clearTimeout(timer);
         }
     }
 
@@ -210,8 +223,6 @@ const AlephAPI = (() => {
         },
 
         async register(username, email, password, role = 'student') {
-            // Seguridad: Solo permitimos roles básicos desde el cliente. 
-            // 'superadmin' o 'director' deben asignarse manualmente en la DB.
             const publicRoles = ['student', 'teacher'];
             const finalRole = publicRoles.includes(role) ? role : 'student';
 
@@ -807,7 +818,6 @@ const AlephAPI = (() => {
             const user = Auth.getCurrentUser();
             if (!user) return { ok: false, error: 'No autenticado' };
 
-            // Verificar si ya existe membresía
             const { data: existing } = await _sb
                 .from('school_members')
                 .select('id, status')
@@ -980,7 +990,6 @@ const AlephAPI = (() => {
                 .single();
             if (error) return { ok: false, error: error.message };
 
-            // Agregar al superadmin como miembro activo
             await _sb.from('school_members').insert({
                 school_id: data.id,
                 user_id: user.id,
@@ -1002,7 +1011,6 @@ const AlephAPI = (() => {
 
         // ── ADMIN: asignar director ─────────────────────────
         async setDirector(schoolId, userId) {
-            // Actualizar role en school_members
             const { data, error } = await _sb
                 .from('school_members')
                 .update({ role: 'director' })
@@ -1103,10 +1111,11 @@ const AlephAPI = (() => {
             });
         },
 
-        async calificarEntrega(schoolId, gradeId, activityId, submissionId, nota) {
-            return _backendRequest(`/api/schools/${schoolId}/grades/${gradeId}/activities/${activityId}/submissions/${submissionId}`, {
-                method: 'PATCH', body: JSON.stringify({ nota })
-            });
+        async calificarEntrega(schoolId, gradeId, activityId, submissionId, nota, comentario = null) {
+            return _backendRequest(
+                `/api/schools/${schoolId}/grades/${gradeId}/activities/${activityId}/submissions/${submissionId}`,
+                { method: 'PATCH', body: JSON.stringify({ nota, comentario }) }
+            );
         }
     };
 
