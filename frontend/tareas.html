@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/aleph-shell.css">
+<link rel="stylesheet" href="css/aleph-shell.css?v=3">
 <style>
 .main-inner{max-width:1180px}
 .hero{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap;padding:26px 4px 18px}
@@ -215,10 +215,16 @@ blockquote.fb{margin-top:6px}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/api.js"></script>
-<script src="js/aleph-shell.js?v=canvas-init-1"></script>
+<script src="js/aleph-shell.js?v=3"></script>
 <script>
 (function(){
 'use strict';
+/* Si falta algún archivo compartido, se dice qué pasa en vez de dejar la página vacía */
+if(typeof AlephShell==='undefined'||typeof AlephAPI==='undefined'){
+  var missing=typeof AlephShell==='undefined'?'js/aleph-shell.js':'js/api.js';
+  document.getElementById('app').innerHTML='<div style="max-width:560px;padding:22px;border-radius:18px;border:1px solid rgba(240,128,128,.5);line-height:1.5"><b>No se pudo cargar la interfaz.</b><br>Falta el archivo <code>'+missing+'</code>. Revisá que esté subido y recargá la página.</div>';
+  return;
+}
 const A=AlephShell,$=A.$,$$=A.$$,esc=A.esc,toast=A.toast;
 
 /* ══════════════════════════════════════════
