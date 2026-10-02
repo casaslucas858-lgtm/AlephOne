@@ -561,7 +561,8 @@ body.pre-rise .rise,body.pre-rise .rail{opacity:0}
                   </div>
                   <div class="field">
                     <label for="profEmail">Correo electrónico</label>
-                    <input type="email" id="profEmail" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false">
+                    <input type="email" id="profEmail" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" aria-describedby="profEmailHint">
+                    <span class="field-hint" id="profEmailHint"></span>
                   </div>
                 </div>
                 <div class="form-actions">
@@ -1092,22 +1093,40 @@ function renderUser(user){
   $('#profEmail').value=user.email||'';
 }
 
+/* El login por usuario resuelve el correo con get_email_by_username(), que devuelve profiles.email_real.
+   Si email_real cambia sin que cambie el correo de Auth, el login por usuario deja de funcionar.
+   Por eso el correo se cambia SOLO con auth.updateUser (que pide confirmación) y se copia a email_real
+   con el trigger de sql-seguridad.sql. Hasta instalarlo, dejar esta constante en false (correo de solo lectura). */
+const EMAIL_SYNC_READY=false;
+$('#profEmail').readOnly=!EMAIL_SYNC_READY;
+$('#profEmailHint').textContent=EMAIL_SYNC_READY?'Si lo cambiás, te mandamos un correo para confirmarlo.':'Por ahora el correo no se puede cambiar desde acá.';
+
 $('#infoForm').addEventListener('submit',async e=>{
   e.preventDefault();
   const btn=$('#saveInfoBtn'),msg=$('#infoMsg'),uIn=$('#profUsername'),eIn=$('#profEmail');
   const username=uIn.value.trim(),email=eIn.value.trim();
   [uIn,eIn].forEach(i=>i.removeAttribute('aria-invalid'));setMsg(msg);
   if(!/^[a-zA-Z0-9_.]{3,26}$/.test(username)){uIn.setAttribute('aria-invalid','true');setMsg(msg,'err','Usuario inválido: 3 a 26 caracteres, letras, números, punto o guion bajo.');uIn.focus();return;}
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){eIn.setAttribute('aria-invalid','true');setMsg(msg,'err','Escribí un correo válido.');eIn.focus();return;}
+  if(EMAIL_SYNC_READY&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){eIn.setAttribute('aria-invalid','true');setMsg(msg,'err','Escribí un correo válido.');eIn.focus();return;}
+  const changedUser=username!==currentUser.username;
+  const changedEmail=EMAIL_SYNC_READY&&email.toLowerCase()!==String(currentUser.email||'').toLowerCase();
+  if(!changedUser&&!changedEmail){setMsg(msg,'ok','No hay cambios para guardar.');return;}
   btn.disabled=true;
   try{
-    const {error}=await AlephAPI._client.from('profiles').update({username,email_real:email}).eq('id',currentUser.id);
-    if(error){setMsg(msg,'err',error.code==='23505'?'Ese usuario ya existe.':'No se pudo guardar. Probá de nuevo.');}
-    else{
-      window._alephUser.username=username;window._alephUser.email=email;
-      currentUser=window._alephUser;renderUser(currentUser);syncEditor();
-      setMsg(msg,'ok','Guardado.');
+    const notes=[];
+    if(changedUser){
+      const {data,error}=await AlephAPI._client.from('profiles').update({username}).eq('id',currentUser.id).select('id');
+      if(error){setMsg(msg,'err',error.code==='23505'?'Ese usuario ya existe.':'No se pudo guardar. Probá de nuevo.');return;}
+      if(!data||!data.length){setMsg(msg,'err','No se guardó ningún cambio. Cerrá sesión, volvé a entrar e intentá otra vez.');return;}
+      window._alephUser.username=username;currentUser=window._alephUser;renderUser(currentUser);syncEditor();
+      notes.push('Usuario guardado.');
     }
+    if(changedEmail){
+      const {error}=await AlephAPI._client.auth.updateUser({email});
+      if(error){setMsg(msg,'err','No se pudo iniciar el cambio de correo.'+(notes.length?' '+notes.join(' '):''));return;}
+      notes.push('Te enviamos un correo para confirmar el cambio. Hasta confirmarlo seguís entrando con tu correo actual.');
+    }
+    setMsg(msg,'ok',notes.join(' '));
   }catch(err){setMsg(msg,'err','No se pudo conectar. Probá de nuevo.');}
   finally{btn.disabled=false;}
 });
@@ -1143,12 +1162,13 @@ $('#deleteBtn').addEventListener('click',async()=>{
   clearTimeout(deleteTimer);deleteArmed=false;
   btn.disabled=true;btn.textContent='Eliminando…';
   try{
-    const {error}=await AlephAPI._client.from('profiles').delete().eq('id',currentUser.id);
+    const {data,error}=await AlephAPI._client.from('profiles').delete().eq('id',currentUser.id).select('id');
     if(error)throw error;
+    if(!data||!data.length)throw new Error('no-rows'); /* RLS no permite borrar: 0 filas y sin error */
     AlephAPI.Auth.logout();
   }catch(err){
     btn.disabled=false;btn.classList.remove('armed');btn.textContent='Eliminar cuenta';
-    setMsg(msg,'err','No se pudo eliminar el perfil. Tu cuenta sigue activa.');
+    setMsg(msg,'err','Todavía no se puede eliminar la cuenta desde acá. Tu cuenta sigue activa; pedile la baja al administrador.');
   }
 });
 
