@@ -1,513 +1,314 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Escuelas — AlephOne</title>
-    <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Escuelas · AlephOne</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/aleph-shell.css?v=3">
+<style>
+.main-inner{max-width:980px}
+.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap;padding:26px 4px 18px}
+.eyebrow{font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--primary-ink,rgb(var(--primary-rgb)))}
+.title{font-family:'Syne',sans-serif;font-size:clamp(1.6rem,1.2rem + 1.4vw,2.2rem);font-weight:800;line-height:1.1;margin-top:6px}
+.subtitle{font-size:0.92rem;color:var(--muted);margin-top:6px}
+.hero-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+.sec{margin-bottom:24px}
+.sec-title{font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:800;margin:0 4px 10px}
+.sch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.sch-card{display:flex;align-items:center;gap:14px;padding:16px;color:inherit;text-decoration:none;transition:transform 220ms var(--e-out)}
+.sch-card:active{transform:scale(0.985)}
+.sch-ic{width:46px;height:46px;flex:none;border-radius:14px;display:grid;place-items:center;background:rgba(var(--primary-rgb),0.16);color:var(--primary-ink,rgb(var(--primary-rgb)))}
+.sch-ic svg{width:22px;height:22px}
+.sch-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.sch-name{font-weight:700;line-height:1.3;overflow-wrap:anywhere}
+.sch-code{font-size:0.8rem;color:var(--muted);letter-spacing:0.04em;font-variant-numeric:tabular-nums}
+.sch-chev{width:18px;height:18px;flex:none;color:var(--faint)}
+.pend-card{padding:6px 16px}
+.pend-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--glass-border)}
+.pend-row:first-child{border-top:0}
+.pend-row .sch-ic{width:40px;height:40px}
+.pend-note{font-size:0.84rem;color:var(--muted)}
+
+.join-card{padding:20px}
+.seg{display:inline-flex;gap:4px;padding:4px;border-radius:14px;background:var(--chip-bg);border:1px solid var(--chip-border);margin-bottom:14px}
+.seg button{min-height:40px;padding:0 18px;border-radius:10px;font-family:'Syne',sans-serif;font-size:0.86rem;font-weight:700;color:var(--muted);transition:background 150ms ease,color 150ms ease}
+.seg button[aria-pressed="true"]{background:rgba(var(--primary-rgb),0.20);color:var(--primary-ink,rgb(var(--primary-rgb)))}
+.q-row{display:flex;gap:8px}
+.q-row input{flex:1;min-width:0;min-height:46px;padding:11px 13px;border-radius:12px;background:var(--field-bg);border:1px solid var(--glass-border);color:var(--text);font-size:1rem;outline:none}
+.q-row input:focus{border-color:rgba(var(--primary-rgb),0.85);box-shadow:0 0 0 3px rgba(var(--primary-rgb),0.24)}
+.q-row input.is-code{text-transform:uppercase;letter-spacing:0.08em}
+.results{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.result{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:var(--chip-bg);border:1px solid var(--chip-border)}
+.result .sch-ic{width:40px;height:40px}
+.res-msg{padding:18px 8px;text-align:center;color:var(--muted);line-height:1.5}
+.res-load{display:flex;justify-content:center;padding:18px}
+.res-load span{width:22px;height:22px;border-radius:50%;border:2.5px solid rgba(var(--primary-rgb),0.25);border-top-color:rgb(var(--primary-rgb));animation:spin 800ms linear infinite}
+.hint{margin-top:14px;padding:12px 14px;border-radius:14px;background:rgba(var(--primary-rgb),0.10);border:1px solid rgba(var(--primary-rgb),0.26);font-size:0.9rem;line-height:1.5}
+.hint b{font-family:'Syne',sans-serif}
+.empty{display:flex;flex-direction:column;align-items:center;gap:12px;padding:30px 18px;text-align:center;color:var(--muted);line-height:1.5}
+.empty p{max-width:44ch}
+.err-card{padding:22px 24px;max-width:600px}
+.err-card h3{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;margin-bottom:8px}
+.err-card p{line-height:1.5;margin-bottom:14px;color:var(--muted)}
+.sk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+@media (hover:hover) and (pointer:fine){
+  .sch-card:hover{transform:translateY(-2px)}
+  .sch-card:hover .sch-chev{color:var(--primary-ink,rgb(var(--primary-rgb)))}
+}
+@media(max-width:560px){.q-row{flex-wrap:wrap}.q-row .btn{width:100%}}
+</style>
 </head>
 <body>
 
-<!-- SVG filtros de visión de color -->
-<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
-    <defs>
-        <filter id="filter-deuteranopia" color-interpolation-filters="linearRGB">
-            <feColorMatrix type="matrix" values="0.367 0.861 -0.228 0 0  0.280 0.673 0.047 0 0  -0.012 0.043 0.969 0 0  0 0 0 1 0"/>
-        </filter>
-        <filter id="filter-protanopia" color-interpolation-filters="linearRGB">
-            <feColorMatrix type="matrix" values="0.152 1.053 -0.205 0 0  0.115 0.786 0.099 0 0  -0.004 -0.048 1.052 0 0  0 0 0 1 0"/>
-        </filter>
-        <filter id="filter-tritanopia" color-interpolation-filters="linearRGB">
-            <feColorMatrix type="matrix" values="1.256 -0.077 -0.179 0 0  -0.078 0.931 0.148 0 0  0.005 0.691 0.304 0 0  0 0 0 1 0"/>
-        </filter>
-    </defs>
-</svg>
+<div class="shell">
+  <main class="main">
+    <div class="main-inner">
 
-<div class="app-shell">
-
-    <!-- TOPBAR -->
-    <header class="topbar">
-        <div class="topbar-left">
-            <button class="mobile-nav-btn" id="mobileNavBtn" onclick="toggleMobileNav()">☰</button>
-            <span class="topbar-logo">ℵ AlephOne</span>
+      <section class="hero rise">
+        <div>
+          <div class="eyebrow">Instituciones</div>
+          <h1 class="title">Escuelas</h1>
+          <p class="subtitle" id="subtitle">Tus instituciones y las solicitudes para sumarte a otras.</p>
         </div>
-        <div class="topbar-right">
-            <button class="dark-mode-toggle" id="darkModeBtn" title="Cambiar tema">🌙</button>
-            <div class="user-pill">
-                <div class="user-avatar" id="userAvatar">?</div>
-                <span id="username">—</span>
-                <span class="role-badge" id="userRole">—</span>
-            </div>
-            <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+        <div class="hero-actions" id="heroActions" hidden>
+          <button class="btn btn-ghost" id="joinToggle" type="button" aria-expanded="false" aria-controls="joinPanel">Unirme a una escuela</button>
+          <button class="btn btn-primary" id="newSchoolBtn" type="button" hidden>Nueva escuela</button>
         </div>
-    </header>
+      </section>
 
-    <!-- SIDEBAR -->
-    <nav class="sidebar" id="sidebar">
-        <span class="nav-section-label">Principal</span>
-        <a href="dashboard.html" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
-        <a href="comunicacion.html" class="nav-link"><span class="nav-icon">📢</span> Comunicación</a>
-        <a href="tareas.html" class="nav-link"><span class="nav-icon">📋</span> Tareas</a>
-        <span class="nav-section-label">Académico</span>
-        <a href="horario.html" class="nav-link"><span class="nav-icon">🗓️</span> Horario</a>
-        <a href="promedios.html" class="nav-link"><span class="nav-icon">📊</span> Promedios</a>
-        <span class="nav-section-label">Herramientas</span>
-        <a href="quizzit.html" class="nav-link"><span class="nav-icon">🧪</span> Quizzit</a>
-        <a href="ai-chat.html" class="nav-link"><span class="nav-icon">🤖</span> Fractal AI</a>
-        <span class="nav-section-label">Escuelas</span>
-        <a href="schools.html" class="nav-link active"><span class="nav-icon">🏫</span> Mis Escuelas</a>
-        <div class="sidebar-footer">
-            <button class="btn btn-ghost btn-sm" onclick="logout()" style="width:100%;">← Cerrar sesión</button>
-        </div>
-    </nav>
+      <section id="app" aria-live="polite"></section>
 
-    <!-- MAIN -->
-    <main class="main-content">
-
-        <!-- Cargando -->
-        <div id="loadingState" style="display:flex;align-items:center;justify-content:center;min-height:300px">
-            <div class="spinner"></div>
-        </div>
-
-        <!-- Sin escuelas -->
-        <div id="noSchoolView" style="display:none">
-
-            <div class="day-greeting fade-up" style="margin-bottom:28px">
-                <div class="greeting-label">ESCUELAS</div>
-                <h2>Encontrá tu institución</h2>
-                <div class="greeting-date">Buscá por nombre o ingresá el código que te dio tu docente</div>
-            </div>
-
-            <!-- Solicitudes pendientes -->
-            <div id="pendingSection" style="display:none;margin-bottom:24px">
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">🕐 Solicitudes pendientes</span>
-                    </div>
-                    <div id="pendingList" class="item-list"></div>
-                </div>
-            </div>
-
-            <!-- Búsqueda -->
-            <div class="card fade-up">
-                <div class="card-header">
-                    <span class="card-title">Buscar escuela</span>
-                </div>
-                <div class="auth-tabs" style="margin-bottom:18px">
-                    <button class="auth-tab active" id="tabNombre" onclick="switchTab('nombre')">Por nombre</button>
-                    <button class="auth-tab" id="tabCodigo" onclick="switchTab('codigo')">Por código</button>
-                </div>
-
-                <div id="searchNombrePanel">
-                    <div style="display:flex;gap:8px">
-                        <input type="text" class="form-input" id="searchNombreInput"
-                            placeholder="Ej: Instituto San Martín..."
-                            style="flex:1"
-                            oninput="handleSearchInput(this.value)">
-                        <button class="btn btn-primary" onclick="buscarPorNombre()">Buscar</button>
-                    </div>
-                </div>
-
-                <div id="searchCodigoPanel" style="display:none">
-                    <div style="display:flex;gap:8px">
-                        <input type="text" class="form-input" id="searchCodigoInput"
-                            placeholder="Ej: ALF-2024"
-                            style="flex:1;font-family:var(--font-mono);letter-spacing:1px;text-transform:uppercase"
-                            oninput="this.value=this.value.toUpperCase()"
-                            onkeydown="if(event.key==='Enter')buscarPorCodigo()">
-                        <button class="btn btn-primary" onclick="buscarPorCodigo()">Buscar</button>
-                    </div>
-                </div>
-
-                <div id="searchResults" style="margin-top:16px"></div>
-            </div>
-
-            <div class="adminOnly" style="display:none;margin-top:16px">
-                <button class="btn btn-primary" style="width:100%" onclick="toggleCrearEscuela()">🏢 Crear Mi Primera Escuela</button>
-            </div>
-
-            <div class="alert alert-info" style="margin-top:16px">
-                <span>ℹ️</span>
-                <div>
-                    <div class="alert-title">¿No tenés código?</div>
-                    Pedíselo a tu docente o director. También podés buscar por nombre y solicitar unirte.
-                </div>
-            </div>
-        </div>
-
-        <!-- Con escuelas activas -->
-        <div id="mySchoolsView" style="display:none">
-            <div class="page-header">
-                <h2>Mis Escuelas</h2>
-                <p>Instituciones a las que pertenecés</p>
-            </div>
-
-            <div id="mySchoolsList" class="item-list" style="margin-bottom:24px"></div>
-
-            <div id="adminCreatePanel" style="display:none;margin-bottom:24px">
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">🏢 Nueva Escuela</span>
-                    </div>
-                    <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
-                        <div class="form-group">
-                            <label class="form-label">Nombre de la escuela</label>
-                            <input type="text" class="form-input" id="newSchoolName" placeholder="Ej: Instituto San Martín">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Código (Opcional)</label>
-                            <input type="text" class="form-input" id="newSchoolCode" placeholder="Ej: SAN-2024" style="text-transform:uppercase">
-                            <small style="color:var(--text-faint)">Si se deja vacío, se generará uno automáticamente.</small>
-                        </div>
-                        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-                            <button class="btn btn-ghost btn-sm" onclick="toggleCrearEscuela()">Cancelar</button>
-                            <button class="btn btn-primary btn-sm" onclick="crearEscuela()">Crear Escuela</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-                <button class="btn btn-secondary" onclick="showJoinFlow()">➕ Unirme a otra escuela</button>
-                <button class="btn btn-primary adminOnly" style="display:none" onclick="toggleCrearEscuela()">🏢 Crear Nueva Escuela</button>
-            </div>
-
-            <div id="joinFlowPanel" style="display:none;margin-top:20px">
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">Buscar escuela</span>
-                        <button class="btn btn-ghost btn-sm" onclick="hideJoinFlow()">✕</button>
-                    </div>
-                    <div class="auth-tabs" style="margin-bottom:18px">
-                        <button class="auth-tab active" id="tabNombre2" onclick="switchTab2('nombre')">Por nombre</button>
-                        <button class="auth-tab" id="tabCodigo2" onclick="switchTab2('codigo')">Por código</button>
-                    </div>
-                    <div id="searchNombrePanel2">
-                        <div style="display:flex;gap:8px">
-                            <input type="text" class="form-input" id="searchNombreInput2"
-                                placeholder="Ej: Instituto San Martín..."
-                                style="flex:1"
-                                oninput="handleSearchInput2(this.value)">
-                            <button class="btn btn-primary" onclick="buscarPorNombre2()">Buscar</button>
-                        </div>
-                    </div>
-                    <div id="searchCodigoPanel2" style="display:none">
-                        <div style="display:flex;gap:8px">
-                            <input type="text" class="form-input" id="searchCodigoInput2"
-                                placeholder="Ej: ALF-2024"
-                                style="flex:1;font-family:var(--font-mono);letter-spacing:1px;text-transform:uppercase"
-                                oninput="this.value=this.value.toUpperCase()"
-                                onkeydown="if(event.key==='Enter')buscarPorCodigo2()">
-                            <button class="btn btn-primary" onclick="buscarPorCodigo2()">Buscar</button>
-                        </div>
-                    </div>
-                    <div id="searchResults2" style="margin-top:16px"></div>
-                </div>
-            </div>
-        </div>
-
-    </main>
+    </div>
+  </main>
 </div>
 
-<!-- BOTTOM NAV -->
-<nav class="bottom-nav" id="bottomNav">
-    <a href="dashboard.html" class="bn-item"><span class="bn-icon">🏠</span><span class="bn-label">Inicio</span></a>
-    <a href="comunicacion.html" class="bn-item"><span class="bn-icon">📢</span><span class="bn-label">Mensajes</span></a>
-    <a href="tareas.html" class="bn-item"><span class="bn-icon">📋</span><span class="bn-label">Tareas</span></a>
-    <button type="button" class="bn-item" onclick="toggleMasSheet()"><span class="bn-icon">⋯</span><span class="bn-label">Más</span></button>
-</nav>
-
-<div class="mas-overlay" id="masOverlay" onclick="toggleMasSheet()"></div>
-<div class="mas-sheet" id="masSheet">
-    <div class="mas-handle"></div>
-    <a href="horario.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🗓️</span><span>Horario</span></a>
-    <a href="promedios.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">📊</span><span>Promedios</span></a>
-    <a href="quizzit.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🧪</span><span>Quizzit</span></a>
-    <a href="schools.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🏫</span><span>Escuelas</span></a>
-    <a href="ai-chat.html" class="mas-item" onclick="toggleMasSheet()"><span class="mas-icon">🤖</span><span>Fractal AI</span></a>
+<!-- Nueva escuela (solo administradores) -->
+<div class="dialog-wrap" id="newSchoolDlg">
+  <div class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="nsTitle">
+    <div class="dlg-head"><h2 id="nsTitle">Nueva escuela</h2><button class="dlg-close" type="button" data-close aria-label="Cerrar">×</button></div>
+    <form id="newSchoolForm" novalidate>
+      <div class="field"><label for="nsName">Nombre de la escuela</label><input id="nsName" maxlength="80" autocomplete="off" placeholder="Ej: Instituto San Martín"><div class="field-err" id="nsNameErr"></div></div>
+      <div class="field"><label for="nsCode">Código (opcional)</label><input id="nsCode" maxlength="16" autocomplete="off" placeholder="Ej: SAN-2024" style="text-transform:uppercase" aria-describedby="nsCodeHint"><span class="field-hint" id="nsCodeHint">Si lo dejás vacío, se genera uno automáticamente.</span><div class="field-err" id="nsCodeErr"></div></div>
+      <div class="field-err" id="nsErr" role="alert"></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost" type="button" data-close>Cancelar</button>
+        <button class="btn btn-primary" type="submit" id="nsSubmit">Crear escuela</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/api.js"></script>
-<script src="js/app.js"></script>
+<script src="js/aleph-shell.js?v=3"></script>
 <script>
-// ── MOBILE NAV ────────────────────────────────────────────
-function toggleMobileNav() {
-    document.getElementById('sidebar').classList.toggle('open');
+(function(){
+'use strict';
+if(typeof AlephShell==='undefined'||typeof AlephAPI==='undefined'){
+  var missing=typeof AlephShell==='undefined'?'js/aleph-shell.js':'js/api.js';
+  document.getElementById('app').innerHTML='<div style="max-width:560px;padding:22px;border-radius:18px;border:1px solid rgba(240,128,128,.5);line-height:1.5"><b>No se pudo cargar la interfaz.</b><br>Falta el archivo <code>'+missing+'</code>. Revisá que esté subido y recargá la página.</div>';
+  return;
 }
-function toggleMasSheet() {
-    document.getElementById('masSheet').classList.toggle('open');
-    document.getElementById('masOverlay').classList.toggle('open');
-}
+const A=AlephShell,$=A.$,$$=A.$$,esc=A.esc,toast=A.toast;
 
-// ── TABS ──────────────────────────────────────────────────
-function switchTab(tab) {
-    document.getElementById('tabNombre').classList.toggle('active', tab === 'nombre');
-    document.getElementById('tabCodigo').classList.toggle('active', tab === 'codigo');
-    document.getElementById('searchNombrePanel').style.display = tab === 'nombre' ? '' : 'none';
-    document.getElementById('searchCodigoPanel').style.display = tab === 'codigo' ? '' : 'none';
-    document.getElementById('searchResults').innerHTML = '';
-}
+/* ══════════════════════════════════════════
+   ESTADO
+══════════════════════════════════════════ */
+const S={user:null,mine:[],pending:[],mode:'nombre',seq:0,timer:0,results:[],joinOpen:false};
+const ROLE={student:'Estudiante',teacher:'Docente',director:'Director',superadmin:'Admin'};
+const ROLE_CHIP={director:'ok',superadmin:'warn'};
+const svg=d=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+d+'</svg>';
+const ICON_SCHOOL=svg('<path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/><path d="M9 10h.01M15 10h.01"/>');
+const ICON_CLOCK=svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>');
+const ICON_CHEV=svg('<path d="M9 18l6-6-6-6"/>').replace('<svg','<svg class="sch-chev"');
+const ICON_SEARCH=svg('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>');
+/* el destino depende del rol que tiene la persona EN ESA escuela */
+const destFor=s=>(s.role==='director'||s.role==='superadmin')?'school-director.html':'school-dash.html';
+const isMember=id=>S.mine.some(m=>String(m.id)===String(id));
+const isPending=id=>S.pending.some(m=>String(m.id)===String(id));
+const slow=(p,ms)=>A.withTimeout(p,ms||15000);
 
-function switchTab2(tab) {
-    document.getElementById('tabNombre2').classList.toggle('active', tab === 'nombre');
-    document.getElementById('tabCodigo2').classList.toggle('active', tab === 'codigo');
-    document.getElementById('searchNombrePanel2').style.display = tab === 'nombre' ? '' : 'none';
-    document.getElementById('searchCodigoPanel2').style.display = tab === 'codigo' ? '' : 'none';
-    document.getElementById('searchResults2').innerHTML = '';
+/* ══════════════════════════════════════════
+   VISTAS
+══════════════════════════════════════════ */
+function mineHTML(){
+  if(!S.mine.length)return '';
+  return '<section class="sec" aria-labelledby="hMine"><h2 class="sec-title" id="hMine">Mis escuelas</h2><div class="sch-grid">'+S.mine.map(s=>
+    '<a class="glass sch-card" href="'+destFor(s)+'?id='+encodeURIComponent(s.id)+'"><span class="sch-ic">'+ICON_SCHOOL+'</span>'+
+    '<span class="sch-body"><span class="sch-name">'+esc(s.name)+'</span><span class="sch-code">'+esc(s.code)+'</span></span>'+
+    '<span class="tchip '+(ROLE_CHIP[s.role]||'')+'">'+esc(ROLE[s.role]||s.role)+'</span>'+ICON_CHEV+'</a>').join('')+'</div></section>';
 }
-
-// ── BÚSQUEDA ──────────────────────────────────────────────
-let _searchTimer = null;
-
-function handleSearchInput(val) {
-    clearTimeout(_searchTimer);
-    if (val.length < 2) { document.getElementById('searchResults').innerHTML = ''; return; }
-    _searchTimer = setTimeout(() => buscarPorNombre(), 400);
+function pendingHTML(){
+  if(!S.pending.length)return '';
+  return '<section class="sec" aria-labelledby="hPend"><h2 class="sec-title" id="hPend">Solicitudes pendientes</h2><div class="glass pend-card">'+S.pending.map(s=>
+    '<div class="pend-row"><span class="sch-ic">'+ICON_CLOCK+'</span><span class="sch-body"><span class="sch-name">'+esc(s.name)+'</span><span class="pend-note">Esperando la aprobación del director</span></span><span class="tchip warn">Pendiente</span></div>').join('')+'</div></section>';
 }
-
-function handleSearchInput2(val) {
-    clearTimeout(_searchTimer);
-    if (val.length < 2) { document.getElementById('searchResults2').innerHTML = ''; return; }
-    _searchTimer = setTimeout(() => buscarPorNombre2(), 400);
+function joinHTML(){
+  const code=S.mode==='codigo';
+  return '<section class="sec" id="joinPanel" aria-labelledby="hJoin"'+((S.mine.length&&!S.joinOpen)?' hidden':'')+'><h2 class="sec-title" id="hJoin">'+(S.mine.length?'Unirme a otra escuela':'Encontrá tu institución')+'</h2>'+
+    '<div class="glass join-card"><div class="seg" role="group" aria-label="Forma de búsqueda"><button type="button" data-mode="nombre" aria-pressed="'+!code+'">Por nombre</button><button type="button" data-mode="codigo" aria-pressed="'+code+'">Por código</button></div>'+
+    '<div class="q-row"><label class="sr-only" for="q">'+(code?'Código de la escuela':'Nombre de la escuela')+'</label><input id="q" type="search" class="'+(code?'is-code':'')+'" autocomplete="off" spellcheck="false" placeholder="'+(code?'Ej: ALF-2024':'Ej: Instituto San Martín')+'"><button class="btn btn-primary" type="button" data-search>Buscar</button></div>'+
+    '<div class="results" id="results"></div>'+
+    '<div class="hint"><b>¿No tenés código?</b> Pedíselo a tu docente o director. También podés buscar por nombre y solicitar unirte: tu solicitud queda pendiente hasta que la apruebe el director.</div></div></section>';
 }
-
-async function buscarPorNombre() {
-    const q = document.getElementById('searchNombreInput').value.trim();
-    if (q) await _runSearch(q, 'searchResults');
+function emptyResults(msg){return '<div class="res-msg">'+msg+'</div>';}
+function resultsHTML(list){
+  if(!list.length)return emptyResults(S.mode==='codigo'?'No se encontró ninguna escuela con ese código.':'No se encontraron escuelas con ese nombre.');
+  return list.map(s=>{
+    const act=isMember(s.id)?'<span class="tchip ok">Miembro</span>':(isPending(s.id)?'<span class="tchip warn">Pendiente</span>':'<button type="button" class="btn btn-primary btn-sm" data-join="'+esc(s.id)+'">Unirme</button>');
+    return '<div class="result"><span class="sch-ic">'+ICON_SCHOOL+'</span><span class="sch-body"><span class="sch-name">'+esc(s.name)+'</span><span class="sch-code">'+esc(s.code)+'</span></span>'+act+'</div>';
+  }).join('');
 }
-async function buscarPorNombre2() {
-    const q = document.getElementById('searchNombreInput2').value.trim();
-    if (q) await _runSearch(q, 'searchResults2');
-}
-
-async function buscarPorCodigo() {
-    const code = document.getElementById('searchCodigoInput').value.trim();
-    if (!code) return;
-    const res = await AlephAPI.Schools.getByCode(code);
-    if (!res.ok || !res.school) {
-        document.getElementById('searchResults').innerHTML =
-            `<div class="empty-state"><div class="empty-icon">🔍</div><p>No se encontró ninguna escuela con ese código.</p></div>`;
-        return;
-    }
-    renderSearchResults([res.school], 'searchResults');
-}
-
-async function buscarPorCodigo2() {
-    const code = document.getElementById('searchCodigoInput2').value.trim();
-    if (!code) return;
-    const res = await AlephAPI.Schools.getByCode(code);
-    if (!res.ok || !res.school) {
-        document.getElementById('searchResults2').innerHTML =
-            `<div class="empty-state"><div class="empty-icon">🔍</div><p>No se encontró ninguna escuela con ese código.</p></div>`;
-        return;
-    }
-    renderSearchResults([res.school], 'searchResults2');
+function errorCard(title,err,retry){
+  return '<div class="glass err-card" role="alert"><h3>'+esc(title)+'</h3><p>'+esc(A.friendlyError(err))+'</p><div class="gate-actions">'+(retry?'<button type="button" class="btn btn-primary" data-reload>Reintentar</button>':'')+'<a class="btn btn-ghost" href="dashboard.html">Volver al inicio</a></div></div>';
 }
 
-async function _runSearch(query, containerId) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = `<div style="display:flex;justify-content:center;padding:16px"><div class="spinner"></div></div>`;
-    const res = await AlephAPI.Schools.buscar(query);
-    if (!res.ok) {
-        container.innerHTML = `<div class="alert alert-danger"><span>⚠️</span> ${sanitize(res.error)}</div>`;
-        return;
-    }
-    if (!res.schools.length) {
-        container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><p>No se encontraron escuelas con ese nombre.</p></div>`;
-        return;
-    }
-    renderSearchResults(res.schools, containerId);
+function render(){
+  const app=$('#app');
+  app.removeAttribute('aria-busy');
+  app.innerHTML=pendingHTML()+mineHTML()+joinHTML();
+  const isAdmin=S.user&&S.user.role==='superadmin';
+  $('#heroActions').hidden=!(S.mine.length||isAdmin);
+  $('#joinToggle').hidden=!S.mine.length;
+  $('#newSchoolBtn').hidden=!isAdmin;
+  $('#joinToggle').setAttribute('aria-expanded',String(!!S.joinOpen));
+  $('#subtitle').textContent=S.mine.length?'Las instituciones a las que pertenecés.':'Todavía no pertenecés a ninguna escuela. Buscá la tuya para pedir acceso.';
+  A.FX.rescan();
+  A.rise($$('.sec'),0);
 }
 
-function renderSearchResults(schools, containerId) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = '';
-    const myIds      = new Set(window._mySchoolIds || []);
-    const pendingIds = new Set(window._pendingIds  || []);
+/* ══════════════════════════════════════════
+   BÚSQUEDA (sin carreras: gana siempre la última)
+══════════════════════════════════════════ */
+function minLen(){return S.mode==='codigo'?3:2;}
+function runSearch(){
+  const input=$('#q'),box=$('#results');if(!input||!box)return;
+  const q=input.value.trim();
+  if(q.length<minLen()){S.seq++;S.results=[];box.innerHTML='';return;}
+  const seq=++S.seq;
+  box.innerHTML='<div class="res-load" role="status" aria-label="Buscando"><span></span></div>';
+  (async()=>{
+    let res;
+    try{res=await slow(S.mode==='codigo'?AlephAPI.Schools.getByCode(q):AlephAPI.Schools.buscar(q));}
+    catch(e){res={ok:false,error:A.friendlyError(e)};}
+    if(seq!==S.seq)return;
+    if(!res||res.ok===false){box.innerHTML=emptyResults('No se pudo buscar: '+esc((res&&res.error)||'error desconocido')+'. <button type="button" class="link" data-search>Reintentar</button>');return;}
+    S.results=S.mode==='codigo'?(res.school?[res.school]:[]):(res.schools||[]);
+    box.innerHTML=resultsHTML(S.results);
+  })();
+}
+function scheduleSearch(){clearTimeout(S.timer);S.timer=setTimeout(runSearch,380);}
 
-    schools.forEach(school => {
-        const isActive  = myIds.has(school.id);
-        const isPending = pendingIds.has(school.id);
-
-        let actionBtn = '';
-        if (isActive)       actionBtn = `<span class="tag tag-success">✓ Miembro</span>`;
-        else if (isPending) actionBtn = `<span class="tag tag-warning">⏳ Pendiente</span>`;
-        else                actionBtn = `<button class="btn btn-primary btn-sm" onclick="solicitarUnirse('${school.id}','${sanitize(school.name).replace(/'/g,"\\'")}',this)">Unirse</button>`;
-
-        const item = document.createElement('div');
-        item.className = 'item fade-up';
-        item.style.marginBottom = '6px';
-        item.innerHTML = `
-            <div class="item-icon teal">🏫</div>
-            <div class="item-body">
-                <div class="item-title">${sanitize(school.name)}</div>
-                <div class="item-meta"><span class="mono" style="font-size:.85em;opacity:.65">${sanitize(school.code)}</span></div>
-            </div>
-            <div class="item-right">${actionBtn}</div>
-        `;
-        container.appendChild(item);
-    });
+async function join(id,btn){
+  const school=S.results.find(s=>String(s.id)===String(id));if(!school)return;
+  btn.disabled=true;btn.textContent='Enviando…';
+  let res;
+  try{res=await slow(AlephAPI.Schools.unirse(school.id));}catch(e){res={ok:false,error:A.friendlyError(e)};}
+  if(!res||res.ok===false){
+    toast((res&&res.error)||'No se pudo enviar la solicitud.',{kind:'err'});
+    btn.disabled=false;btn.textContent='Unirme';return;
+  }
+  S.pending.push({id:school.id,name:school.name,code:school.code,memberId:res.member&&res.member.id});
+  /* se actualizan "pendientes" y los resultados sin volver a pedir nada */
+  const keep=$('#q')?$('#q').value:'';
+  const pend=$('#hPend');
+  render();
+  S.joinOpen=true;$('#joinPanel').hidden=false;$('#joinToggle').setAttribute('aria-expanded','true');
+  if($('#q')){$('#q').value=keep;$('#results').innerHTML=resultsHTML(S.results);}
+  toast('Solicitud enviada a '+school.name,{kind:'ok'});
 }
 
-// ── SOLICITAR UNIRSE ──────────────────────────────────────
-async function solicitarUnirse(schoolId, schoolName, btn) {
-    btn.disabled = true;
-    btn.textContent = '...';
-
-    const res = await AlephAPI.Schools.unirse(schoolId);
-    if (!res.ok) {
-        showToast(res.error, 'error');
-        btn.disabled = false;
-        btn.textContent = 'Unirse';
-        return;
-    }
-
-    window._pendingIds = window._pendingIds || [];
-    window._pendingIds.push(schoolId);
-    btn.closest('.item').querySelector('.item-right').innerHTML = `<span class="tag tag-warning">⏳ Pendiente</span>`;
-    addPendingItem(schoolId, schoolName);
-    showToast(`Solicitud enviada a ${schoolName}`, 'success');
-}
-
-function addPendingItem(schoolId, schoolName) {
-    document.getElementById('pendingSection').style.display = '';
-    const list = document.getElementById('pendingList');
-    const item = document.createElement('div');
-    item.className = 'item fade-up';
-    item.innerHTML = `
-        <div class="item-icon warning">🕐</div>
-        <div class="item-body">
-            <div class="item-title">${sanitize(schoolName)}</div>
-            <div class="item-meta">Esperando aprobación del director</div>
-        </div>
-        <div class="item-right"><span class="tag tag-warning">Pendiente</span></div>
-    `;
-    list.appendChild(item);
-}
-
-// ── JOIN FLOW ─────────────────────────────────────────────
-function showJoinFlow() {
-    const panel = document.getElementById('joinFlowPanel');
-    panel.style.display = '';
-    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-function hideJoinFlow() {
-    document.getElementById('joinFlowPanel').style.display = 'none';
-}
-
-// ── RENDER MIS ESCUELAS ───────────────────────────────────
-function renderMySchools(schools) {
-    const list = document.getElementById('mySchoolsList');
-    list.innerHTML = '';
-    const roleLabel = { student: 'Estudiante', teacher: 'Docente', director: 'Director', superadmin: 'Admin' };
-    const roleClass = { student: 'tag-teal', teacher: 'tag-accent', director: 'tag-blue', superadmin: 'tag-primary' };
-
-    schools.forEach(school => {
-        const item = document.createElement('div');
-        item.className = 'item fade-up';
-        item.style.cursor = 'pointer';
-        item.onclick = () => {
-            const user = AlephAPI.Auth.getCurrentUser();
-            const dest = (school.role === 'director' || school.role === 'superadmin') ? 'school-director.html' : 'school-dash.html';
-            location.href = `${dest}?id=${school.id}`;
-        };
-        item.innerHTML = `
-            <div class="item-icon teal" style="font-size:1.2em">🏫</div>
-            <div class="item-body">
-                <div class="item-title">${sanitize(school.name)}</div>
-                <div class="item-meta"><span class="mono" style="font-size:.85em;opacity:.65">${sanitize(school.code)}</span></div>
-            </div>
-            <div class="item-right" style="display:flex;align-items:center;gap:8px">
-                <span class="tag ${roleClass[school.role] || 'tag-teal'}">${roleLabel[school.role] || school.role}</span>
-                <span style="color:var(--text-faint)">›</span>
-            </div>
-        `;
-        list.appendChild(item);
-    });
-}
-
-// ── INIT ──────────────────────────────────────────────────
-// app.js ya corrió Auth.init() en su DOMContentLoaded y redirige si no hay sesión.
-// Acá sólo esperamos a que esa misma promise termine (es singleton).
-document.addEventListener('DOMContentLoaded', async () => {
-    // Esperamos exactamente la misma promise que ya inició app.js
-    await AlephAPI.Auth.init();
-    const user = AlephAPI.Auth.getCurrentUser();
-    // Si app.js no redirigió es porque hay usuario; aun así por las dudas:
-    if (!user) return; // app.js ya maneja la redirección
-
-    // Header — app.js solo llena #username / #userRole en protectedPages hardcodeadas.
-    // Lo rellenamos acá por si schools no está en esa lista.
-    const roles = { student: 'Estudiante', teacher: 'Docente', director: 'Director', superadmin: 'Admin' };
-    const usernameEl = document.getElementById('username');
-    const roleEl     = document.getElementById('userRole');
-    const avatarEl   = document.getElementById('userAvatar');
-    if (usernameEl && usernameEl.textContent === '—') usernameEl.textContent = user.username;
-    if (avatarEl)   avatarEl.textContent = (user.username || '?')[0].toUpperCase();
-    if (roleEl && roleEl.textContent === '—') {
-        roleEl.textContent = roles[user.role] || user.role;
-        roleEl.className   = `role-badge ${user.role}`;
-    }
-
-    // Mis escuelas activas
-    const res = await AlephAPI.Schools.getMisSchools();
-    document.getElementById('loadingState').style.display = 'none';
-
-    if (!res.ok) {
-        showToast('Error cargando escuelas', 'error');
-        document.getElementById('noSchoolView').style.display = '';
-        return;
-    }
-
-    window._mySchoolIds = res.schools.map(s => s.id);
-    window._pendingIds  = [];
-
-    // Pendientes — fetch directo al cliente Supabase que api.js ya instanció como _sb
-    // Pero _sb es privado dentro del IIFE. Usamos una query pública a través de AlephAPI.
-    // Por ahora dejamos _pendingIds vacío; se actualiza en sesión al hacer Unirse.
-    // TODO: exponer Schools.getMisSolicitudesPendientes() si se necesita persistencia entre sesiones.
-
-    if (res.schools.length === 0) {
-        document.getElementById('noSchoolView').style.display = '';
-    } else {
-        document.getElementById('mySchoolsView').style.display = '';
-        renderMySchools(res.schools);
-    }
-
-    // Si es superadmin, mostrar elementos de admin
-    if (user.role === 'superadmin') {
-        document.querySelectorAll('.adminOnly').forEach(el => el.style.display = '');
-    }
+/* ══════════════════════════════════════════
+   EVENTOS
+══════════════════════════════════════════ */
+$('#app').addEventListener('click',e=>{
+  const t=e.target.closest('[data-mode],[data-search],[data-join],[data-reload]');if(!t)return;
+  if(t.hasAttribute('data-mode')){
+    S.mode=t.dataset.mode;S.results=[];S.seq++;
+    $$('.seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===S.mode)));
+    const q=$('#q');q.value='';q.className=S.mode==='codigo'?'is-code':'';
+    q.placeholder=S.mode==='codigo'?'Ej: ALF-2024':'Ej: Instituto San Martín';
+    $('label[for="q"]').textContent=S.mode==='codigo'?'Código de la escuela':'Nombre de la escuela';
+    $('#results').innerHTML='';q.focus();
+  }
+  else if(t.hasAttribute('data-search'))runSearch();
+  else if(t.hasAttribute('data-join'))join(t.dataset.join,t);
+  else if(t.hasAttribute('data-reload'))location.reload();
+});
+$('#app').addEventListener('input',e=>{
+  if(e.target.id!=='q')return;
+  if(S.mode==='codigo')e.target.value=e.target.value.toUpperCase();
+  scheduleSearch();
+});
+$('#app').addEventListener('keydown',e=>{if(e.target.id==='q'&&e.key==='Enter'){e.preventDefault();clearTimeout(S.timer);runSearch();}});
+$('#joinToggle').addEventListener('click',()=>{
+  S.joinOpen=!S.joinOpen;
+  const p=$('#joinPanel');if(p)p.hidden=!S.joinOpen;
+  $('#joinToggle').setAttribute('aria-expanded',String(S.joinOpen));
+  if(S.joinOpen){const q=$('#q');if(q)q.focus();}
 });
 
-function toggleCrearEscuela() {
-    const p = document.getElementById('adminCreatePanel');
-    const noSchoolView = document.getElementById('noSchoolView');
-    
-    // Si estamos en noSchoolView, mover el panel ahí si no está
-    if (noSchoolView.style.display !== 'none') {
-        if (!noSchoolView.contains(p)) {
-            noSchoolView.appendChild(p);
-        }
-    }
-    
-    p.style.display = p.style.display === 'none' ? '' : 'none';
-}
+/* Nueva escuela */
+$('#newSchoolBtn').addEventListener('click',()=>{
+  $('#newSchoolForm').reset();['nsNameErr','nsCodeErr','nsErr'].forEach(id=>{$('#'+id).textContent='';});
+  A.openDialog($('#newSchoolDlg'),{focus:'#nsName'});
+});
+$$('#newSchoolDlg [data-close]').forEach(b=>b.addEventListener('click',()=>A.closeDialog($('#newSchoolDlg'))));
+$('#nsCode').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase();});
+$('#newSchoolForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const name=$('#nsName').value.trim(),code=$('#nsCode').value.trim().toUpperCase(),btn=$('#nsSubmit');
+  ['nsNameErr','nsCodeErr','nsErr'].forEach(id=>{$('#'+id).textContent='';});
+  $('#nsName').removeAttribute('aria-invalid');$('#nsCode').removeAttribute('aria-invalid');
+  if(name.length<3){$('#nsNameErr').textContent='Escribí el nombre de la escuela (mínimo 3 letras).';$('#nsName').setAttribute('aria-invalid','true');$('#nsName').focus();return;}
+  if(code&&!/^[A-Z0-9-]{3,16}$/.test(code)){$('#nsCodeErr').textContent='Usá de 3 a 16 caracteres: letras, números o guion.';$('#nsCode').setAttribute('aria-invalid','true');$('#nsCode').focus();return;}
+  btn.disabled=true;btn.textContent='Creando…';
+  let res;
+  try{res=await slow(AlephAPI.Schools.crearEscuela({name:name,code:code}),20000);}catch(err){res={ok:false,error:A.friendlyError(err)};}
+  btn.disabled=false;btn.textContent='Crear escuela';
+  if(!res||res.ok===false){$('#nsErr').textContent=(res&&res.error)||'No se pudo crear la escuela. Probá de nuevo.';return;}
+  toast('Escuela creada',{kind:'ok'});
+  location.href='school-director.html?id='+encodeURIComponent(res.school.id);
+});
 
-async function crearEscuela() {
-    const name = document.getElementById('newSchoolName').value.trim();
-    const code = document.getElementById('newSchoolCode').value.trim();
-    if (!name) { showToast('El nombre es obligatorio', 'warning'); return; }
+/* ══════════════════════════════════════════
+   ARRANQUE
+══════════════════════════════════════════ */
+const SKELETON='<div class="sk-grid">'+'<div class="skel" style="height:80px"></div>'.repeat(3)+'</div>';
+async function init(){
+  A.mount({active:'escuela'});
+  A.ready();
+  const gate=A.stages($('#app'),[
+    {id:'session',label:'Verificando tu sesión'},
+    {id:'schools',label:'Cargando tus escuelas'}
+  ],{title:'Preparando Escuelas',skeleton:SKELETON});
 
-    const res = await AlephAPI.Schools.crearEscuela({ name, code });
-    if (!res.ok) {
-        showToast(res.error, 'error');
-        return;
-    }
-    showToast('Escuela creada correctamente', 'success');
-    location.reload();
+  await gate.run('session',()=>AlephAPI.Auth.init(),{timeoutMs:20000});
+  S.user=AlephAPI.Auth.getCurrentUser();
+  if(!S.user){location.href='index.html';return;}
+  A.setUser(S.user);
+
+  const data=await gate.run('schools',async()=>{
+    const [mine,pend]=await Promise.all([
+      AlephAPI.Schools.getMisSchools(),
+      AlephAPI.Schools.getMisSolicitudesPendientes().catch(()=>({ok:false}))
+    ]);
+    if(!mine||mine.ok===false)return{ok:false,error:(mine&&mine.error)||'No se pudieron cargar tus escuelas.'};
+    return{ok:true,mine:(mine.schools||[]).filter(s=>s&&s.id),pending:(pend&&pend.ok?(pend.solicitudes||[]):[]).filter(s=>s&&s.id)};
+  },{timeoutMs:25000});
+  gate.stop();
+  S.mine=data.mine;S.pending=data.pending;
+  render();
 }
+init().catch(err=>{
+  console.error('Escuelas:',err);
+  $('#app').innerHTML=errorCard('Algo salió mal al abrir Escuelas',err,true);
+});
+})();
 </script>
 </body>
 </html>
